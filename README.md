@@ -11,7 +11,7 @@
 
 ## Working overview diagram
 
-![Overview](./otrp-overview.png)
+![Overview](./doc-assets/otrp-overview.png)
 
 ## 10000m view
 
@@ -61,9 +61,11 @@ two restrictions.
 
 ## TA Encryption
 
-![TA in transit](./otrp-ta-in-transit.png)
+![TA in transit](./doc-assets/otrp-ta-in-transit.png)
 
 ## OTrP PKI
 
-![OTrP PKI](./otrp-pki.png)
+![OTrP PKI](./doc-assets/otrp-pki.png)
+
+[Setting up OTrP PKI](./README-pki.md)
 
