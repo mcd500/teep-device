@@ -82,3 +82,7 @@ Step 1: Run otrp-kickstart-pki.sh as described below
 |ta-aist-otrp|TA implementing OTrP on TEE side|
 |ta-aist-test|Tiny TA that is copied to the fake TAM so it can be encrypted and sent to the TEE via aist-otrp-testapp|
 
+## OTrP test flow
+
+![OTrP test flow](./doc-assets/otrp-initial-test-flow.png)
+
