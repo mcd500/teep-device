@@ -67,5 +67,18 @@ two restrictions.
 
 ![OTrP PKI](./doc-assets/otrp-pki.png)
 
+Step 1: Run otrp-kickstart-pki.sh as described below
+
 [Setting up OTrP PKI](./README-pki.md)
+
+## OTrP sources layout
+
+|Subdirectory|Function|
+|---|---|
+|aist-otrp-testapp|Test REE client application, uses libaistotrp to fetch an encrypted test TA from TAM and install it|
+|aist-otrp-test-ta-client|Tiny REE client that just opens a session to the test TA if it is installed successfully|
+|libaistotrp|REE shared library that can do http(s) requests to the TAM and can forward results to ta-aist-otrp|
+|pki|PKI created by scripts/otrp-kickstart-pki.sh|
+|ta-aist-otrp|TA implementing OTrP on TEE side|
+|ta-aist-test|Tiny TA that is copied to the fake TAM so it can be encrypted and sent to the TEE via aist-otrp-testapp|
 
