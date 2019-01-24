@@ -266,7 +266,7 @@ otrp(uint32_t type, TEE_Param p[TEE_NUM_PARAMS])
 		}
 
 		memset(pars, 0, sizeof(pars));
-		pars[0].memref.buffer = jwe.jws.map.buf[LJWE_CTXT];
+		pars[0].memref.buffer = (void *)jwe.jws.map.buf[LJWE_CTXT];
 		pars[0].memref.size = jwe.jws.map.len[LJWE_CTXT];
 		res = TEE_InvokeTACommand(sess, 0,
 					  PTA_SECSTOR_TA_MGMT_BOOTSTRAP,

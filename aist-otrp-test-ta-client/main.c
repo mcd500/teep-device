@@ -48,7 +48,7 @@ size_t file_length;
 
 
 TEEC_Result
-caDo()
+aist_otrp_test_ta_client()
 {
 	TEEC_Result n;
 	TEEC_Operation op;
@@ -73,7 +73,7 @@ caDo()
 
 	fprintf(stderr, "\n");
 
-	fprintf(stderr, "[aist-otrp-client] done\n");
+	fprintf(stderr, "%s: done\n", __func__);
 
 	return n;
 }
@@ -124,7 +124,7 @@ int main(int argc, char *argv[])
 		goto bail3;
 	}
 
-	nResult = caDo();
+	nResult = aist_otrp_test_ta_client();
 
 	if (nResult != TEEC_SUCCESS) {
 		fprintf(stderr, "Could not send command to TA\n");
