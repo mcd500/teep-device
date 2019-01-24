@@ -86,3 +86,45 @@ Step 1: Run otrp-kickstart-pki.sh as described below
 
 ![OTrP test flow](./doc-assets/otrp-initial-test-flow.png)
 
+Start the fake TAM on the remote server
+
+```
+# node /var/www/node/app.js
+```
+
+### Install Test TA flow
+
+```
+# ifconfig eth0 192.168.2.22/24 up
+# echo "nameserver 192.168.2.1" >  /etc/resolv.conf
+# echo "192.168.2.236 buddy.home.warmcat.com" > /etc/hosts
+# aist-otrp-testapp
+```
+
+### Confirm test ta is installed
+
+```
+# aist-otrp-test-ta-client 
+AIST ta-aist-test client
+E/TA:  TA_InvokeCommandEntryPoint:75 TA_InvokeCommandEntryPoint: AIST OTrP Test TA: こんにちは
+
+aist_otrp_test_ta_client: done
+```
+
+### Delete Test TA flow
+
+```
+# aist-otrp-testapp -d
+```
+
+### Confirm Test TA deleted
+
+```
+# aist-otrp-test-ta-client 
+AIST ta-aist-test client
+ERR [1641] TEES:load_ta:225:   TA not found
+E/TC:? 0 tee_ta_open_session:540 init session failed 0xffff0008
+Could not open session with TA
+```
+
+

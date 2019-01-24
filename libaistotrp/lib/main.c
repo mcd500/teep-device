@@ -160,7 +160,11 @@ libaistotrp_tam_msg(struct libaistotrp_ctx *ctx, const char *urlinfo,
 	i.port = ctx->tam_port;
 	i.address = ctx->tam_address;
 	i.alpn = "http/1.1";
-	lws_snprintf(path, sizeof(path), "%s/%s", ctx->tam_path,
+	if (ctx->tam_path[strlen(ctx->tam_path) - 1] == '/')
+		lws_snprintf(path, sizeof(path), "%s%s", ctx->tam_path,
+						  urlinfo);
+	else
+		lws_snprintf(path, sizeof(path), "%s/%s", ctx->tam_path,
 						  urlinfo);
 	i.path = path;
 	i.host = i.address;

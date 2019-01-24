@@ -33,19 +33,39 @@
 static uint8_t pkt[6 * 1024 * 1024];
 static const char *duri = "http://buddy.home.warmcat.com:3000";
 
-int
-main(int argc, char *argv[])
+static void
+usage(void)
 {
+	fprintf(stderr, "aist-otrp-testapp [--tamurl http://tamserver:port] [-d]\n");
+	fprintf(stderr, "     -d: ask TAM to send an encrypted request \n"
+			"         for the TEE to delete the test TA\n");
+
+	exit(1);
+}
+
+int
+main(int argc, const char *argv[])
+{
+	const char *path = "enc-ta.jwe.jws", *p;
 	struct libaistotrp_ctx *lao_ctx = NULL;
 	struct lao_rpc_io io;
 	uint8_t result[64];
 	char *uri = duri;
 	int n;
 
-	/* our remote TAM */
+	if (lws_cmdline_option(argc, argv, "--help"))
+		usage();
 
-	if (argc > 1)
-		duri = argv[1];
+	/* request the TAM ask the TEE to delete the test TA */
+
+	if (lws_cmdline_option(argc, argv, "-d"))
+		path = "delete";
+
+	/* override the remote TAM URL */
+
+	p = lws_cmdline_option(argc, argv, "--tamurl");
+	if (p)
+		duri = p;
 
 	if (libaistotrp_init(&lao_ctx, uri)) {
 		fprintf(stderr, "%s: Unable to create lao\n", __func__);
@@ -61,7 +81,7 @@ main(int argc, char *argv[])
 	io.out = pkt;
 	io.out_len = sizeof(pkt);
 
-	n = libaistotrp_tam_msg(lao_ctx, "enc-ta.jwe.jws", &io);
+	n = libaistotrp_tam_msg(lao_ctx, path, &io);
 	if (n != TR_OKAY) {
 		fprintf(stderr, "%s: libaistotrp_tam_msg: %d\n", __func__, n);
 

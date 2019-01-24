@@ -93,6 +93,57 @@ int gettimeofday(struct timeval *tv, struct timezone *tz)
 	return 0;
 }
 
+static int hex(char c)
+{
+	if (c >= 'A' && c <= 'F')
+		return 10 + (c - 'A');
+		
+	if (c >= 'a' && c <= 'f')
+		return 10 + (c - 'a');
+
+	if (c >= '0' && c <= '9')
+		return c - '0';
+
+	return -1;
+}
+
+/*
+ * input should be like this
+ *
+ * 8d82573a-926d-4754-9353-32dc29997f74.ta
+ *
+ * return will be 0, 16 bytes of octets16 will be filled.
+ *
+ * On error, return is -1.
+ */
+
+static int
+string_to_uuid_octets(const char *s, uint8_t *octets16)
+{
+	const char *end = s + 36;
+	uint8_t b, flip = 0;
+	int a;
+
+	while (s < end) {
+		if (*s != '-') {
+			a = hex(*s);
+			if (a < 0)
+				return -1;
+			if (flip)
+				*(octets16++) = (b << 4) | a;
+			else
+				b = a;
+
+			flip ^= 1;
+		}
+
+		s++;
+	}
+
+	return 0;
+}
+
+
 TEE_Result TA_CreateEntryPoint(void)
 {
 	return TEE_SUCCESS;
@@ -139,6 +190,8 @@ otrp(uint32_t type, TEE_Param p[TEE_NUM_PARAMS])
 	uint8_t *resp;
 	char *temp;
 	int n;
+
+	lws_set_log_level(LLL_USER | LLL_ERR | LLL_WARN | LLL_NOTICE, NULL);
 
 	if ((TEE_PARAM_TYPE_GET(type, 0) != TEE_PARAM_TYPE_MEMREF_INPUT) ||
 	    (TEE_PARAM_TYPE_GET(type, 1) != TEE_PARAM_TYPE_VALUE_INPUT) ||
@@ -224,34 +277,48 @@ otrp(uint32_t type, TEE_Param p[TEE_NUM_PARAMS])
 	}
 
 	lwsl_user("Decrypt OK: length %d\n", n);
-#if 0
-	/* delete it if it already exists */
 
-	if (TEE_OpenPersistentObject(TEE_STORAGE_PRIVATE_REE, (void *)ta_name,
-				     strlen(ta_name), TEE_DATA_FLAG_ACCESS_READ,
-				     &handle) != TEE_ERROR_ITEM_NOT_FOUND) {
-		lwsl_notice("%s: TA already existed, replacing\n", __func__);
-		TEE_CloseAndDeletePersistentObject(handle);
+	if (!strncmp((const char *)jwe.jws.map.buf[LJWE_CTXT], "{\"delete-ta\":\"", 14)) {
+		uint8_t uuid_octets[16];
+		TEE_TASessionHandle sess = TEE_HANDLE_NULL;
+		const TEE_UUID secstor_uuid = PTA_SECSTOR_TA_MGMT_UUID;
+		TEE_Param pars[TEE_NUM_PARAMS];
+		TEE_Result res;
+
+		lwsl_user("Recognized TA delete request\n");
+
+		if (string_to_uuid_octets((const char *)jwe.jws.map.buf[LJWE_CTXT] + 14, uuid_octets)) {
+			lwsl_err("%s: problem parsing UUID\n", __func__);
+			goto bail1;
+		}
+
+		res = TEE_OpenTASession(&secstor_uuid, 0, 0, NULL, &sess, NULL);
+		if (res != TEE_SUCCESS) {
+			lwsl_err("%s: Unable to open session to secstor\n",
+				 __func__);
+			goto bail1;
+		}
+
+		memset(pars, 0, sizeof(pars));
+		pars[0].memref.buffer = (void *)uuid_octets;
+		pars[0].memref.size = 16;
+		res = TEE_InvokeTACommand(sess, 0,
+					  PTA_SECSTOR_TA_MGMT_DELETE_TA,
+					  TEE_PARAM_TYPES(
+						TEE_PARAM_TYPE_MEMREF_INPUT,
+						TEE_PARAM_TYPE_NONE,
+						TEE_PARAM_TYPE_NONE,
+						TEE_PARAM_TYPE_NONE),
+					  pars, NULL);
+		TEE_CloseTASession(sess);
+		if (res != TEE_SUCCESS) {
+			lwsl_err("%s: Command failed\n", __func__);
+			goto bail1;
+		}
+		lwsl_notice("Deleted TA from secure storage\n");
+
 	}
-
-	/*
-	 * in a real OTrP system the "filename" must be segregated by path
-	 * per security domain
-	 */
-
-	res = TEE_CreatePersistentObject(TEE_STORAGE_PRIVATE_REE,
-				ta_name, strlen(ta_name),
-				TEE_DATA_FLAG_ACCESS_WRITE |
-				 TEE_DATA_FLAG_ACCESS_READ |
-				 TEE_DATA_FLAG_ACCESS_WRITE_META,
-				(TEE_ObjectHandle)(uintptr_t)NULL,
-				jwe.jws.map.buf[LJWE_CTXT], n, &handle);
-	if (res) {
-		lwsl_err("Failed to write TA: 0x%x\n", (int)res);
-		goto bail1;
-	}
-#endif
-
+		else
 	{
 		TEE_TASessionHandle sess = TEE_HANDLE_NULL;
 		const TEE_UUID secstor_uuid = PTA_SECSTOR_TA_MGMT_UUID;
@@ -281,9 +348,9 @@ otrp(uint32_t type, TEE_Param p[TEE_NUM_PARAMS])
 			lwsl_err("%s: Command failed\n", __func__);
 			goto bail1;
 		}
+		lwsl_notice("Wrote TA to secure storage\n");
 	}
 
-	lwsl_notice("Wrote TA to secure storage\n");
 
 	/* the return of TEE_SUCCESS is enough */
 	p[3].value.a = 0;
