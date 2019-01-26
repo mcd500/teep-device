@@ -37,7 +37,6 @@
 #define __LIBAISTOTRP__
 
 #include <tee_client_api.h>
-#include "host_include/pta_aist_otrp.h"
 
 #include <stdlib.h>
 #include <stdio.h>

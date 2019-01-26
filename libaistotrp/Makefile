@@ -8,7 +8,7 @@
 # - aarch64 aist-otrp-testapp
 # - host    aist-otrp-tam for host (uses host mbedtls)
 
-REE_CFLAGS := -Wall -Werror -fPIC -I./libwebsockets/build/include -I./mbedtls/include -I../../optee_client/public -I$(TA_DEV_KIT_DIR)
+REE_CFLAGS := -Wall -Werror -fPIC -I./libwebsockets/include -I./libwebsockets/build/include -I./mbedtls/include -I../../optee_client/public -I$(TA_DEV_KIT_DIR)
 CFLAGS += $(REE_CFLAGS) -I$(TA_DEV_KIT_DIR)/host_include
 LDFLAGS += -Llibwebsockets/build/lib -Lmbedtls-build/lib
 

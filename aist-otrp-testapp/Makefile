@@ -3,7 +3,7 @@ aist-otrp-testapp:
 	#
 	# aist-otrp-testapp (REE test application includes libaistotrp)
 	#
-	$(CROSS_COMPILE)gcc $(CFLAGS) -I../libaistotrp/libwebsockets/build/include \
+	$(CROSS_COMPILE)gcc $(CFLAGS) -I../libaistotrp/libwebsockets/include -I../libaistotrp/libwebsockets/build/include \
 		-I$(TA_DEV_KIT_DIR) -I../libaistotrp/mbedtls/include\
 		-I../../optee_client/out/export/include \
 		-I../libaistotrp/lib -c main.c -o main.o
