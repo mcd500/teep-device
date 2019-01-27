@@ -1,5 +1,17 @@
 # Setting up the Fake TAM
 
+## Preparing node
+
+Install node.js, for Fedora the package is called "nodejs".
+
+Then use npm to install the node package for JOSE.
+
+```
+sudo npm install --global node-jose
+```
+
+## Setting up pki pieces and test ta
+
 The "Fake TAM" is a node.js application that listens on port 3000
 and serves an encrypted + signed test TA to anyone making requests.
 
@@ -12,6 +24,20 @@ currently configured).
 |app.js|./aist-tb-otrp/fake-tam|The Fake TAM node.js application|
 |spaik-pub.jwk|./aist-tb-otrp/test-jw/tee/sds/xbank/spaik-pub.jwk|The PKI TEE SPAIK public part|
 |tam-mytam-rsa-key.pem|./aist-tb-otrp/pki/tam/tam/tam-mytam-rsa-key.pem|The TAM private key|
+
+### Force Padding Scheme in spaik pubkey
+
+Edit `spaik-pub.jwk` to force the RSA1_5 padding scheme.  At the top, change
+
+```
+..."kty":"RSA","n":...
+```
+
+to
+
+```
+..."kty":"RSA","alg":"RSA1_5","n":...
+```
 
 ## Generating PKI and JWK parts
 
@@ -28,6 +54,15 @@ which contains some JWK extracted from certs and keys in the `./aist-tb-otrp/pki
 ## Copying everything to the "Fake TAM" server
 
 Copy all the listed pieces to a `/var/www/node` directory on your server.
+
+
+## Edit app,js hostname
+
+Edit `/var/www/node/app,js` so the hostname matches the external IP of your server.
+
+## Open your server filewall for port 3000 if necessary
+
+Eg for Fedora, `firewall-cmd --add-port 3000/tcp`
 
 ## Running the fake TAM server
 

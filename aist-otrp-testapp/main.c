@@ -50,7 +50,7 @@ main(int argc, const char *argv[])
 	struct libaistotrp_ctx *lao_ctx = NULL;
 	struct lao_rpc_io io;
 	uint8_t result[64];
-	char *uri = duri;
+	const char *uri = duri;
 	int n;
 
 	if (lws_cmdline_option(argc, argv, "--help"))
@@ -65,7 +65,7 @@ main(int argc, const char *argv[])
 
 	p = lws_cmdline_option(argc, argv, "--tamurl");
 	if (p)
-		duri = p;
+		uri = p;
 
 	if (libaistotrp_init(&lao_ctx, uri)) {
 		fprintf(stderr, "%s: Unable to create lao\n", __func__);

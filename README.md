@@ -98,7 +98,7 @@ Start the fake TAM on the remote server
 # ifconfig eth0 192.168.2.22/24 up
 # echo "nameserver 192.168.2.1" >  /etc/resolv.conf
 # echo "192.168.2.236 buddy.home.warmcat.com" > /etc/hosts
-# aist-otrp-testapp
+# aist-otrp-testapp --tamurl http://buddy.home.warmcat.com:3000
 ```
 
 ### Confirm test ta is installed
@@ -114,7 +114,7 @@ aist_otrp_test_ta_client: done
 ### Delete Test TA flow
 
 ```
-# aist-otrp-testapp -d
+# aist-otrp-testapp --tamurl http://buddy.home.warmcat.com:3000 -d
 ```
 
 ### Confirm Test TA deleted
