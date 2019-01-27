@@ -4,10 +4,13 @@
 
 You can configure the root certs, intermediate CA certs and
 some selected demo certs signed by the intermediate CA certs
-by running this script
+by running this script.
+
+It also converts some PEM certs and keys to JWK for later tests (and hence needs the path
+to the libwebsockets conversion tools)
 
 ```
-$ ./scripts/otrp-kickstart-pki.sh
+$ LWS_BUILD_DIR=/path/to/libwebsockets/build ./scripts/otrp-kickstart-pki.sh
 ```
 
 ## PKI layout
@@ -87,23 +90,23 @@ This flow has important deviations from OTrP...
 ... so it proves a small but significant part of one flow around
 the certs and crypto.
 
-### Step 1: run the pki kickstart script
+### Step 1: build libwebsockets with mbedtls
 
-```
-$ ./scripts/otrp-kickstart-pki.sh
-```
+Build libwebsockets on your build machine and to build the minimal examples.
 
-### Step 2: build libwebsockets with mbedtls
-
-Build libwebsockets on your build machine to use mbedtls and
-to build the minimal examples.
-
-You should install your distro mbedtls first
+You should install your either your distro mbedtls first (-DLWS_WITH_MBEDTLS=1)
 
 Distro|Package
 ---|---
 Fedora|mbedtls-devel
 Ubuntu|libmbedtls-dev
+
+or distro OpenSSL (-DLWS_WITH_MBEDTLS=0)
+
+Distro|Package
+---|---
+Fedora|openssl-devel
+Ubuntu|libssl-dev
 
 ```
 $ git clone https://libwebsockets.org/repo/libwebsockets
@@ -116,17 +119,27 @@ $ sudo ldconfig
 ```
 
 This will build but not install several dozen example applications in
-./bin, which are able to perform operations from the commandline on
+./build/bin, which are able to perform operations from the commandline on
 x.509 PEM, JWKs, JWS (signing) and JWE (en/decrypt).  These can be used
 to synthesize the core operations around, eg, encrypting and signing a TA
 and verifying and decrypting it, using the PKI created above.
+
+### Step 2: run the pki kickstart script
+
+```
+$ LWS_BUILD_DIR=/path/to/libwebsockets/build ./scripts/otrp-kickstart-pki.sh
+```
+
+This recreates all the PKI, root certs and keys etc... running this again
+will mean you will have to rebuild everything and update fake-tam copies of
+the crypto etc using the new pki.
 
 ### Step 3: run the test script
 
 Run the test script like this
 
 ```
-$ LWS_BUILD_DIR=/my/libwebsockets/build ./scripts/otrp-test.sh
+$ LWS_BUILD_DIR=/path/to/libwebsockets/build ./scripts/otrp-test.sh
 ```
 
 You should see output like this
@@ -150,3 +163,5 @@ You should see output like this
 Decrypted TA matches original
 ```
 
+Running `otrp-test.sh` doesn't change the pki, so you can run it as
+many times as you like.

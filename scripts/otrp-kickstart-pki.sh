@@ -6,6 +6,13 @@
 # a safe) and deleted from the tmpfs.  Then the remaining files can be
 # copied into various places and the machine rebooted or shut down.
 
+if [ -z "$LWS_BUILD_DIR" ] ; then
+	LWS_BUILD_DIR=/projects/libwebsockets/build-mtls
+fi
+
+#SPAIK_KEYTYPE="-t EC -v P-521"
+SPAIK_KEYTYPE="-t RSA -b 4096"
+
 rm -rf pki
 SPATH="`dirname \"$0\"`"
 
@@ -58,6 +65,61 @@ openssl verify -no-CApath -trusted pki/sp/sp-rootca/sp-rootca-ec-cert.pem \
 if [ $? -ne 0 ]; then
 	exit 1
 fi
+
+
+#
+# These are the one-time setups for ./scripts/otrp-test.sh
+#
+
+rm -rf test-jw
+
+mkdir -p test-jw test-jw/tsm/trusted/sp test-jw/tsm/trusted/tee \
+         test-jw/tsm/sds/xbank \
+         test-jw/tsm/identity/private \
+         test-jw/tee/trusted \
+	 test-jw/tee/identity/private \
+         test-jw/tee/sds/xbank 
+
+#######
+# populate TSM trust
+
+cp pki/sp/sp-rootca/sp-rootca-ec-cert.pem test-jw/tsm/trusted/sp
+cp pki/tee/tee-rootca/tee-rootca-ec-cert.pem test-jw/tsm/trusted/tee
+
+# populate TSM TAM identity
+
+cp pki/tam/tam/tam-mytam-rsa-cert-plus-intermediate-cert.pem test-jw/tsm/identity
+cp pki/tam/tam/tam-mytam-rsa-key.pem test-jw/tsm/identity/private
+
+# create a private JWK from the TAM identity, so we can JWE-sign with it
+
+$LWS_BUILD_DIR/bin/lws-crypto-x509 --alg RSA1_5 -c pki/tam/tam/tam-mytam-rsa-cert.pem \
+	-p pki/tam/tam/tam-mytam-rsa-key.pem > test-jw/tsm/identity/private/tam-mytam-private.jwk
+
+# create a public JWK from the TAM identity cert, so we can confirm its signatures
+
+$LWS_BUILD_DIR/bin/lws-crypto-x509 --alg RSA1_5 -c pki/tam/tam/tam-mytam-rsa-cert.pem \
+	 > test-jw/tsm/identity/tam-mytam-public.jwk
+
+#######
+# populate TEE trust
+
+cp pki/tam/tam-rootca/tam-rootca-ec-cert.pem test-jw/tee/trusted
+
+# populate TEE identity
+
+cp pki/tee/tee/tee-mytee-rsa-cert.pem test-jw/tee/identity
+cp pki/tee/tee/tee-mytee-rsa-key.pem test-jw/tee/identity/private
+
+# create xbank SD and SP-AIK keypair
+
+$LWS_BUILD_DIR/bin/lws-crypto-jwk $SPAIK_KEYTYPE --alg RSA1_5 --kid mytee \
+	--public test-jw/tee/sds/xbank/spaik-pub.jwk > test-jw/tee/sds/xbank/spaik-priv.jwk
+if [ $? -ne 0 ] ; then
+	echo "Failed to generate TEE's SD JWK keypair"
+	exit 1
+fi
+
 
 echo "OK"
 

@@ -1,3 +1,5 @@
 ## AIST-TB OTrP Trusted Application
 
-This is where the AIST OTrP support for TEE-side will go.
+This is where the AIST OTrP Trusted Application implementation.
+
+You can communicate with it and a TAM using libaistotrp.

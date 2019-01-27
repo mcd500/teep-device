@@ -70,7 +70,7 @@ ca)
 		exit 1
 	fi
 
-	RCA_FUNCTION=`openssl x509 -in "$2" -text | grep CN\ = | grep Subject: | head -n 1 | sed "s/.*CN\ =\ //g"`
+	RCA_FUNCTION=`openssl x509 -in "$2" -text | grep -E 'CN=|CN =' | grep Subject: | head -n 1 | sed "s/.*=\ //g"`
 
 	case $RCA_FUNCTION in
 	sp-rootca)
