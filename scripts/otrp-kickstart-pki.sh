@@ -48,9 +48,11 @@ $SPATH/otrp-generate-pki.sh sign ./pki/tee/tee-ca/tee-ca-1-ec-cert.pem ./pki/tee
 #
 # let's confirm the expected relationships
 #
+# NB these should use -no-CApath to disable OS trust store.
+# but older OpenSSL found on eg, Xenial, doesn't support it.
 
 # trusting the rootca means we can verify the ca signed by it
-openssl verify -no-CApath -trusted pki/sp/sp-rootca/sp-rootca-ec-cert.pem \
+openssl verify -trusted pki/sp/sp-rootca/sp-rootca-ec-cert.pem \
 		pki/sp/sp-ca/sp-ca-1-ec-cert.pem
 if [ $? -ne 0 ]; then
 	exit 1
@@ -60,7 +62,7 @@ fi
 # ...-cert-plus-intermediate-cert.pem
 # so we only need to trust the rootca to confirm the chain if we
 # use the cert chain file.
-openssl verify -no-CApath -trusted pki/sp/sp-rootca/sp-rootca-ec-cert.pem \
+openssl verify -trusted pki/sp/sp-rootca/sp-rootca-ec-cert.pem \
 		pki/sp/sp/sp-xbank-rsa-cert-plus-intermediate-cert.pem
 if [ $? -ne 0 ]; then
 	exit 1
