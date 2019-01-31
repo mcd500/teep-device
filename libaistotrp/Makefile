@@ -54,11 +54,14 @@ all:
 	#
 	# libwebsockets (host library)
 	#
+	# (on older build hosts, mbedtls is too old, so use OpenSSL)
+	export MBTLS=0 && \
+	if [ -e "/usr/include/mbedtls/net_sockets.h" ] ; then export MBTLS=1; fi && \
 	cd libwebsockets/build/build-host && \
 	cmake \
 	 -DLWS_ROLE_WS=0 \
 	 -DLWS_WITH_SSL=1 \
-	 -DLWS_WITH_MBEDTLS=1 \
+	 -DLWS_WITH_MBEDTLS=$$MBTLS \
 	 -DLWS_WITH_JOSE=1 \
 	 -DLWS_WITHOUT_SERVER=0 \
 	 -DLWS_WITH_STATIC=0 \
