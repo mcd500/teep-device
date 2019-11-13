@@ -72,7 +72,7 @@ TEE_Result TA_InvokeCommandEntryPoint(void __maybe_unused *sess_ctx,
 	switch (cmd_id) {
 
 	case 1: /* Confirm the TA is installed */
-		EMSG("%s: AIST OTrP Test TA: こんにちは\n", __func__);
+		IMSG("%s: AIST OTrP Test TA: Hello IETF TEEP!\n", __func__);
 
 		return TEE_SUCCESS;
 
