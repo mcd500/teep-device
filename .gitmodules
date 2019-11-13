@@ -1,6 +1,6 @@
 [submodule "libaistotrp/libwebsockets"]
 	path = libaistotrp/libwebsockets
-	url = ssh://git@git.warmcat.com/libwebsockets
+	url = http://150.82.217.189/vc707/libwebsockets
 [submodule "libaistotrp/mbedtls"]
 	path = libaistotrp/mbedtls
-	url = https://github.com/ARMmbed/mbedtls
+	url = http://150.82.217.189/vc707/mbedtls
