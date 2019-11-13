@@ -1,8 +1,8 @@
 const http = require('http');
-const jose = require('/usr/lib/node_modules/node-jose');
+const jose = require('/usr/local/lib/node_modules/node-jose');
 const fs = require('fs');
 
-const hostname = '192.168.2.236';
+const hostname = '192.168.11.3'
 const port = 3000;
 
 const TA_FILEPATH = "/var/www/node/8d82573a-926d-4754-9353-32dc29997f74.ta";
