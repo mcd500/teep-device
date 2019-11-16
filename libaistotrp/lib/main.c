@@ -135,10 +135,14 @@ libaistotrp_tam_msg(struct libaistotrp_ctx *ctx, const char *urlinfo,
 {
 	struct libaistotrp_async *laoa = malloc(sizeof(*laoa));
 	struct lws_client_connect_info i;
+	char str[200];
 	char path[200];
+	char ta_path[200];
 
 	if (!laoa)
 		return -1; /* OOM */
+
+	memset(laoa, 0, sizeof(struct libaistotrp_async));
 
 	laoa->ctx = ctx;
 	laoa->io = io;
@@ -160,22 +164,111 @@ libaistotrp_tam_msg(struct libaistotrp_ctx *ctx, const char *urlinfo,
 	i.port = ctx->tam_port;
 	i.address = ctx->tam_address;
 	i.alpn = "http/1.1";
-	if (ctx->tam_path[strlen(ctx->tam_path) - 1] == '/')
-		lws_snprintf(path, sizeof(path), "%s%s", ctx->tam_path,
-						  urlinfo);
-	else
-		lws_snprintf(path, sizeof(path), "%s/%s", ctx->tam_path,
-						  urlinfo);
+	if (ctx->tam_path[strlen(ctx->tam_path) - 1] == '/') {
+		lws_snprintf(path, sizeof(path),
+				"/api/tam HTTP/1.1\n"
+				"Host: example.com\n"
+				"Accept: application/otrp+json\n"
+				"Content-Type: application/otrp+json\n"
+				"Content-Length: 0\n"
+				);
+	} else {
+		lws_snprintf(path, sizeof(path),
+				"%s/%s", ctx->tam_path,  urlinfo);
+	}
 	i.path = path;
 	i.host = i.address;
 	i.origin = i.address;
-	i.method = "GET";
+//	i.method = "GET";
+	i.method = "POST";
 	i.userdata = laoa;
 	i.protocol = protocols[0].name;
 	i.pwsi = &laoa->wsi;
 
-	lwsl_notice("GET %s://%s:%d/%s\n", ctx->tam_protocol, ctx->tam_address,
-					   ctx->tam_port, ctx->tam_path);
+	lwsl_notice(	"\n"
+			"%s://%s:%d%s\n"
+			, ctx->tam_protocol, ctx->tam_address,
+					   ctx->tam_port, i.path);
+
+	if (!lws_client_connect_via_info(&i)) {
+		lwsl_err("%s: connect failed\n", __func__);
+		return 1;
+	}
+
+	laoa->result = TR_ONGOING;
+
+	/* spin the event loop until we're done */
+
+	while (!lws_service(ctx->lws_ctx, 100000) && laoa->result == TR_ONGOING)
+		;
+
+	sleep(1);
+
+	memset(laoa, 0, sizeof(struct libaistotrp_async));
+
+	laoa->ctx = ctx;
+	laoa->io = io;
+	laoa->max_out_len = io->out_len;
+	io->out_len = 0;
+	laoa->wsi = NULL;
+
+	pthread_mutex_lock(&ctx->lock); /* ++++++++++++++++++++++++ ctx->lock */
+	laoa->laoa_list_next = ctx->laoa_list_head;
+	ctx->laoa_list_head = laoa;
+	pthread_mutex_unlock(&ctx->lock); /* ctx->lock ---------------------- */
+
+	memset(&i, 0, sizeof(i));
+
+	i.context = ctx->lws_ctx;
+	if (!strcmp(ctx->tam_protocol, "https"))
+		i.ssl_connection = LCCSCF_USE_SSL | LCCSCF_ALLOW_SELFSIGNED;
+
+	i.port = ctx->tam_port;
+	i.address = ctx->tam_address;
+	i.alpn = "http/1.1";
+	if (ctx->tam_path[strlen(ctx->tam_path) - 1] == '/') {
+		lws_snprintf(str, sizeof(str),
+				"/api/tam HTTP/1.1\n"
+				"Host: example.com\n"
+				"Accept: application/otrp+json\n"
+				"Content-Type: application/otrp+json\n"
+				);
+	} else {
+		lws_snprintf(str, sizeof(str),
+				"/api/tam HTTP/1.1\n"
+				"%s/%s", ctx->tam_path,  urlinfo);
+	}
+
+	lws_snprintf(ta_path, sizeof(ta_path),
+				"{ \"taname\": \"%s\" }"
+//				"{ \"taname\": \"dummy\" }"
+//				"hi"
+				, urlinfo
+		    );
+
+	lws_snprintf(path, sizeof(path),
+				"%s"
+				"Content-Length: %ld\n"
+//				"Content-Length: 0\n"
+				"%s\n"
+				, str
+				, strlen(ta_path)
+				, ta_path
+		    );
+
+	i.path = path;
+	i.host = i.address;
+	i.origin = i.address;
+//	i.method = "GET";
+	i.method = "POST";
+	i.userdata = laoa;
+	i.protocol = protocols[0].name;
+	i.pwsi = &laoa->wsi;
+
+	lwsl_notice(	"\n"
+			"%s://%s:%d%s\n"
+			, ctx->tam_protocol, ctx->tam_address,
+					   ctx->tam_port, i.path);
 
 	if (!lws_client_connect_via_info(&i)) {
 		lwsl_err("%s: connect failed\n", __func__);
