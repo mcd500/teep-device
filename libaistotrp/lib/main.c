@@ -82,6 +82,7 @@ callback_tam(struct lws *wsi, enum lws_callback_reasons reason, void *user,
 
 	switch (reason) {
 	case LWS_CALLBACK_CLIENT_CONNECTION_ERROR:
+		lwsl_notice("%s: CONNECTION_ERROR: %d\n", __func__, TR_FAIL_CONN_ERR);
 		laoa->result = TR_FAIL_CONN_ERR;
 		break;
 	case LWS_CALLBACK_CLOSED_CLIENT_HTTP:
