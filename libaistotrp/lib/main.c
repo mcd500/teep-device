@@ -58,6 +58,9 @@ struct libaistotrp_ctx {
 
 /* This is the user-opaque internal representation of an ongoing TAM message */
 
+//static unsigned int rrlen;
+//static uint8_t *rr;
+
 struct libaistotrp_async {
 	struct libaistotrp_async *laoa_list_next; /* protected by .lock */
 	struct libaistotrp_ctx	 *ctx;
@@ -93,11 +96,13 @@ callback_tam(struct lws *wsi, enum lws_callback_reasons reason, void *user,
 		laoa->http_resp = lws_http_client_http_response(wsi);
 		lwsl_notice("%s: established, resp %d\n", __func__,
 				laoa->http_resp);
+#if 0
 		if (laoa->http_resp != 200) {
 			laoa->result = TR_FAIL_REFUSED;
 
 			return -1;
 		}
+#endif
 		break;
 	case LWS_CALLBACK_COMPLETED_CLIENT_HTTP:
 		lwsl_notice("%s: completed; read %d\n", __func__,
@@ -120,6 +125,32 @@ callback_tam(struct lws *wsi, enum lws_callback_reasons reason, void *user,
 		break;
 	case LWS_CALLBACK_CLIENT_HTTP_WRITEABLE:
 		break;
+#if 0
+	case LWS_CALLBACK_RECEIVE_CLIENT_HTTP:
+		px = buffer + LWS_PRE;
+		lenx = sizeof(buffer) - LWS_PRE;
+
+		if (lws_http_client_read(wsi, &px, &lenx) < 0) {
+			lwsl_notice("lws_http_client_read returned < 0\n");
+			return -1;
+		}
+		break;
+	case LWS_CALLBACK_CLIENT_HTTP_WRITEABLE:
+		if (wsi == wsi_report) {
+			lwsl_user("report LWS_CALLBACK_CLIENT_HTTP_WRITEABLE\n");
+			/* we can be sure it was sent */
+			if (!rrlen) {
+				lwsl_user("report LWS_CALLBACK_CLIENT_HTTP_WRITEABLE\n");
+                                return -1;
+			}
+			lws_write(wsi, rr, rrlen, LWS_WRITE_HTTP_FINAL);
+			rrlen = 0;
+			lws_client_http_body_pending(wsi, 0);
+			lws_callback_on_writable(wsi);
+		}
+		break
+#endif
+
 	default:
 		break;
 	}
@@ -128,6 +159,7 @@ callback_tam(struct lws *wsi, enum lws_callback_reasons reason, void *user,
 
 static const struct lws_protocols protocols[] = {
 	{ "tam", callback_tam, 0, 4096, },
+	{ "application/teep+json", callback_tam, 0, 4096, },
 	{ NULL, NULL, 0, 0 }
 };
 
@@ -137,9 +169,7 @@ libaistotrp_tam_msg(struct libaistotrp_ctx *ctx, const char *urlinfo,
 {
 	struct libaistotrp_async *laoa = malloc(sizeof(*laoa));
 	struct lws_client_connect_info i;
-	char str[200];
 	char path[200];
-	char ta_path[200];
 
 	if (!laoa)
 		return -1; /* OOM */
@@ -166,18 +196,29 @@ libaistotrp_tam_msg(struct libaistotrp_ctx *ctx, const char *urlinfo,
 	i.port = ctx->tam_port;
 	i.address = ctx->tam_address;
 	i.alpn = "http/1.1";
+	memset(path, 0, sizeof(path));
 	if (ctx->tam_path[strlen(ctx->tam_path) - 1] == '/') {
 		lws_snprintf(path, sizeof(path),
-				"/api/tam HTTP/1.1\n"
-				"Host: example.com\n"
-				"Accept: application/otrp+json\n"
-				"Content-Type: application/otrp+json\n"
-				"Content-Length: 0\n"
+				"/TEEP HTTP/1.1\r\n"
+				"Host: example.com\r\n"
+				"Accept: application/otrp+json\r\n"
+				"Content-Type: application/otrp+json\r\n"
+				"Content-Length: 0\r\n"
 				);
 	} else {
 		lws_snprintf(path, sizeof(path),
 				"%s/%s", ctx->tam_path,  urlinfo);
 	}
+
+#if 1
+	i.path = "/api/tam";
+	i.host = "example.com";
+	i.origin = "192.168.11.3";
+	i.method = "POST";
+	i.userdata = laoa;
+	i.protocol = protocols[1].name;
+#else
+
 	i.path = path;
 	i.host = i.address;
 	i.origin = i.address;
@@ -185,7 +226,12 @@ libaistotrp_tam_msg(struct libaistotrp_ctx *ctx, const char *urlinfo,
 	i.method = "POST";
 	i.userdata = laoa;
 	i.protocol = protocols[0].name;
+#endif
 	i.pwsi = &laoa->wsi;
+
+//	char *c_type = "application/teep+json";
+
+//	lws_client_http_multipart(i.pwsi, NULL, NULL, c_type, i.userdata, i.userdata + 200);
 
 	lwsl_notice(	"\n"
 			"%s://%s:%d%s\n"
@@ -201,8 +247,12 @@ libaistotrp_tam_msg(struct libaistotrp_ctx *ctx, const char *urlinfo,
 
 	/* spin the event loop until we're done */
 
-	while (!lws_service(ctx->lws_ctx, 100000) && laoa->result == TR_ONGOING)
+	while (!lws_service(ctx->lws_ctx, 1000) && laoa->result == TR_ONGOING)
 		;
+
+#if 0
+	char str[200];
+	char ta_path[200];
 
 	sleep(1);
 
@@ -230,14 +280,14 @@ libaistotrp_tam_msg(struct libaistotrp_ctx *ctx, const char *urlinfo,
 	i.alpn = "http/1.1";
 	if (ctx->tam_path[strlen(ctx->tam_path) - 1] == '/') {
 		lws_snprintf(str, sizeof(str),
-				"/api/tam HTTP/1.1\n"
-				"Host: example.com\n"
-				"Accept: application/otrp+json\n"
-				"Content-Type: application/otrp+json\n"
+				"/api/tam HTTP/1.1\r\n"
+				"Host: example.com\r\n"
+				"Accept: application/otrp+json\r\n"
+				"Content-Type: application/otrp+json\r\n"
 				);
 	} else {
 		lws_snprintf(str, sizeof(str),
-				"/api/tam HTTP/1.1\n"
+				"/api/tam HTTP/1.1\r\n"
 				"%s/%s", ctx->tam_path,  urlinfo);
 	}
 
@@ -250,8 +300,8 @@ libaistotrp_tam_msg(struct libaistotrp_ctx *ctx, const char *urlinfo,
 
 	lws_snprintf(path, sizeof(path),
 				"%s"
-				"Content-Length: %ld\n"
-//				"Content-Length: 0\n"
+				"Content-Length: %ld\r\n"
+//				"Content-Length: 0\r\n"
 				"%s\n"
 				, str
 				, strlen(ta_path)
@@ -273,8 +323,8 @@ libaistotrp_tam_msg(struct libaistotrp_ctx *ctx, const char *urlinfo,
 					   ctx->tam_port, i.path);
 
 	if (!lws_client_connect_via_info(&i)) {
-		lwsl_err("%s: connect failed\n", __func__);
-		return 1;
+//		lwsl_err("%s: connect failed\n", __func__);
+//		return 1;
 	}
 
 	laoa->result = TR_ONGOING;
@@ -283,6 +333,7 @@ libaistotrp_tam_msg(struct libaistotrp_ctx *ctx, const char *urlinfo,
 
 	while (!lws_service(ctx->lws_ctx, 1000) && laoa->result == TR_ONGOING)
 		;
+#endif
 
 	return laoa->result;
 }
