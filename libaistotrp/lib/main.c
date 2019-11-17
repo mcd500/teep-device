@@ -107,6 +107,7 @@ callback_tam(struct lws *wsi, enum lws_callback_reasons reason, void *user,
 	case LWS_CALLBACK_COMPLETED_CLIENT_HTTP:
 		lwsl_notice("%s: completed; read %d\n", __func__,
 			    (int)laoa->io->out_len);
+		lwsl_notice("\n%s\n", (char *)(laoa->io->out));
 		laoa->result = TR_OKAY;
 		break;
 	case LWS_CALLBACK_RECEIVE_CLIENT_HTTP_READ:
@@ -121,7 +122,6 @@ callback_tam(struct lws *wsi, enum lws_callback_reasons reason, void *user,
 	case LWS_CALLBACK_RECEIVE_CLIENT_HTTP:
 		if (lws_http_client_read(wsi, &px, &lenx) < 0)
 			return -1;
-		lwsl_notice("\n%s", px);
 		break;
 	case LWS_CALLBACK_CLIENT_HTTP_WRITEABLE:
 		break;
