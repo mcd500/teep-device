@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2017 - 2019 National Institute of Advanced Industrial Science
- *                           and Technology (AIST）
+ *                           and Technology (AIST)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
