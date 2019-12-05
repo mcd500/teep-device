@@ -104,6 +104,20 @@ callback_tam(struct lws *wsi, enum lws_callback_reasons reason, void *user,
 		}
 #endif
 		break;
+	case LWS_CALLBACK_CLIENT_APPEND_HANDSHAKE_HEADER:
+	    {
+		unsigned char **p = (unsigned char **)in, *end = (*p) + len;
+		char *c_type_str = "application/otrp+json";
+
+		if (lws_add_http_header_by_name(wsi,
+					(const unsigned char *)"Accept:",
+					(const unsigned char *)c_type_str,
+					strlen(c_type_str), p, end)) {
+			lwsl_notice("%s: Append header error\n", __func__);
+			return -1;
+		}
+	    }
+		break;
 	case LWS_CALLBACK_COMPLETED_CLIENT_HTTP:
 		lwsl_notice("%s: completed; read %d\n", __func__,
 			    (int)laoa->io->out_len);
@@ -154,7 +168,7 @@ callback_tam(struct lws *wsi, enum lws_callback_reasons reason, void *user,
 	default:
 		break;
 	}
-	return 0;
+	return lws_callback_http_dummy(wsi, reason, user, in, len);
 }
 
 static const struct lws_protocols protocols[] = {
