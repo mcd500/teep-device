@@ -1,6 +1,6 @@
 [submodule "libaistotrp/libwebsockets"]
 	path = libaistotrp/libwebsockets
-	url = http://150.82.217.189/vc707/libwebsockets
+	url = http://192.168.100.100/vc707/libwebsockets
 [submodule "libaistotrp/mbedtls"]
 	path = libaistotrp/mbedtls
-	url = http://150.82.217.189/vc707/mbedtls
+	url = http://192.168.100.100/vc707/mbedtls
