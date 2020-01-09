@@ -34,6 +34,10 @@ const server = http.createServer((req, res) => {
 		console.log(data);
 	});
 
+	console.log("req.url ");
+	console.log(req.url);
+	console.log("\n");
+
 	if (req.url == "/delete") {
 		var cmd = "{\"delete-ta\":\"8d82573a-926d-4754-9353-32dc29997f74.ta\"}";
 		console.log("Request for delete packet\n");
