@@ -1,20 +1,17 @@
 const http = require('http');
-const jose = require('/usr/local/lib/node_modules/node-jose');
+const jose = require('node-jose');
 const fs = require('fs');
-
-const hostname = '192.168.11.3'
-const port = 3000;
-
-const TA_FILEPATH = "/var/www/node/8d82573a-926d-4754-9353-32dc29997f74.ta";
+const os = require('os');
+const config = require('./config.json').develop
 
 var keystore = jose.JWK.createKeyStore();
 
 /* this is the key used to encrypt the TA */
-var tee_pubkey = fs.readFileSync("/var/www/node/spaik-pub.jwk", function(err, data) {
+var tee_pubkey = fs.readFileSync(config.ta_pub_key, function(err, data) {
 		console.log(data);
 	});
 /* this is the key used to sign the JWE */
-var tam_privkey = fs.readFileSync("/var/www/node/tam-mytam-rsa-key.pem", function(err, data) {
+var tam_privkey = fs.readFileSync(config.tam_key, function(err, data) {
 		console.log(data);
 	});
 
@@ -28,7 +25,7 @@ keystore.add(tam_privkey, "pem").then(function(result) {
         });
 
 /* the plaintext TA */
-var f, f_pt = fs.readFileSync(TA_FILEPATH, function(err, data) {
+var f, f_pt = fs.readFileSync(config.ta, function(err, data) {
 	console.log(data);
 });
 
@@ -157,7 +154,7 @@ function dumpHttpResponse(res, body) {
 	console.log("\n");
 }
 
-server.listen(port, hostname, () => {
-  console.log(`Server running at http://${hostname}:${port}/`);
+server.listen(config.port, config.hostname, () => {
+  console.log(`Server running at http://${config.hostname}:${config.port}/`);
 });
 

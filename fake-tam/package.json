@@ -1,0 +1,10 @@
+{
+  "name": "fake-tam",
+  "version": "1.0.0",
+  "description": "fake tam implementation",
+  "main": "app.js",
+  "scripts": {},
+  "dependencies": {
+    "node-jose": "1"
+  }
+}

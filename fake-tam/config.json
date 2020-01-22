@@ -1,0 +1,10 @@
+{
+	"develop": {
+		"id": "develop",
+		"hostname": "127.0.0.1",
+		"port": 3000,
+		"tam_key": "key/tam-mytam-rsa-key.pem",
+		"ta_pub_key": "key/spaik-pub.jwk",
+		"ta": "TAs/8d82573a-926d-4754-9353-32dc29997f74.ta"
+	}
+}
