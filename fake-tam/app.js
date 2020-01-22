@@ -2,7 +2,10 @@ const http = require('http');
 const jose = require('node-jose');
 const fs = require('fs');
 const os = require('os');
-const config = require('./config.json').develop
+const config_table = require('./config.json')
+const env = process.env.NODE_ENV || 'development';
+const config = config_table[env];
+config.hostname = process.env.TAM_SERVER_HOSTNAME || config.hostname
 
 var keystore = jose.JWK.createKeyStore();
 
