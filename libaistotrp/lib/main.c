@@ -116,6 +116,20 @@ callback_tam(struct lws *wsi, enum lws_callback_reasons reason, void *user,
 			lwsl_notice("%s: Append header error\n", __func__);
 			return -1;
 		}
+		// need to add http request body
+		// int to char*
+		char buf_len[12];
+		size_t len = snprintf(buf_len, 12, "%d", (int)laoa->io->in_len);
+		if (lws_add_http_header_by_token(wsi,
+					WSI_TOKEN_HTTP_CONTENT_LENGTH,
+					(const unsigned char*)buf_len, len, p, end)) {
+			lwsl_notice("%s: Append header error\n", __func__);
+			return -1;
+		}
+		if (laoa->io->in_len > 0) {
+			lws_client_http_body_pending(wsi, 1);
+			lws_callback_on_writable(wsi);
+		}
 	    }
 		break;
 	case LWS_CALLBACK_COMPLETED_CLIENT_HTTP:
@@ -138,6 +152,11 @@ callback_tam(struct lws *wsi, enum lws_callback_reasons reason, void *user,
 			return -1;
 		break;
 	case LWS_CALLBACK_CLIENT_HTTP_WRITEABLE:
+		if (lws_write(wsi, laoa->io->in, laoa->io->in_len, LWS_WRITE_HTTP) < 0) {
+			lwsl_notice("%s: Write body error\n", __func__);
+			return -1;
+		}
+		lws_client_http_body_pending(wsi, 0);
 		break;
 #if 0
 	case LWS_CALLBACK_RECEIVE_CLIENT_HTTP:
@@ -429,7 +448,6 @@ libaistotrp_init(struct libaistotrp_ctx **ctx, const char *tam_url_base)
 			__func__, r);
 		goto bail2;
 	}
-
 	/*
 	 * Create an lws context in there as well, so we can do http client
 	 * connections at will later.
