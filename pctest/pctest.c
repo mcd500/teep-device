@@ -14,7 +14,10 @@ int main(int argc, const char *argv[])
 
 	struct lao_rpc_io io;
 	uint8_t result[64];
+
 	int n;
+
+	fprintf(stderr, "%s compiled at %s %s\n",__FILE__, __DATE__, __TIME__);
 
 	libaistotrp_init(&lao_ctx, uri);
 
@@ -32,8 +35,7 @@ int main(int argc, const char *argv[])
 	n = libaistotrp_tam_msg(lao_ctx, path, &io);
 	if (n != TR_OKAY) {
 		fprintf(stderr, "%s: libaistotrp_tam_msg: %d\n", __func__, n);
-
-	  libaistotrp_destroy(&lao_ctx);
+		libaistotrp_destroy(&lao_ctx);
 		return 1;
 	}
 
