@@ -232,12 +232,7 @@ libaistotrp_tam_msg(struct libaistotrp_ctx *ctx, const char *urlinfo,
 	memset(path, 0, sizeof(path));
 	if (ctx->tam_path[strlen(ctx->tam_path) - 1] == '/') {
 		lws_snprintf(path, sizeof(path),
-				"/TEEP HTTP/1.1\r\n"
-				"Host: example.com\r\n"
-				"Accept: application/otrp+json\r\n"
-				"Content-Type: application/otrp+json\r\n"
-				"Content-Length: 0\r\n"
-				);
+				"%s%s", ctx->tam_path,  urlinfo);
 	} else {
 		lws_snprintf(path, sizeof(path),
 				"%s/%s", ctx->tam_path,  urlinfo);
