@@ -52,6 +52,7 @@ main(int argc, const char *argv[])
 	uint8_t result[64];
 	const char *uri = duri;
 	int n;
+	fprintf(stderr, "%s compiled at %s %s\n", __FILE__, __DATE__, __TIME__);
 
 	if (lws_cmdline_option(argc, argv, "--help"))
 		usage();
