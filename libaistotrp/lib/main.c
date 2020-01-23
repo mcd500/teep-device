@@ -239,7 +239,8 @@ libaistotrp_tam_msg(struct libaistotrp_ctx *ctx, const char *urlinfo,
 	}
 
 #if 1
-	i.path = "/api/tam";
+//	i.path = "/api/tam";
+	i.path = path;
 	i.host = "example.com";
 	i.origin = "192.168.11.3";
 	i.method = "POST";
