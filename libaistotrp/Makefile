@@ -88,7 +88,7 @@ all:
 	ln -sf libaistotrp.so.1 lib/libaistotrp.so
 
 clean:
-	rm -f libaistotrp.so
+	rm -fr lib/main.o lib/libaistotrp.so* mbedtls-build libwebsockets/build libwebsockets/build/build-host lib/build
 
 update:
 	scp libaistotrp.so root@${HIKEY_IP}:/usr/bin

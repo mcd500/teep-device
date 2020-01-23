@@ -1,4 +1,3 @@
-.PHONY: aist-otrp-testapp
 aist-otrp-testapp:
 	#
 	# aist-otrp-testapp (REE test application includes libaistotrp)
@@ -14,3 +13,6 @@ aist-otrp-testapp:
 		-lteec -laistotrp -lwebsockets -lmbedx509 -lmbedtls -l mbedcrypto \
 		-o aist-otrp-testapp
 
+.PHONY: clean
+clean:
+	rm -f *.o aist-otrp-testapp
