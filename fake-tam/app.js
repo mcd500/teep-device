@@ -46,6 +46,10 @@ const server = http.createServer((req, res) => {
 
 function handleRequest(req, body, res) {
 	dumpHttpRequest(req, body);
+	if (req.url == "/delete") {
+		handleAppDelete(req, null, res);
+		return;
+	}
 	if (!body) {
 		// if body is empty, goto OTrP:GetDeviceState or TEEP:QueryRequest
 		handleAppInstall(req, null, res)
