@@ -64,7 +64,7 @@ function handleRequest(req, body, res) {
 			// no more sequence, return 204
 			res.statusCode = 204;
 			res.end();
-	  } else if (bodyJson.DeleteTAResponse !== undefined) {
+		} else if (bodyJson.DeleteTAResponse !== undefined) {
 			console.log("reviced DeleteTAResponse");
 			// no more sequence, return 204
 			res.statusCode = 204;
