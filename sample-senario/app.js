@@ -27,6 +27,15 @@ function make_agent(my_key, their_key) {
 	}
 };
 
+async function make_keypair(keystore, kid) {
+	privkey = await keystore.generate('RSA', 1024, {kid: kid})
+	pubkey = await JWK.asKey(privkey.toJSON())
+	return {
+		priv: privkey,
+		pub: pubkey,
+	}
+}
+
 function install_ta(uuid) {
 	// TODO
 	console.log("-- retrieve TA image (TODO)")
@@ -38,14 +47,11 @@ function install_ta(uuid) {
 
 async function go() {
 	keystore = JWK.createKeyStore()
-	tee_key = await keystore.generate('RSA', 1024)
-	tee_pubkey = await JWK.asKey(tee_key.toJSON())
-	tam_key = await keystore.generate('RSA', 1024)
-	tam_pubkey = await JWK.asKey(tam_key.toJSON())
-	console.log(tee_key.toJSON(true))
+	teekey = await make_keypair(keystore, 'tee');
+	tamkey = await make_keypair(keystore, 'tam');
 
-	tee = make_agent(tee_key, tam_pubkey);
-	tam = make_agent(tam_key, tee_pubkey);
+	tee = make_agent(teekey.priv, tamkey.pub);
+	tam = make_agent(tamkey.priv, teekey.pub);
 
 	query_request = {
 		"TYPE": 1, // Query Request
