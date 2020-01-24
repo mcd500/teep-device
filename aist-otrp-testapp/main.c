@@ -101,7 +101,7 @@ main(int argc, const char *argv[])
 
 	res = libaistotrp_tam_msg(lao_ctx, path, &io);
 	if (res != TR_OKAY) {
-		fprintf(stderr, "%s: libaistotrp_tam_msg: %d\n", __func__, n);
+		fprintf(stderr, "%s: libaistotrp_tam_msg: %d\n", __func__, res);
 		return 1;
 	}
 
@@ -116,7 +116,7 @@ main(int argc, const char *argv[])
 
 	res = libaistotrp_pta_msg(lao_ctx, 1, &io);
 	if (res != TR_OKAY) {
-		lwsl_err("%s: libaistotrp_pta_msg: fail %d\n", __func__, n);
+		lwsl_err("%s: libaistotrp_pta_msg: fail %d\n", __func__, res);
 	} else
 		lwsl_notice("%s: libaistotrp_pta_msg: OK %d\n", __func__,
 				(int)io.out_len);
