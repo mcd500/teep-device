@@ -1,10 +1,12 @@
 const http = require('http')
 const { JWE, JWK, JWS } = require('node-jose')
 
+const signParam = { alg: 'RS256' }
+const encParam = { alg: 'RSA1_5' }
 
 async function wrap(obj, signkey, enckey) {
-	signed = await JWS.createSign(signkey).update(JSON.stringify(obj)).final()
-	encrypted = await JWE.createEncrypt(enckey).update(JSON.stringify(signed)).final()
+	signed = await JWS.createSign(signParam, signkey).update(JSON.stringify(obj)).final()
+	encrypted = await JWE.createEncrypt(encParam, enckey).update(JSON.stringify(signed)).final()
 	return JSON.stringify(encrypted)
 }
 
@@ -40,6 +42,7 @@ async function go() {
 	tee_pubkey = await JWK.asKey(tee_key.toJSON())
 	tam_key = await keystore.generate('RSA', 1024)
 	tam_pubkey = await JWK.asKey(tam_key.toJSON())
+	console.log(tee_key.toJSON(true))
 
 	tee = make_agent(tee_key, tam_pubkey);
 	tam = make_agent(tam_key, tee_pubkey);
