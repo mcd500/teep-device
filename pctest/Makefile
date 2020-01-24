@@ -10,7 +10,7 @@ endif
 TARGET = pctest
 
 # Makefile for TEEP Agent of UT
-$(TARGET): $(TARGET).c ../libaistotrp/lib/main.c tee_client_api_stub.c
+$(TARGET): $(TARGET).c ../aist-otrp-testapp/main.c ../libaistotrp/lib/main.c tee_client_api_stub.c
 
 clean:
 	$(RM) $(TARGET)

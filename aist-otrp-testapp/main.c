@@ -31,46 +31,63 @@
 #include <libwebsockets.h>
 
 static uint8_t pkt[6 * 1024 * 1024];
-static const char *duri = "http://buddy.home.warmcat.com:3000";
+static const char *uri = "http://127.0.0.1:3000"; // TAM server uri
+static const char *path = "/api/tam"; // TAM TEEP/HTTP server path
+static const char *proto = "otrp"; // protocol
+static const char *talist = ""; // installed TA list
 
 static void
 usage(void)
 {
 	fprintf(stderr, "aist-otrp-testapp [--tamurl http://tamserver:port] [-d]\n");
 	fprintf(stderr, "     -d: ask TAM to send an encrypted request \n"
-			"         for the TEE to delete the test TA\n");
-
+			"         for the TEE to delete the test TA\n"
+			"     -p: protocol otrp or teep \n");
 	exit(1);
+}
+
+static void
+cmdline_parse(int argc, const char *argv[])
+{
+	const char *tmp;
+	if (lws_cmdline_option(argc, argv, "--help"))
+		usage();
+
+	/* override the remote TAM URL */
+	tmp = lws_cmdline_option(argc, argv, "--tamurl");
+	if (tmp)
+		uri = tmp;
+
+	/* request the TAM ask the TEE to delete the test TA */
+	if (lws_cmdline_option(argc, argv, "-d"))
+		path = "delete";
+
+	/* protocol (teep or otrp) */
+	tmp = lws_cmdline_option(argc, argv, "-p");
+	if (tmp)
+		proto = tmp;
+
+	/* ta-list */
+	tmp = lws_cmdline_option(argc, argv, "--talist");
+	if (tmp)
+		talist = tmp;
+
 }
 
 int
 main(int argc, const char *argv[])
 {
-	const char *path = "enc-ta.jwe.jws", *p;
 	struct libaistotrp_ctx *lao_ctx = NULL;
 	struct lao_rpc_io io;
 	uint8_t result[64];
-	const char *uri = duri;
-	int n;
+	int res;
+
 	fprintf(stderr, "%s compiled at %s %s\n", __FILE__, __DATE__, __TIME__);
+	cmdline_parse(argc, argv);
 
-	if (lws_cmdline_option(argc, argv, "--help"))
-		usage();
-
-	/* request the TAM ask the TEE to delete the test TA */
-
-	if (lws_cmdline_option(argc, argv, "-d"))
-		path = "delete";
-
-	/* override the remote TAM URL */
-
-	p = lws_cmdline_option(argc, argv, "--tamurl");
-	if (p)
-		uri = p;
-
-	if (libaistotrp_init(&lao_ctx, uri)) {
+	res = libaistotrp_init(&lao_ctx, uri);
+	if (res != TR_OKAY) {
 		fprintf(stderr, "%s: Unable to create lao\n", __func__);
-
 		return 1;
 	}
 
@@ -82,10 +99,9 @@ main(int argc, const char *argv[])
 	io.out = pkt;
 	io.out_len = sizeof(pkt);
 
-	n = libaistotrp_tam_msg(lao_ctx, path, &io);
-	if (n != TR_OKAY) {
+	res = libaistotrp_tam_msg(lao_ctx, path, &io);
+	if (res != TR_OKAY) {
 		fprintf(stderr, "%s: libaistotrp_tam_msg: %d\n", __func__, n);
-
 		return 1;
 	}
 
@@ -98,8 +114,8 @@ main(int argc, const char *argv[])
 	io.out = result;
 	io.out_len = sizeof(result);
 
-	n = libaistotrp_pta_msg(lao_ctx, 1, &io);
-	if (n) {
+	res = libaistotrp_pta_msg(lao_ctx, 1, &io);
+	if (res != TR_OKAY) {
 		lwsl_err("%s: libaistotrp_pta_msg: fail %d\n", __func__, n);
 	} else
 		lwsl_notice("%s: libaistotrp_pta_msg: OK %d\n", __func__,
