@@ -11,13 +11,12 @@ brew intall libwebsockets
 ### libs on ubuntu 18.04
 
 ```bash
-git clone https://github.com/warmcat/libwebsockets.git
+git clone http://192.168.100.100/vc707/libwebsockets
 cd libwebsockets
-git checkout v3.1-stable
-sudo apt-get install libssl-dev
+sudo apt-get install libssl-dev libmbedtls-dev
 mkdir build
 cd build
-cmake ..
+cmake -DLWS_WITH_SSL=1 -DLWS_WITH_MBEDTLS=1 -DLWS_WITH_JOSE=1 ..
 make
 sudo make install
 sudo ldconfig

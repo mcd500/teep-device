@@ -1,6 +1,6 @@
 CFLAGS := -g -O0 -Wall
 LDLIBS := -lwebsockets
-INCLUDES := -I../libaistotrp/lib -I../libaistotrp/libwebsockets/include -I../../optee_client/public
+INCLUDES := -I../libaistotrp/lib -I../libaistotrp/libwebsockets/include -I../../optee_client/public -I../ta-aist-otrp
 CPPFLAGS := $(INCLUDES)
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Darwin)
