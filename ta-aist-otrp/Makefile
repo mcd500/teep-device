@@ -41,7 +41,7 @@ endif
 
 .PHONY: clean
 clean:
-	rm -rf *.o .*.o.* $(BINARY).* .ta.ld.d ta.lds
+	rm -rf *.o .*.o.* *.cmd *.dmp *.elf *.map $(BINARY).ta .ta.ld.d ta.lds
 
 update:
 	scp *.ta root@${HIKEY_IP}:/lib/optee_armtz
