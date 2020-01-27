@@ -1,5 +1,5 @@
 global-incdirs-y += libwebsockets/build libwebsockets/lib .
-srcs-y += ta-aist-otrp.c 
+srcs-y += ta-aist-otrp.c teep_message.c
 
 BINARY=68373894-5bb3-403c-9eec-3114a1f5d3fc
 

@@ -1,6 +1,6 @@
 #include <libwebsockets.h>
 #include "teep_message.h"
-#define EMSG(...) fprintf(stderr, __VA_ARGS__)
+
 #define TEMP_BUF_SIZE (800 * 1024)
 
 static char temp_buf[TEMP_BUF_SIZE];
@@ -23,7 +23,7 @@ static const char * const tee_privkey_jwk =
 int
 otrp_unwrap_message(const char *msg, int msg_len, char *out, int out_len) {
 	struct lws_context_creation_info info;
-	static struct lws_context *context;
+	static struct lws_context *context = NULL;
 	struct lws_jwk jwk_pubkey_tam;
 	int temp_len = sizeof(temp_buf);
 	struct lws_jws jws;
@@ -32,15 +32,18 @@ otrp_unwrap_message(const char *msg, int msg_len, char *out, int out_len) {
 
 	lws_set_log_level(LLL_USER | LLL_ERR | LLL_WARN | LLL_NOTICE, NULL);
 
-	EMSG("%s: msg len %d\n", __func__, msg_len);
+	lwsl_notice("%s: msg len %d\n", __func__, msg_len);
 	memset(&info, 0, sizeof(info));
 	info.port = CONTEXT_PORT_NO_LISTEN;
 	info.options = 0;
+#if 0
+	// calling lws_create_context causes a lot of link error
 	context = lws_create_context(&info);
 	if (!context) {
 		lwsl_err("lws init failed\n");
 		return -1;
 	}
+#endif
 
 	lws_jws_init(&jws, &jwk_pubkey_tam, context);
 	lws_jwe_init(&jwe, context);
@@ -99,7 +102,7 @@ otrp(const char *msg, int msg_len, uint8_t *resp, int resp_len) {
 		return -1;
 	}
 	if (!strncmp(buf, "{\"delete-ta\":\"", 14)) {
-		EMSG("TODO delete TA\n");
+		lwsl_notice("TODO delete TA\n");
 #if 0
 		uint8_t uuid_octets[16];
 		TEE_TASessionHandle sess = TEE_HANDLE_NULL;
@@ -142,7 +145,7 @@ otrp(const char *msg, int msg_len, uint8_t *resp, int resp_len) {
 	}
 	else
 	{
-		EMSG("TODO install TA\n");
+		lwsl_notice("TODO install TA\n");
 #if 0
 		TEE_TASessionHandle sess = TEE_HANDLE_NULL;
 		const TEE_UUID secstor_uuid = PTA_SECSTOR_TA_MGMT_UUID;
