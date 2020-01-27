@@ -1,4 +1,5 @@
 #include <libwebsockets.h>
+#include "teep_message.h"
 #define EMSG(...) fprintf(stderr, __VA_ARGS__)
 #define TEMP_BUF_SIZE (800 * 1024)
 
@@ -27,7 +28,7 @@ otrp_unwrap_message(const char *msg, int msg_len, char *out, int out_len) {
 	int temp_len = sizeof(temp_buf);
 	struct lws_jws jws;
 	struct lws_jwe jwe;
-	int n = -1;
+	int n;
 
 	lws_set_log_level(LLL_USER | LLL_ERR | LLL_WARN | LLL_NOTICE, NULL);
 
@@ -36,6 +37,11 @@ otrp_unwrap_message(const char *msg, int msg_len, char *out, int out_len) {
 	info.port = CONTEXT_PORT_NO_LISTEN;
 	info.options = 0;
 	context = lws_create_context(&info);
+	if (!context) {
+		lwsl_err("lws init failed\n");
+		return -1;
+	}
+
 	lws_jws_init(&jws, &jwk_pubkey_tam, context);
 	lws_jwe_init(&jwe, context);
 
@@ -75,7 +81,7 @@ otrp_unwrap_message(const char *msg, int msg_len, char *out, int out_len) {
 		lwsl_err("%s: output buffer is small (in, out) = (%d, %d)\n", __func__, jwe.jws.map.len[LJWE_CTXT], out_len);
 	}
 	memcpy(out, jwe.jws.map.buf[LJWE_CTXT], jwe.jws.map.len[LJWE_CTXT]);
-	return 0;
+	n = 0;
 bail1:
 	lws_jwe_destroy(&jwe);
 bail:
@@ -89,16 +95,86 @@ otrp(const char *msg, int msg_len, uint8_t *resp, int resp_len) {
 	char *buf = malloc(TEMP_BUF_SIZE);
 	int res = otrp_unwrap_message(msg, msg_len, buf, TEMP_BUF_SIZE);
 	if (res) {
+		lwsl_err("%s: failed to unwrap message\n", __func__);
 		return -1;
 	}
 	if (!strncmp(buf, "{\"delete-ta\":\"", 14)) {
 		EMSG("TODO delete TA\n");
-		return 0;
+#if 0
+		uint8_t uuid_octets[16];
+		TEE_TASessionHandle sess = TEE_HANDLE_NULL;
+		const TEE_UUID secstor_uuid = PTA_SECSTOR_TA_MGMT_UUID;
+		TEE_Param pars[TEE_NUM_PARAMS];
+		TEE_Result res;
+
+		lwsl_user("Recognized TA delete request\n");
+
+		if (string_to_uuid_octets((const char *)jwe.jws.map.buf[LJWE_CTXT] + 14, uuid_octets)) {
+			lwsl_err("%s: problem parsing UUID\n", __func__);
+			goto bail1;
+		}
+
+		res = TEE_OpenTASession(&secstor_uuid, 0, 0, NULL, &sess, NULL);
+		if (res != TEE_SUCCESS) {
+			lwsl_err("%s: Unable to open session to secstor\n",
+				 __func__);
+			goto bail1;
+		}
+
+		memset(pars, 0, sizeof(pars));
+		pars[0].memref.buffer = (void *)uuid_octets;
+		pars[0].memref.size = 16;
+		res = TEE_InvokeTACommand(sess, 0,
+					  PTA_SECSTOR_TA_MGMT_DELETE_TA,
+					  TEE_PARAM_TYPES(
+						TEE_PARAM_TYPE_MEMREF_INPUT,
+						TEE_PARAM_TYPE_NONE,
+						TEE_PARAM_TYPE_NONE,
+						TEE_PARAM_TYPE_NONE),
+					  pars, NULL);
+		TEE_CloseTASession(sess);
+		if (res != TEE_SUCCESS) {
+			lwsl_err("%s: Command failed\n", __func__);
+			goto bail1;
+		}
+		lwsl_notice("Deleted TA from secure storage\n");
+#endif
 	}
 	else
 	{
 		EMSG("TODO install TA\n");
-		return 0;
+#if 0
+		TEE_TASessionHandle sess = TEE_HANDLE_NULL;
+		const TEE_UUID secstor_uuid = PTA_SECSTOR_TA_MGMT_UUID;
+		TEE_Param pars[TEE_NUM_PARAMS];
+		TEE_Result res;
+
+		res = TEE_OpenTASession(&secstor_uuid, 0, 0, NULL, &sess, NULL);
+		if (res != TEE_SUCCESS) {
+			lwsl_err("%s: Unable to open session to secstor\n",
+				 __func__);
+			goto bail1;
+		}
+
+		memset(pars, 0, sizeof(pars));
+		pars[0].memref.buffer = (void *)jwe.jws.map.buf[LJWE_CTXT];
+		pars[0].memref.size = jwe.jws.map.len[LJWE_CTXT];
+		res = TEE_InvokeTACommand(sess, 0,
+					  PTA_SECSTOR_TA_MGMT_BOOTSTRAP,
+					  TEE_PARAM_TYPES(
+						TEE_PARAM_TYPE_MEMREF_INPUT,
+						TEE_PARAM_TYPE_NONE,
+						TEE_PARAM_TYPE_NONE,
+						TEE_PARAM_TYPE_NONE),
+					  pars, NULL);
+		TEE_CloseTASession(sess);
+		if (res != TEE_SUCCESS) {
+			lwsl_err("%s: Command failed\n", __func__);
+			goto bail1;
+		}
+		lwsl_notice("Wrote TA to secure storage\n");
+#endif
 	}
+	return 0;
 }
 

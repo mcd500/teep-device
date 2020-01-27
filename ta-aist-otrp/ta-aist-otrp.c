@@ -33,29 +33,7 @@
 #include <libwebsockets.h>
 
 #include "pta_secstor_ta_mgmt.h"
-
-/* the TAM root cert we trust */
-
-static const uint8_t const *tam_root_cert_pem =
-	#include "tam_root_cert.h"
-;
-
-/* the TAM server cert public key as a JWK */
-
-static const uint8_t const *tam_id_pubkey_jwk =
-	#include "tam_id_pubkey_jwk.h"
-;
-
-/* our TEE private key as a JWK */
-
-static const uint8_t const *tee_privkey_jwk =
-	#include "tee_privkey_jwk.h"
-;
-
-
-static struct lws_context *context;
-
-#define JW_TEMP_SIZE (800 * 1024)
+#include "teep_message.h"
 
 #define TA_NAME		"aist-otrp.ta"
 #define TA_PRINT_PREFIX	"AIST-OTRP: "
@@ -175,229 +153,29 @@ void TA_CloseSessionEntryPoint(void __maybe_unused *sess_ctx)
 	(void)&sess_ctx;
 }
 
-static TEE_Result
-otrp(uint32_t type, TEE_Param p[TEE_NUM_PARAMS])
-{
-	struct lws_genhash_ctx hash_ctx;
-	struct lws_jwk jwk_pubkey_tam;
-	int temp_len = JW_TEMP_SIZE;
-	TEE_ObjectHandle handle;
-	int msg_len, resp_len;
-	const uint8_t *msg;
-	TEE_Result res = 1;
-	struct lws_jws jws;
-	struct lws_jwe jwe;
-	uint8_t *resp;
-	char *temp;
-	int n;
-
-	lws_set_log_level(LLL_USER | LLL_ERR | LLL_WARN | LLL_NOTICE, NULL);
-
-	if ((TEE_PARAM_TYPE_GET(type, 0) != TEE_PARAM_TYPE_MEMREF_INPUT) ||
-	    (TEE_PARAM_TYPE_GET(type, 1) != TEE_PARAM_TYPE_VALUE_INPUT) ||
-	    (TEE_PARAM_TYPE_GET(type, 2) != TEE_PARAM_TYPE_MEMREF_OUTPUT) ||
-	    (TEE_PARAM_TYPE_GET(type, 3) != TEE_PARAM_TYPE_VALUE_INOUT))
-		return TEE_ERROR_BAD_PARAMETERS;
-
-	temp = malloc(JW_TEMP_SIZE);
-	if (!temp) {
-		EMSG("%s: can't allocate JWS temp\n", __func__);
-		return TEE_ERROR_BAD_PARAMETERS;
-	}
-
-	msg = (const uint8_t *)p[0].memref.buffer;
-	msg_len = (int)p[1].value.a;
-	resp = (uint8_t *)p[2].memref.buffer;
-	resp_len = (int)p[3].value.a;
-
-	EMSG("%s: msg len %d\n", __func__, msg_len);
-
-	lws_jws_init(&jws, &jwk_pubkey_tam, context);
-
-	if (lws_jwk_import(&jwk_pubkey_tam, NULL, NULL, tam_id_pubkey_jwk,
-			   strlen(tam_id_pubkey_jwk))) {
-		lwsl_err("%s: unable to import tam jwk\n", __func__);
-
-		goto bail;
-	}
-
-	if (lws_jws_sig_confirm_json(msg, msg_len, &jws, &jwk_pubkey_tam, context,
-				     temp, &temp_len) < 0) {
-		lwsl_notice("%s: confirm rsa sig failed\n",
-		    __func__);
-		goto bail;
-	}
-
-	lwsl_user("Signature OK\n");
-
-	/*
-	 * it's a bit expensive, but take a moment to reset the temp usage now
-	 * the JWS part is confirmed.  Over-allocating large temp spaces is
-	 * really expensive in OP-TEE world.
-	 *
-	 * First copy the part we care about, the base64-decoded JWS payload,
-	 * to the start of the temp space.
-	 */
-
-	memmove(temp, jws.map.buf[LJWS_PYLD], jws.map.len[LJWS_PYLD]);
-
-	/* Second, set the pointers to point to the copy at the start */
-
-	jws.map.buf[LJWS_PYLD] = temp;
-
-	/* Lastly, reset the remaining temp space.  Now all the JWS-related
-	 * temp usage is wiped out except the JWE payload. */
-
-	temp_len = JW_TEMP_SIZE - jws.map.len[LJWS_PYLD];
-
-	lws_jwe_init(&jwe, context);
-	if (lws_jwe_json_parse(&jwe, jws.map.buf[LJWS_PYLD],
-			       jws.map.len[LJWS_PYLD],
-			       lws_concat_temp(temp, temp_len), &temp_len)) {
-		lwsl_err("%s: lws_jwe_json_parse failed\n",
-						 __func__);
-		goto bail1;
-	}
-
-	if (lws_jwk_import(&jwe.jwk, NULL, NULL, tee_privkey_jwk,
-			   strlen(tee_privkey_jwk))) {
-		lwsl_err("%s: unable to import tee jwk\n", __func__);
-
-		goto bail1;
-	}
-
-	/* JWS payload is a JWE */
-
-	n = lws_jwe_auth_and_decrypt(&jwe, lws_concat_temp(temp, temp_len),
-				     &temp_len);
-	if (n < 0) {
-		lwsl_err("%s: lws_jwe_auth_and_decrypt failed\n",
-			 __func__);
-		goto bail1;
-	}
-
-	lwsl_user("Decrypt OK: length %d\n", n);
-
-	if (!strncmp((const char *)jwe.jws.map.buf[LJWE_CTXT], "{\"delete-ta\":\"", 14)) {
-		uint8_t uuid_octets[16];
-		TEE_TASessionHandle sess = TEE_HANDLE_NULL;
-		const TEE_UUID secstor_uuid = PTA_SECSTOR_TA_MGMT_UUID;
-		TEE_Param pars[TEE_NUM_PARAMS];
-		TEE_Result res;
-
-		lwsl_user("Recognized TA delete request\n");
-
-		if (string_to_uuid_octets((const char *)jwe.jws.map.buf[LJWE_CTXT] + 14, uuid_octets)) {
-			lwsl_err("%s: problem parsing UUID\n", __func__);
-			goto bail1;
-		}
-
-		res = TEE_OpenTASession(&secstor_uuid, 0, 0, NULL, &sess, NULL);
-		if (res != TEE_SUCCESS) {
-			lwsl_err("%s: Unable to open session to secstor\n",
-				 __func__);
-			goto bail1;
-		}
-
-		memset(pars, 0, sizeof(pars));
-		pars[0].memref.buffer = (void *)uuid_octets;
-		pars[0].memref.size = 16;
-		res = TEE_InvokeTACommand(sess, 0,
-					  PTA_SECSTOR_TA_MGMT_DELETE_TA,
-					  TEE_PARAM_TYPES(
-						TEE_PARAM_TYPE_MEMREF_INPUT,
-						TEE_PARAM_TYPE_NONE,
-						TEE_PARAM_TYPE_NONE,
-						TEE_PARAM_TYPE_NONE),
-					  pars, NULL);
-		TEE_CloseTASession(sess);
-		if (res != TEE_SUCCESS) {
-			lwsl_err("%s: Command failed\n", __func__);
-			goto bail1;
-		}
-		lwsl_notice("Deleted TA from secure storage\n");
-
-	}
-		else
-	{
-		TEE_TASessionHandle sess = TEE_HANDLE_NULL;
-		const TEE_UUID secstor_uuid = PTA_SECSTOR_TA_MGMT_UUID;
-		TEE_Param pars[TEE_NUM_PARAMS];
-		TEE_Result res;
-
-		res = TEE_OpenTASession(&secstor_uuid, 0, 0, NULL, &sess, NULL);
-		if (res != TEE_SUCCESS) {
-			lwsl_err("%s: Unable to open session to secstor\n",
-				 __func__);
-			goto bail1;
-		}
-
-		memset(pars, 0, sizeof(pars));
-		pars[0].memref.buffer = (void *)jwe.jws.map.buf[LJWE_CTXT];
-		pars[0].memref.size = jwe.jws.map.len[LJWE_CTXT];
-		res = TEE_InvokeTACommand(sess, 0,
-					  PTA_SECSTOR_TA_MGMT_BOOTSTRAP,
-					  TEE_PARAM_TYPES(
-						TEE_PARAM_TYPE_MEMREF_INPUT,
-						TEE_PARAM_TYPE_NONE,
-						TEE_PARAM_TYPE_NONE,
-						TEE_PARAM_TYPE_NONE),
-					  pars, NULL);
-		TEE_CloseTASession(sess);
-		if (res != TEE_SUCCESS) {
-			lwsl_err("%s: Command failed\n", __func__);
-			goto bail1;
-		}
-		lwsl_notice("Wrote TA to secure storage\n");
-	}
-
-
-	/* the return of TEE_SUCCESS is enough */
-	p[3].value.a = 0;
-
-	res = TEE_SUCCESS;
-
-bail1:
-	lws_jwe_destroy(&jwe);
-bail:
-	lws_jwk_destroy(&jwk_pubkey_tam);
-	lws_jws_destroy(&jws);
-
-	free(temp);
-
-	return res;
-}
-
-static struct lws_context *
-create_lws_context(void)
-{
-	struct lws_context_creation_info info;
-	struct lws_context *context;
-
-	memset(&info, 0, sizeof info);
-	info.port = CONTEXT_PORT_NO_LISTEN;
-	context = lws_create_context(&info);
-	if (!context) {
-		lwsl_err("lws init failed\n");
-		return NULL;
-	}
-
-	return context;
-}
-
 TEE_Result
 TA_InvokeCommandEntryPoint(void __maybe_unused *sess_ctx,
 			uint32_t cmd_id,
 			uint32_t param_types,
 			TEE_Param params[TEE_NUM_PARAMS])
 {
+	int res;
 	switch (cmd_id) {
-
 	case 1: /* interpret OTrP message */
-		return otrp(param_types, params);
-
-	default:
-		return TEE_ERROR_BAD_PARAMETERS;
+		if ((TEE_PARAM_TYPE_GET(type, 0) != TEE_PARAM_TYPE_MEMREF_INPUT) ||
+				(TEE_PARAM_TYPE_GET(type, 1) != TEE_PARAM_TYPE_VALUE_INPUT) ||
+				(TEE_PARAM_TYPE_GET(type, 2) != TEE_PARAM_TYPE_MEMREF_OUTPUT) ||
+				(TEE_PARAM_TYPE_GET(type, 3) != TEE_PARAM_TYPE_VALUE_INOUT))
+			return TEE_ERROR_BAD_PARAMETERS;
+		res = otrp(param_types, params);
+		if (res != 0) {
+			return TEE_ERROR_COMMUNICATION;
+		}
+		return TEE_SUCCESS;
+	case 2: /* interpret TEEP message */
+		/* TODO */
+		return TEE_ERROR_NOT_IMPLEMENTED;
+	deafalt:
+		return TEE_ERROR_NOT_IMPLEMENTED;
 	}
-	return TEE_ERROR_NOT_IMPLEMENTED;
 }

@@ -1,4 +1,5 @@
 #include <tee_client_api.h>
+#include "teep_message.h"
 
 TEEC_Result TEEC_InitializeContext(const char *name, TEEC_Context *context)
 {
@@ -42,6 +43,7 @@ TEEC_Result TEEC_InvokeCommand(TEEC_Session *session,
 			return TEEC_ERROR_BAD_PARAMETERS;
 		return otrp(params[0].tmpref.buffer, params[1].value.a, params[2].tmpref.buffer, params[3].value.a);
 	case 2: /* TEEP */
+		return TEEC_ERROR_NOT_IMPLEMENTED;
 	default:
 		return TEEC_ERROR_NOT_IMPLEMENTED;
 	}
