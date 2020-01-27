@@ -58,6 +58,7 @@ clean:
 	make -C aist-otrp-test-ta-client TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) clean
 	make -C ta-aist-otrp TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) clean
 	make -C ta-aist-test TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) clean
+	rm -f $(TEEP_KEY_SRCS)
 
 .PHONY: clean-ta
 clean-ta:
