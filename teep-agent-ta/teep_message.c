@@ -35,8 +35,9 @@ otrp_unwrap_message(const char *msg, int msg_len, char *out, int *out_len) {
 	memset(&info, 0, sizeof(info));
 	info.port = CONTEXT_PORT_NO_LISTEN;
 	info.options = 0;
-#if 0
-	// calling lws_create_context causes a lot of link error
+#ifdef PCTEST
+	// calling lws_create_context on tee environment causes a lot of link error
+	// lws_create_context must be called in pc environment to avoid SEGV on decrypt
 	context = lws_create_context(&info);
 	if (!context) {
 		lwsl_err("lws init failed\n");

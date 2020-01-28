@@ -1,7 +1,7 @@
 CFLAGS := -g -O0 -Wall
 LDLIBS := -lwebsockets
 INCLUDES := -I../libteep/lib -I../libteep/libwebsockets/include -I../../optee_client/public -I../teep-agent-ta
-CPPFLAGS := $(INCLUDES)
+CPPFLAGS := $(INCLUDES) -DPCTEST
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Darwin)
 	LDFLAGS := -L/usr/local/opt/libwebsockets/lib
