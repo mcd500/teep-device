@@ -20,10 +20,10 @@ currently configured).
 
 |Remote Filename on server|Source|Function|
 |---|---|---|
-|8d82573a-926d-4754-9353-32dc29997f74.ta|./aist-tb-otrp/ta-aist-test|Unencrypted stub TA that just says hello when installed and you open a session to it|
-|app.js|./aist-tb-otrp/fake-tam|The Fake TAM node.js application|
-|spaik-pub.jwk|./aist-tb-otrp/test-jw/tee/sds/xbank/spaik-pub.jwk|The PKI TEE SPAIK public part|
-|tam-mytam-rsa-key.pem|./aist-tb-otrp/pki/tam/tam/tam-mytam-rsa-key.pem|The TAM private key|
+|8d82573a-926d-4754-9353-32dc29997f74.ta|./aist-teep/sp-hello-ta|Unencrypted stub TA that just says hello when installed and you open a session to it|
+|app.js|./aist-teep/fake-tam|The Fake TAM node.js application|
+|spaik-pub.jwk|./aist-teep/test-jw/tee/sds/xbank/spaik-pub.jwk|The PKI TEE SPAIK public part|
+|tam-mytam-rsa-key.pem|./aist-teep/pki/tam/tam/tam-mytam-rsa-key.pem|The TAM private key|
 
 ### Force Padding Scheme in spaik pubkey
 
@@ -41,11 +41,11 @@ to
 
 ## Generating PKI and JWK parts
 
-To generate the additional files, you should run first `./aist-tb-otrp/scripts/otrp-kickstart-pki.sh, and
-then `./aist-tb-otrp/scripts/otrp-test.sh`.  See `./aist-tb-otrp/README-pki.md` for advice on that.
+To generate the additional files, you should run first `./aist-teep/scripts/otrp-kickstart-pki.sh, and
+then `./aist-teep/scripts/otrp-test.sh`.  See `./aist-teep/README-pki.md` for advice on that.
 
-That will create `./aist-tb-otrp/pki` which contains the X.509 PKI infrastructure, and `./aist-tb-otrp/test-jw`,
-which contains some JWK extracted from certs and keys in the `./aist-tb-otrp/pki` directory.
+That will create `./aist-teep/pki` which contains the X.509 PKI infrastructure, and `./aist-teep/test-jw`,
+which contains some JWK extracted from certs and keys in the `./aist-teep/pki` directory.
 
 ## Generating the test TA
 

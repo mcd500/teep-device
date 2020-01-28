@@ -34,7 +34,7 @@
 #include <signal.h>
 #include <unistd.h>
 
-/* UUID of ta-aist-test, the remotely-installed TA */
+/* UUID of sp-hello-ta, the remotely-installed TA */
 
 const TEEC_UUID uuid =
         { 0x8d82573a, 0x926d, 0x4754, \
@@ -48,7 +48,7 @@ size_t file_length;
 
 
 TEEC_Result
-aist_otrp_test_ta_client()
+sp_hello_app()
 {
 	TEEC_Result n;
 	TEEC_Operation op;
@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
 	TEEC_Result nResult;
 	TEEC_Operation op;
 
-	printf("AIST ta-aist-test client\n");
+	printf("START: sp-hello-app\n");
 
 	context = (TEEC_Context *)malloc(sizeof(*context));
 	if (!context) {
@@ -124,7 +124,7 @@ int main(int argc, char *argv[])
 		goto bail3;
 	}
 
-	nResult = aist_otrp_test_ta_client();
+	nResult = sp_hello_app();
 
 	if (nResult != TEEC_SUCCESS) {
 		fprintf(stderr, "Could not send command to TA\n");

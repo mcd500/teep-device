@@ -77,7 +77,7 @@ Step 1: Run otrp-kickstart-pki.sh as described below
 |---|---|
 |teep-broker-app|Test REE client application, uses libteep to fetch an encrypted test TA from TAM and install it|
 |sp-hello-app|Tiny REE client that just opens a session to the test TA if it is installed successfully|
-|libteep|REE shared library that can do http(s) requests to the TAM and can forward results to ta-aist-otrp|
+|libteep|REE shared library that can do http(s) requests to the TAM and can forward results to teep-agent-ta|
 |pki|PKI created by scripts/otrp-kickstart-pki.sh|
 |teep-agent-ta|TA implementing OTrP on TEE side|
 |sp-hello-ta|Tiny TA that is copied to the fake TAM so it can be encrypted and sent to the TEE via teep-broker-app|
@@ -98,31 +98,32 @@ Start the fake TAM on the remote server
 # ifconfig eth0 192.168.2.22/24 up
 # echo "nameserver 192.168.2.1" >  /etc/resolv.conf
 # echo "192.168.2.236 buddy.home.warmcat.com" > /etc/hosts
-# aist-otrp-testapp --tamurl http://buddy.home.warmcat.com:3000
+# teep-broker-app --tamurl http://buddy.home.warmcat.com:3000
 ```
 
 ### Confirm test ta is installed
 
 ```
-# aist-otrp-test-ta-client 
-AIST ta-aist-test client
-E/TA:  TA_InvokeCommandEntryPoint:75 TA_InvokeCommandEntryPoint: AIST OTrP Test TA: こんにちは
+# sp-hello-app 
+START: sp-hello-ap
+I/TA: TA_InvokeCommandEntryPoint:
+I/TA: sp-hello-ta: Hello IETF TEEP!
 
-aist_otrp_test_ta_client: done
+sp_hello_app: done
 ```
 
 ### Delete Test TA flow
 
 ```
-# aist-otrp-testapp --tamurl http://buddy.home.warmcat.com:3000 -d
+# teep-broker-app --tamurl http://buddy.home.warmcat.com:3000 -d
 ```
 
 ### Confirm Test TA deleted
 
 ```
-# aist-otrp-test-ta-client 
-AIST ta-aist-test client
-ERR [1641] TEES:load_ta:225:   TA not found
+# sp-hello-app
+START: sp-hello-app
+ERR [649] TEES:load_ta:225:   TA not found
 E/TC:? 0 tee_ta_open_session:540 init session failed 0xffff0008
 Could not open session with TA
 ```
