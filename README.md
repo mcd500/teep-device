@@ -75,12 +75,12 @@ Step 1: Run otrp-kickstart-pki.sh as described below
 
 |Subdirectory|Function|
 |---|---|
-|aist-otrp-testapp|Test REE client application, uses libaistotrp to fetch an encrypted test TA from TAM and install it|
-|aist-otrp-test-ta-client|Tiny REE client that just opens a session to the test TA if it is installed successfully|
-|libaistotrp|REE shared library that can do http(s) requests to the TAM and can forward results to ta-aist-otrp|
+|teep-broker-app|Test REE client application, uses libteep to fetch an encrypted test TA from TAM and install it|
+|sp-hello-app|Tiny REE client that just opens a session to the test TA if it is installed successfully|
+|libteep|REE shared library that can do http(s) requests to the TAM and can forward results to ta-aist-otrp|
 |pki|PKI created by scripts/otrp-kickstart-pki.sh|
-|ta-aist-otrp|TA implementing OTrP on TEE side|
-|ta-aist-test|Tiny TA that is copied to the fake TAM so it can be encrypted and sent to the TEE via aist-otrp-testapp|
+|teep-agent-ta|TA implementing OTrP on TEE side|
+|sp-hello-ta|Tiny TA that is copied to the fake TAM so it can be encrypted and sent to the TEE via teep-broker-app|
 
 ## OTrP test flow
 

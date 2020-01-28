@@ -4,7 +4,7 @@
 # - aarch64 mbedtls dynamic library for REE
 # - aarch64 libwebsockets dynamic library for REE
 # - host    libwebsockets dynamic library for host (uses host mbedtls)
-# - aarch64 libaistotrp dynamic library for REE (include lws + mbedtls above)
+# - aarch64 libteep dynamic library for REE (include lws + mbedtls above)
 # - aarch64 aist-otrp-testapp
 # - host    aist-otrp-tam for host (uses host mbedtls)
 
@@ -76,21 +76,21 @@ all:
 	make
 
 	#
-	# libaistotrp (REE library)
+	# libteep (REE library)
 	#
 	$(CROSS_COMPILE)gcc $(REE_CFLAGS) -Ilib -c lib/main.c -o lib/main.o
 	$(CROSS_COMPILE)gcc $(LDFLAGS) \
-		-shared -Wl,-soname,libaistotrp.so.1 \
+		-shared -Wl,-soname,libteep.so.1 \
 		-L../../optee_client/out/libteec -L mbedtls-build/library \
 		-Llibwebsockets/build/lib \
 		lib/main.o -lteec -lwebsockets -lmbedx509 -lmbedtls -l mbedcrypto \
-		-o lib/libaistotrp.so.1
-	ln -sf libaistotrp.so.1 lib/libaistotrp.so
+		-o lib/libteep.so.1
+	ln -sf libteep.so.1 lib/libteep.so
 
 clean:
-	rm -fr lib/main.o lib/libaistotrp.so* mbedtls-build libwebsockets/build libwebsockets/build/build-host lib/build
+	rm -fr lib/main.o lib/libteep.so* mbedtls-build libwebsockets/build libwebsockets/build/build-host lib/build
 
 update:
-	scp libaistotrp.so root@${HIKEY_IP}:/usr/bin
+	scp libteep.so root@${HIKEY_IP}:/usr/bin
 
 .PHONY: .FORCE

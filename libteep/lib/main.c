@@ -25,7 +25,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *
- * This is the libaistotrp REE userland library.
+ * This is the libteep REE userland library.
  *
  * It provides services for REE Applications to communicate with a remote TAM,
  * and the OTrP PTA in the Secure World.
@@ -33,7 +33,7 @@
  * The return convention is 0 means all is OK.  Nonzero indicates an error.
  */
 
-#include "libaistotrp.h"
+#include "libteep.h"
 #include <libwebsockets.h>
 #include <pthread.h>
 
@@ -43,12 +43,12 @@ static const TEEC_UUID uuid_aist_otrp_ta =
 
 /* this is wholly opaque to library users */
 
-struct libaistotrp_ctx {
+struct libteep_ctx {
 	TEEC_Context		 tee_context;
 	TEEC_Session		 tee_session;
 	pthread_mutex_t 	 lock;
 	struct lws_context	 *lws_ctx;
-	struct libaistotrp_async *laoa_list_head; /* protected by .lock */
+	struct libteep_async *laoa_list_head; /* protected by .lock */
 	char			 *tam_url_base;
 	int			 tam_port;
 	const char		 *tam_address;
@@ -61,9 +61,9 @@ struct libaistotrp_ctx {
 //static unsigned int rrlen;
 //static uint8_t *rr;
 
-struct libaistotrp_async {
-	struct libaistotrp_async *laoa_list_next; /* protected by .lock */
-	struct libaistotrp_ctx	 *ctx;
+struct libteep_async {
+	struct libteep_async *laoa_list_next; /* protected by .lock */
+	struct libteep_ctx	 *ctx;
 	struct lao_rpc_io	 *io;
 	struct lws		 *wsi;
 
@@ -78,7 +78,7 @@ static int
 callback_tam(struct lws *wsi, enum lws_callback_reasons reason, void *user,
 	     void *in, size_t len)
 {
-	struct libaistotrp_async *laoa = (struct libaistotrp_async *)user;
+	struct libteep_async *laoa = (struct libteep_async *)user;
 	char buffer[1024 + LWS_PRE];
 	char *px = buffer + LWS_PRE;
 	int lenx = sizeof(buffer) - LWS_PRE;
@@ -197,17 +197,17 @@ static const struct lws_protocols protocols[] = {
 };
 
 int
-libaistotrp_tam_msg(struct libaistotrp_ctx *ctx, const char *urlinfo,
+libteep_tam_msg(struct libteep_ctx *ctx, const char *urlinfo,
 		    struct lao_rpc_io *io)
 {
-	struct libaistotrp_async *laoa = malloc(sizeof(*laoa));
+	struct libteep_async *laoa = malloc(sizeof(*laoa));
 	struct lws_client_connect_info i;
 	char path[200];
 
 	if (!laoa)
 		return -1; /* OOM */
 
-	memset(laoa, 0, sizeof(struct libaistotrp_async));
+	memset(laoa, 0, sizeof(struct libteep_async));
 
 	laoa->ctx = ctx;
 	laoa->io = io;
@@ -285,7 +285,7 @@ libaistotrp_tam_msg(struct libaistotrp_ctx *ctx, const char *urlinfo,
 
 	sleep(1);
 
-	memset(laoa, 0, sizeof(struct libaistotrp_async));
+	memset(laoa, 0, sizeof(struct libteep_async));
 
 	laoa->ctx = ctx;
 	laoa->io = io;
@@ -368,7 +368,7 @@ libaistotrp_tam_msg(struct libaistotrp_ctx *ctx, const char *urlinfo,
 }
 
 int
-libaistotrp_pta_msg(struct libaistotrp_ctx *ctx, uint32_t cmd,
+libteep_pta_msg(struct libteep_ctx *ctx, uint32_t cmd,
 		    struct lao_rpc_io *io)
 {
 	TEEC_Result n;
@@ -405,13 +405,13 @@ libaistotrp_pta_msg(struct libaistotrp_ctx *ctx, uint32_t cmd,
 }
 
 int
-libaistotrp_init(struct libaistotrp_ctx **ctx, const char *tam_url_base)
+libteep_init(struct libteep_ctx **ctx, const char *tam_url_base)
 {
 	struct lws_context_creation_info info;
 	TEEC_Operation op;
 	TEEC_Result r;
 
-	/* allocate an opaque libaistotrp context to the caller */
+	/* allocate an opaque libteep context to the caller */
 
 	*ctx = malloc(sizeof(**ctx));
 	if (!(*ctx)) {
@@ -488,7 +488,7 @@ bail1:
 }
 
 void
-libaistotrp_destroy(struct libaistotrp_ctx **ctx)
+libteep_destroy(struct libteep_ctx **ctx)
 {
 	TEEC_CloseSession(&(*ctx)->tee_session);
 	TEEC_FinalizeContext(&(*ctx)->tee_context);

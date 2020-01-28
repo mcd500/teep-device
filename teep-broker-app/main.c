@@ -25,9 +25,9 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *
- * This is a REE test application to test operation of libaistotrp.
+ * This is a REE test application to test operation of libteep.
  */
-#include <libaistotrp.h>
+#include <libteep.h>
 #include <libwebsockets.h>
 
 static uint8_t pkt[6 * 1024 * 1024];
@@ -77,7 +77,7 @@ cmdline_parse(int argc, const char *argv[])
 int
 main(int argc, const char *argv[])
 {
-	struct libaistotrp_ctx *lao_ctx = NULL;
+	struct libteep_ctx *lao_ctx = NULL;
 	struct lao_rpc_io io;
 	uint8_t result[64];
 	int res;
@@ -85,7 +85,7 @@ main(int argc, const char *argv[])
 	fprintf(stderr, "%s compiled at %s %s\n", __FILE__, __DATE__, __TIME__);
 	cmdline_parse(argc, argv);
 
-	res = libaistotrp_init(&lao_ctx, uri);
+	res = libteep_init(&lao_ctx, uri);
 	if (res != TR_OKAY) {
 		fprintf(stderr, "%s: Unable to create lao\n", __func__);
 		return 1;
@@ -99,9 +99,9 @@ main(int argc, const char *argv[])
 	io.out = pkt;
 	io.out_len = sizeof(pkt);
 
-	res = libaistotrp_tam_msg(lao_ctx, path, &io);
+	res = libteep_tam_msg(lao_ctx, path, &io);
 	if (res != TR_OKAY) {
-		fprintf(stderr, "%s: libaistotrp_tam_msg: %d\n", __func__, res);
+		fprintf(stderr, "%s: libteep_tam_msg: %d\n", __func__, res);
 		return 1;
 	}
 
@@ -114,14 +114,14 @@ main(int argc, const char *argv[])
 	io.out = result;
 	io.out_len = sizeof(result);
 
-	res = libaistotrp_pta_msg(lao_ctx, 1, &io);
+	res = libteep_pta_msg(lao_ctx, 1, &io);
 	if (res != TR_OKAY) {
-		lwsl_err("%s: libaistotrp_pta_msg: fail %d\n", __func__, res);
+		lwsl_err("%s: libteep_pta_msg: fail %d\n", __func__, res);
 	} else
-		lwsl_notice("%s: libaistotrp_pta_msg: OK %d\n", __func__,
+		lwsl_notice("%s: libteep_pta_msg: OK %d\n", __func__,
 				(int)io.out_len);
 
-	libaistotrp_destroy(&lao_ctx);
+	libteep_destroy(&lao_ctx);
 
 	return 0;
 }
