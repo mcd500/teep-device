@@ -29,10 +29,7 @@
 #define STR_TRACE_USER_TA "AIST_OTrP"
 #include <tee_internal_api.h>
 #include <tee_internal_api_extensions.h>
-
 #include <libwebsockets.h>
-
-#include "pta_secstor_ta_mgmt.h"
 #include "teep_message.h"
 
 #define TA_NAME		"aist-otrp.ta"
@@ -123,6 +120,7 @@ string_to_uuid_octets(const char *s, uint8_t *octets16)
 
 TEE_Result TA_CreateEntryPoint(void)
 {
+	lws_set_log_level(LLL_USER | LLL_ERR | LLL_WARN | LLL_INFO | LLL_NOTICE, NULL);
 	return TEE_SUCCESS;
 }
 
