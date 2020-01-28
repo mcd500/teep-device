@@ -8,9 +8,9 @@ $(TARGET): main.c
 
 .PHONY: clean
 clean:
-	rm -f sp-hello-app
+	rm -f $(TARGET)
 
 .PHONY: update
 update:
-	scp sp-hello-app root@${HIKEY_IP}:/usr/bin
+	scp $(TARGET) root@${HIKEY_IP}:/usr/bin
 
