@@ -55,7 +55,7 @@ string_to_uuid_octets(const char *s, uint8_t *octets16)
 
 /* install given a TA Image into secure storage using optee pta*/
 int
-install_ta(const char *ta_image)
+install_ta(const char *ta_image, size_t ta_image_len)
 {
 	TEE_TASessionHandle sess = TEE_HANDLE_NULL;
 	const TEE_UUID secstor_uuid = PTA_SECSTOR_TA_MGMT_UUID;
@@ -69,8 +69,8 @@ install_ta(const char *ta_image)
 	}
 
 	memset(pars, 0, sizeof(pars));
-	pars[0].memref.buffer = (void *)jwe.jws.map.buf[LJWE_CTXT];
-	pars[0].memref.size = jwe.jws.map.len[LJWE_CTXT];
+	pars[0].memref.buffer = ta_image;
+	pars[0].memref.size = ta_image_len;
 	res = TEE_InvokeTACommand(sess, 0,
 			PTA_SECSTOR_TA_MGMT_BOOTSTRAP,
 			TEE_PARAM_TYPES(
@@ -82,7 +82,7 @@ install_ta(const char *ta_image)
 	TEE_CloseTASession(sess);
 	if (res != TEE_SUCCESS) {
 		lwsl_err("%s: Command failed\n", __func__);
-		return -1
+		return -1;
 	}
 	lwsl_notice("Wrote TA to secure storage\n");
 	return 0;

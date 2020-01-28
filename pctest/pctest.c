@@ -5,7 +5,7 @@
 // TA Store Stub
 
 int
-install_ta(const char *ta_image)
+install_ta(const char *ta_image, size_t ta_image_len)
 {
 	lwsl_user("%s: stub called\n", __func__);
 	return 0;

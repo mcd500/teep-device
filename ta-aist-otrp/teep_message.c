@@ -21,7 +21,7 @@ static const char * const tee_privkey_jwk =
 ;
 
 int
-otrp_unwrap_message(const char *msg, int msg_len, char *out, int out_len) {
+otrp_unwrap_message(const char *msg, int msg_len, char *out, int *out_len) {
 	struct lws_context_creation_info info;
 	static struct lws_context *context = NULL;
 	struct lws_jwk jwk_pubkey_tam;
@@ -79,10 +79,11 @@ otrp_unwrap_message(const char *msg, int msg_len, char *out, int out_len) {
 	}
 
 	lwsl_user("Decrypt OK: length %d\n", n);
-	if (jwe.jws.map.len[LJWE_CTXT] > out_len) {
-		lwsl_err("%s: output buffer is small (in, out) = (%d, %d)\n", __func__, jwe.jws.map.len[LJWE_CTXT], out_len);
+	if (jwe.jws.map.len[LJWE_CTXT] > *out_len) {
+		lwsl_err("%s: output buffer is small (in, out) = (%d, %d)\n", __func__, jwe.jws.map.len[LJWE_CTXT], *out_len);
 	}
 	memcpy(out, jwe.jws.map.buf[LJWE_CTXT], jwe.jws.map.len[LJWE_CTXT]);
+	*out_len = jwe.jws.map.len[LJWE_CTXT];
 	n = 0;
 bail1:
 	lws_jwe_destroy(&jwe);
@@ -95,13 +96,14 @@ bail:
 int
 otrp(const char *msg, int msg_len, uint8_t *resp, int resp_len) {
 	char *buf = malloc(TEMP_BUF_SIZE);
+	int buf_len = TEMP_BUF_SIZE;
 	int res;
 	if (!buf) {
 		lwsl_err("%s: out of memory\n", __func__);
 		return -1;
 	}
-	res = otrp_unwrap_message(msg, msg_len, buf, TEMP_BUF_SIZE);
-	if (res) {
+	res = otrp_unwrap_message(msg, msg_len, buf, &buf_len);
+	if (res < 0) {
 		lwsl_err("%s: failed to unwrap message\n", __func__);
 		goto bail;
 	}
@@ -109,7 +111,7 @@ otrp(const char *msg, int msg_len, uint8_t *resp, int resp_len) {
 	if (!strncmp(buf, "{\"delete-ta\":\"", 14)) {
 		res = delete_ta(buf + 14);
 	} else {
-		res = install_ta(buf);
+		res = install_ta(buf, buf_len);
 	}
 bail:
 	free(buf);
