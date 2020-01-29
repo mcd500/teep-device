@@ -23,7 +23,7 @@ var jwk_tam_privkey, jwk_tee_pubkey;
 keystore.add(tee_pubkey, "json").then(function(result) {
 		jwk_tee_pubkey = result;
         });
-keystore.add(tam_privkey, "pem").then(function(result) {
+keystore.add(tam_privkey, "json").then(function(result) {
 		jwk_tam_privkey = result;
         });
 
@@ -95,7 +95,7 @@ function handleAppInstall(req, bodyJson, res) {
 	console.log(req.url + ": Request for encrypted TA\n");
 
 	jose.JWE.createEncrypt({ alg: 'RSA1_5', contentAlg: 'A128CBC-HS256', format: "flattened" },
-			jwk_tee_pubkey).update(f_pt).final().then
+			jwk_tee_pubkey).update("hoge").final().then
 				(function(result) {
 		f = JSON.stringify(result);
 
@@ -152,11 +152,11 @@ function dumpHttpResponse(res, body) {
 
 	console.log("headers: " + res._header);
 
-	if (body.length < 128) {
+	if (body.length < 4096) {
 		console.log("body: " + body);
 	} else {
 		// 長いbodyは128文字で区切り
-		console.log("body: " + body.substring(0, 128) + "...");
+		console.log("body: " + body.substring(0, 4096) + "...");
 	}
 	console.log("\n");
 }
