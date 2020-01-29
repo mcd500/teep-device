@@ -21,8 +21,11 @@ all:
 endif
 
 .PHONY: generate-jwks
-generate-jwks:
-	(cd sample-senario && npm install)
+generate-jwks $(TEEP_KEYS):
+	(cd sample-senario && sudo npm install)
+	mkdir -p test-jw/tsm/identity/private
+	mkdir -p test-jw/tee/identity/private
+	mkdir -p test-jw/tee/sds/xbank
 	node ./sample-senario/generate-jwk.js $(TAM_PRIV_JWK) $(TAM_PUB_JWK)
 	node ./sample-senario/generate-jwk.js $(TEE_PRIV_JWK) $(TEE_PUB_JWK)
 	node ./sample-senario/generate-jwk.js $(SP_PRIV_JWK) $(SP_PUB_JWK)
@@ -66,6 +69,7 @@ clean:
 	make -C sp-hello-app TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) clean
 	make -C sp-hello-ta TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) clean
 	rm -f $(TEEP_KEY_SRCS)
+	rm -fr test-jw
 
 .PHONY: clean-ta
 clean-ta:
