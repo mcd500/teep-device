@@ -72,7 +72,7 @@ struct lao_rpc_io {
  * Returns 0 if created OK, else error and nothing was allocated.
  */
 int
-libteep_init(struct libteep_ctx **ctx, const char *tam_url_base);
+libteep_init(struct libteep_ctx **ctx);
 
 /**
  * libteep_destroy() - Destroy a libteep context
@@ -135,8 +135,7 @@ typedef enum tam_result {
  * Returns 0 if the communication was started OK, else error.
  */
 int
-libteep_tam_msg(struct libteep_ctx *ctx, const char *urlinfo,
-		    struct lao_rpc_io *io);
+libteep_tam_msg(struct libteep_ctx *ctx, const char *urlinfo, const char *proto, struct lao_rpc_io *io);
 
 #endif
 

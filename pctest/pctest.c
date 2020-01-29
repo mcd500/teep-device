@@ -50,7 +50,9 @@ delete_ta(const char *uuid_string)
 
 TEEC_Result TEEC_InitializeContext(const char *name, TEEC_Context *context)
 {
-	lws_set_log_level(LLL_USER | LLL_ERR | LLL_WARN | LLL_INFO | LLL_NOTICE | LLL_DEBUG, NULL);
+	lws_set_log_level(LLL_USER | LLL_ERR | LLL_WARN | LLL_INFO | LLL_NOTICE
+//		| LLL_DEBUG
+		, NULL);
 	lwsl_user("%s: stub called\n", __func__);
 	return TEEC_SUCCESS;
 }
@@ -94,6 +96,12 @@ TEEC_Result TEEC_InvokeCommand(TEEC_Session *session,
 			return TEEC_ERROR_BAD_PARAMETERS;
 		return otrp(params[0].tmpref.buffer, params[1].value.a, params[2].tmpref.buffer, params[3].value.a);
 	case 2: /* TEEP */
+		if ((TEEC_PARAM_TYPE_GET(type, 0) != TEEC_MEMREF_TEMP_INPUT) ||
+				(TEEC_PARAM_TYPE_GET(type, 1) != TEEC_VALUE_INPUT) ||
+				(TEEC_PARAM_TYPE_GET(type, 2) != TEEC_MEMREF_TEMP_OUTPUT) ||
+				(TEEC_PARAM_TYPE_GET(type, 3) != TEEC_VALUE_INOUT))
+			return TEEC_ERROR_BAD_PARAMETERS;
+		return teep(params[0].tmpref.buffer, params[1].value.a, params[2].tmpref.buffer, params[3].value.a);
 		return TEEC_ERROR_NOT_IMPLEMENTED;
 	default:
 		return TEEC_ERROR_NOT_IMPLEMENTED;

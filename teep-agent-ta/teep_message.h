@@ -32,4 +32,7 @@
 int
 otrp(const char *msg, int msg_len, uint8_t *resp, int resp_len);
 
+int
+teep(const char *msg, int msg_len, uint8_t *resp, int resp_len);
+
 #endif /* TEEP_MESSAGE_H */

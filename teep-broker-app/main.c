@@ -31,9 +31,8 @@
 #include <libwebsockets.h>
 
 static uint8_t pkt[6 * 1024 * 1024];
-static const char *uri = "http://127.0.0.1:3000"; // TAM server uri
-static const char *path = "/api/tam"; // TAM TEEP/HTTP server path
-static const char *proto = "otrp"; // protocol
+static const char *uri = "http://127.0.0.1:3000/api/tam"; // TAM server uri
+static const char *teep_ver = "teep"; // protocol
 static const char *talist = ""; // installed TA list
 
 static void
@@ -42,7 +41,7 @@ usage(void)
 	fprintf(stderr, "aist-otrp-testapp [--tamurl http://tamserver:port] [-d]\n");
 	fprintf(stderr, "     -d: ask TAM to send an encrypted request \n"
 			"         for the TEE to delete the test TA\n"
-			"     -p: protocol otrp or teep \n");
+			"     -p: teep protocol otrp or teep \n");
 	exit(1);
 }
 
@@ -59,13 +58,10 @@ cmdline_parse(int argc, const char *argv[])
 		uri = tmp;
 
 	/* request the TAM ask the TEE to delete the test TA */
-	if (lws_cmdline_option(argc, argv, "-d"))
-		path = "delete";
-
 	/* protocol (teep or otrp) */
 	tmp = lws_cmdline_option(argc, argv, "-p");
 	if (tmp)
-		proto = tmp;
+		teep_ver = tmp;
 
 	/* ta-list */
 	tmp = lws_cmdline_option(argc, argv, "--talist");
@@ -85,7 +81,7 @@ main(int argc, const char *argv[])
 	fprintf(stderr, "%s compiled at %s %s\n", __FILE__, __DATE__, __TIME__);
 	cmdline_parse(argc, argv);
 
-	res = libteep_init(&lao_ctx, uri);
+	res = libteep_init(&lao_ctx);
 	if (res != TR_OKAY) {
 		fprintf(stderr, "%s: Unable to create lao\n", __func__);
 		return 1;
@@ -99,7 +95,7 @@ main(int argc, const char *argv[])
 	io.out = pkt;
 	io.out_len = sizeof(pkt);
 
-	res = libteep_tam_msg(lao_ctx, path, &io);
+	res = libteep_tam_msg(lao_ctx, uri, teep_ver, &io);
 	if (res != TR_OKAY) {
 		fprintf(stderr, "%s: libteep_tam_msg: %d\n", __func__, res);
 		return 1;

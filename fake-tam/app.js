@@ -43,9 +43,7 @@ const server = http.createServer((req, res) => {
 	});
 });
 
-
-function handleRequest(req, body, res) {
-	dumpHttpRequest(req, body);
+function handleOtrpRequest(req, body, res) {
 	if (req.url == "/delete") {
 		handleAppDelete(req, null, res);
 		return;
@@ -53,7 +51,7 @@ function handleRequest(req, body, res) {
 	if (!body) {
 		// if body is empty, goto OTrP:GetDeviceState or TEEP:QueryRequest
 		handleAppInstall(req, null, res)
-		// handleQuery(req, res);
+			// handleQuery(req, res);
 	} else {
 		// parse json for switch TEEP Response
 		let bodyJson = JSON.parse(body);
@@ -81,6 +79,43 @@ function handleRequest(req, body, res) {
 		}
 	}
 }
+function handleTeepRequest(req, body, res) {
+	// parse json for switch TEEP Response
+	let bodyJson = JSON.parse(body);
+	console.log("parsed JSON:", bodyJson);
+
+	if (bodyJson.GetDeviceStateResponse !== undefined) {
+		console.log("reviced GetDeviceStateResponse");
+		// TODO: switch handleAppInstall or handleAppDelete
+		handleAppInstall(req, bodyJson, res);
+	} else if (bodyJson.InstallTAResponse !== undefined) {
+		console.log("reviced InstallTAResponse");
+		// no more sequence, return 204
+		res.statusCode = 204;
+		res.end();
+	} else if (bodyJson.DeleteTAResponse !== undefined) {
+		console.log("reviced DeleteTAResponse");
+		// no more sequence, return 204
+		res.statusCode = 204;
+		res.end();
+	} else {
+		// unknown OTrP or TEEP message
+		res.statusCode = 400;
+		console.error("Unknown OTrP or TEEP message");
+		res.end();
+	}
+}
+
+function handleRequest(req, body, res) {
+	dumpHttpRequest(req, body);
+	if (req.headers.accept == "application/otrp+json") {
+		return handleOtrpRequest(req, body, res)
+	} else if (req.headers.accept == "application/teep+json") {
+		return handleTeepRequest(req, body, res)
+	}
+	console.error("Unknown protocol");
+	res.end()
+}
 
 // OTrP:GetDeviceState or TEEP:QueryRequest
 function handleQuery(req, res) {
@@ -91,25 +126,19 @@ function handleQuery(req, res) {
 }
 
 // OTrP::InstallTA or TEEP:TrustedAppInstall
-function handleAppInstall(req, bodyJson, res) {
+async function handleAppInstall(req, bodyJson, res) {
 	console.log(req.url + ": Request for encrypted TA\n");
 
-	jose.JWE.createEncrypt({ alg: 'RSA1_5', contentAlg: 'A128CBC-HS256', format: "flattened" },
-			jwk_tee_pubkey).update("hoge").final().then
-				(function(result) {
-		f = JSON.stringify(result);
-
-		jose.JWS.createSign({ alg: 'RS256', format: 'flattened' }, jwk_tam_privkey).update(f).final().then
-					(function(result) {
-			f = JSON.stringify(result);
-			res.statusCode = 200;
-			res.setHeader('Content-Type', 'application/tee-ta');
-			res.setHeader('Content-Length', f.length);
-			res.end(f);
-
-			dumpHttpResponse(res, f);
-		});
-	});
+	result = jose.JWS.createSign({ alg: 'RS256', format: 'flattened' }, jwk_tam_privkey).update(f).final()
+	f = JSON.stringify(result);
+	result = await jose.JWE.createEncrypt({ alg: 'RSA1_5', contentAlg: 'A128CBC-HS256', format: "flattened" },
+			jwk_tee_pubkey).update(f_pt).final()
+	f = JSON.stringify(result);
+	res.statusCode = 200;
+	res.setHeader('Content-Type', 'application/tee-ta');
+	res.setHeader('Content-Length', f.length);
+	res.end(f);
+	dumpHttpResponse(res, f);
 }
 
 // OTrP::DeleteTA or TEEP:TrustedAppDelete
@@ -152,11 +181,11 @@ function dumpHttpResponse(res, body) {
 
 	console.log("headers: " + res._header);
 
-	if (body.length < 4096) {
+	if (body.length < 128) {
 		console.log("body: " + body);
 	} else {
 		// 長いbodyは128文字で区切り
-		console.log("body: " + body.substring(0, 4096) + "...");
+		console.log("body: " + body.substring(0, 128) + "...");
 	}
 	console.log("\n");
 }
