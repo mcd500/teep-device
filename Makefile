@@ -1,6 +1,5 @@
 # the PEM certificate for the TAM root of trust
 #
-TAM_ROOT_CERT=pki/tam/tam-rootca/tam-rootca-ec-cert.pem
 TAM_PUB_JWK=test-jw/tsm/identity/tam-mytam-public.jwk
 TAM_PRIV_JWK=test-jw/tsm/identity/private/tam-mytam-private.jwk
 TEE_PUB_JWK=test-jw/tee/identity/tee-mytee-public.jwk
@@ -8,10 +7,9 @@ TEE_PRIV_JWK=test-jw/tee/identity/private/tee-mytee-private.jwk
 SP_PUB_JWK=test-jw/tee/sds/xbank/spaik-pub.jwk
 SP_PRIV_JWK=test-jw/tee/sds/xbank/spaik-priv.jwk
 
-TEEP_KEYS=$(TAM_ROOT_CERT) $(TAM_PRIV_JWK) $(TAM_PUB_JWK) $(TEE_PRIV_JWK) $(TEE_PUB_JWK) $(SP_PRIV_JWK) $(SP_PUB_JWK)
+TEEP_KEYS= $(TAM_PRIV_JWK) $(TAM_PUB_JWK) $(TEE_PRIV_JWK) $(TEE_PUB_JWK) $(SP_PRIV_JWK) $(SP_PUB_JWK)
 
-TEEP_KEY_SRCS=teep-agent-ta/tam_root_cert.h \
-              teep-agent-ta/tam_id_pubkey_jwk.h \
+TEEP_KEY_SRCS=teep-agent-ta/tam_id_pubkey_jwk.h \
               teep-agent-ta/tee_privkey_jwk.h
 
 .PHONY: all
@@ -30,9 +28,7 @@ generate-jwks:
 	node ./sample-senario/generate-jwk.js $(SP_PRIV_JWK) $(SP_PUB_JWK)
 
 .PHONY: convert_teep_keys
-convert_teep_keys $(TEEP_KEY_SRCS): $(TAM_ROOT_CERT) $(TAM_PUB_JWK) $(SP_PRIV_JWK)
-	cat $(TAM_ROOT_CERT) | sed 's/^/\"/g' | sed 's/$$/\\\n\"/g' > \
-		teep-agent-ta/tam_root_cert.h
+convert_teep_keys $(TEEP_KEY_SRCS): $(TAM_PUB_JWK) $(SP_PRIV_JWK)
 	cat $(TAM_PUB_JWK) | sed 's/\"/\\\"/g' | sed 's/^/\"/g' | sed 's/$$/\\\n\"/g' > \
 		teep-agent-ta/tam_id_pubkey_jwk.h
 	cat $(SP_PRIV_JWK) | sed 's/\"/\\\"/g' | sed 's/^/\"/g' | sed 's/$$/\\\n\"/g' > \

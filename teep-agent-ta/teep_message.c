@@ -33,10 +33,6 @@
 
 static char temp_buf[TEMP_BUF_SIZE];
 
-/* the TAM root cert we trust */
-static const char * const tam_root_cert_pem =
-#include "tam_root_cert.h"
-;
 /* the TAM server cert public key as a JWK */
 
 static const char * const tam_id_pubkey_jwk =
