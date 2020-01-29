@@ -10,7 +10,7 @@ SP_PRIV_JWK=test-jw/tee/sds/xbank/spaik-priv.jwk
 TEEP_KEYS= $(TAM_PRIV_JWK) $(TAM_PUB_JWK) $(TEE_PRIV_JWK) $(TEE_PUB_JWK) $(SP_PRIV_JWK) $(SP_PUB_JWK)
 
 TEEP_KEY_SRCS=teep-agent-ta/tam_id_pubkey_jwk.h \
-              teep-agent-ta/tee_privkey_jwk.h
+              teep-agent-ta/sp_pubkey_jwk.h
 
 .PHONY: all
 ifneq ($(wildcard $(TA_DEV_KIT_DIR)/mk/ta_dev_kit.mk),)
@@ -30,12 +30,25 @@ generate-jwks $(TEEP_KEYS):
 	node ./sample-senario/generate-jwk.js $(TEE_PRIV_JWK) $(TEE_PUB_JWK)
 	node ./sample-senario/generate-jwk.js $(SP_PRIV_JWK) $(SP_PUB_JWK)
 
-.PHONY: convert_teep_keys
-convert_teep_keys $(TEEP_KEY_SRCS): $(TAM_PUB_JWK) $(SP_PRIV_JWK)
+$(TEEP_KEYS):
+	(cd sample-senario && npm install)
+	node ./sample-senario/generate-jwk.js $(TAM_PRIV_JWK) $(TAM_PUB_JWK)
+	node ./sample-senario/generate-jwk.js $(TEE_PRIV_JWK) $(TEE_PUB_JWK)
+	node ./sample-senario/generate-jwk.js $(SP_PRIV_JWK) $(SP_PUB_JWK)
+
+.PHONY: check-jwks
+check-jwks: $(TEEP_KEYS)
+	(cd sample-senario && npm install)
+	node ./sample-senario/check-jwk.js $(TAM_PRIV_JWK) $(TAM_PUB_JWK)
+	node ./sample-senario/check-jwk.js $(TEE_PRIV_JWK) $(TEE_PUB_JWK)
+	node ./sample-senario/check-jwk.js $(SP_PRIV_JWK) $(SP_PUB_JWK)
+
+.PHONY: generate-jwk-headers
+generate-jwk-headers $(TEEP_KEY_SRCS): $(TAM_PUB_JWK) $(SP_PUB_JWK)
 	cat $(TAM_PUB_JWK) | sed 's/\"/\\\"/g' | sed 's/^/\"/g' | sed 's/$$/\\\n\"/g' > \
-		teep-agent-ta/tam_id_pubkey_jwk.h
-	cat $(SP_PRIV_JWK) | sed 's/\"/\\\"/g' | sed 's/^/\"/g' | sed 's/$$/\\\n\"/g' > \
-		teep-agent-ta/tee_privkey_jwk.h
+               teep-agent-ta/tam_id_pubkey_jwk.h
+	cat $(SP_PUB_JWK) | sed 's/\"/\\\"/g' | sed 's/^/\"/g' | sed 's/$$/\\\n\"/g' > \
+               teep-agent-ta/sp_pubkey_jwk.h
 
 .PHONY: teep-agent-ta
 teep-agent-ta: $(TEEP_KEY_SRCS)

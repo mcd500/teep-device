@@ -40,8 +40,8 @@ static const char * const tam_id_pubkey_jwk =
 ;
 
 /* our TEE private key as a JWK */
-static const char * const tee_privkey_jwk =
-#include "tee_privkey_jwk.h"
+static const char * const sp_pubkey_jwk =
+#include "sp_pubkey_jwk.h"
 ;
 
 int
@@ -91,7 +91,7 @@ otrp_unwrap_message(const char *msg, int msg_len, char *out, int *out_len) {
 		goto bail1;
 	}
 
-	n = lws_jwk_import(&jwe.jwk, NULL, NULL, tee_privkey_jwk, strlen(tee_privkey_jwk));
+	n = lws_jwk_import(&jwe.jwk, NULL, NULL, sp_pubkey_jwk, strlen(sp_pubkey_jwk));
 	if (n < 0) {
 		lwsl_err("%s: unable to import tee jwk\n", __func__);
 		goto bail1;
