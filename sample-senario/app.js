@@ -96,27 +96,19 @@ async function go() {
 			"TYPE": 3, // TrustedAppInstall
 			"TOKEN": "2",
 			"MANIFEST_LIST": [
-				{
-					"apply-image": [
-						{
-							"directive-set-ver": {
-								"uri": "http://127.0.0.1/TAs/8d82573a-926d-4754-9353-32dc29997f74.ta"
-							}
-						}
-					]
-				}
+				"http://127.0.0.1/TAs/8d82573a-926d-4754-9353-32dc29997f74.ta"
 			]
 		}
 
 		http_res = await tam.send(trusted_app_install)
-		console.log("-- TrastedAppInstall")
-		console.log("-- TAM->TEE")
-		console.log("json: ", JSON.stringify(trusted_app_install))
+			console.log("-- TrastedAppInstall")
+			console.log("-- TAM->TEE")
+			console.log("json: ", JSON.stringify(trusted_app_install))
 		console.log("http_res: ", http_res)
 		console.log("")
 
 		trusted_app_install = await tee.recv(http_res)
-		result = install_ta(trusted_app_install.MANIFEST_LIST[0]["apply-image"][0]["directive-set-ver"].uri)
+		result = install_ta(trusted_app_install.MANIFEST_LIST[0])
 		if (result) {
 			success = {
 				"TYPE": 5, // Success
