@@ -27,6 +27,19 @@ generate-jwks:
 	node ./sample-senario/generate-jwk.js $(TEE_PRIV_JWK) $(TEE_PUB_JWK)
 	node ./sample-senario/generate-jwk.js $(SP_PRIV_JWK) $(SP_PUB_JWK)
 
+$(TEEP_KEYS):
+	(cd sample-senario && npm install)
+	node ./sample-senario/generate-jwk.js $(TAM_PRIV_JWK) $(TAM_PUB_JWK)
+	node ./sample-senario/generate-jwk.js $(TEE_PRIV_JWK) $(TEE_PUB_JWK)
+	node ./sample-senario/generate-jwk.js $(SP_PRIV_JWK) $(SP_PUB_JWK)
+
+.PHONY: check-jwks
+check-jwks: $(TEEP_KEYS)
+	(cd sample-senario && npm install)
+	node ./sample-senario/check-jwk.js $(TAM_PRIV_JWK) $(TAM_PUB_JWK)
+	node ./sample-senario/check-jwk.js $(TEE_PRIV_JWK) $(TEE_PUB_JWK)
+	node ./sample-senario/check-jwk.js $(SP_PRIV_JWK) $(SP_PUB_JWK)
+
 .PHONY: convert_teep_keys
 convert_teep_keys $(TEEP_KEY_SRCS): $(TAM_PUB_JWK) $(SP_PRIV_JWK)
 	cat $(TAM_PUB_JWK) | sed 's/\"/\\\"/g' | sed 's/^/\"/g' | sed 's/$$/\\\n\"/g' > \
@@ -65,7 +78,6 @@ clean:
 	make -C teep-agent-ta TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) clean
 	make -C sp-hello-app TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) clean
 	make -C sp-hello-ta TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) clean
-	rm -f $(TEEP_KEY_SRCS)
 
 .PHONY: clean-ta
 clean-ta:
