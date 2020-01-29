@@ -30,12 +30,6 @@ generate-jwks $(TEEP_KEYS):
 	node ./sample-senario/generate-jwk.js $(TEE_PRIV_JWK) $(TEE_PUB_JWK)
 	node ./sample-senario/generate-jwk.js $(SP_PRIV_JWK) $(SP_PUB_JWK)
 
-$(TEEP_KEYS):
-	(cd sample-senario && npm install)
-	node ./sample-senario/generate-jwk.js $(TAM_PRIV_JWK) $(TAM_PUB_JWK)
-	node ./sample-senario/generate-jwk.js $(TEE_PRIV_JWK) $(TEE_PUB_JWK)
-	node ./sample-senario/generate-jwk.js $(SP_PRIV_JWK) $(SP_PUB_JWK)
-
 .PHONY: check-jwks
 check-jwks: $(TEEP_KEYS)
 	(cd sample-senario && npm install)
