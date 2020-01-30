@@ -112,15 +112,15 @@ main(int argc, const char *argv[])
 
 	/* pass the encrypted, signed TA into the TEE to deal with */
 	do {
+		if (io.out_len == 0) { // io.in_len == 0 => finish
+			lwsl_notice("teep over http finish packet received\n");
+			break;
+		}
 		io.in = pkt;
 		io.in_len = io.out_len;
 		io.out = result;
 		io.out_len = sizeof(result);
 
-		if (io.out_len == 0) { // io.in_len == 0 => finish
-			lwsl_notice("teep over http finish packet received");
-			break;
-		}
 		lwsl_notice("unwrap teep message");
 		res = libteep_msg_unwrap(lao_ctx, &io);
 		if (res != TR_OKAY) {

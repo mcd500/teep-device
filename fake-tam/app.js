@@ -55,7 +55,7 @@ async function go() {
 			if (accept == 'application/otrp+json' && method == 'POST') {
 				return otrpHandler.handleMessage(req, body, res).catch(console.log)
 			}
-			if (accept == 'application/teep+json' && method == 'POST') {
+			if (method == 'POST') {
 				return teepHandler.handleMessage(req, body, res).catch(console.log)
 			}
 			console.error("Unknown protocol");

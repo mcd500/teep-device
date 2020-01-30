@@ -130,10 +130,8 @@ callback_tam(struct lws *wsi, enum lws_callback_reasons reason, void *user,
 				lwsl_notice("%s: Append header error\n", __func__);
 				return -1;
 			}
-			if (laoa->io->in_len > 0) {
-				lws_client_http_body_pending(wsi, 1);
-				lws_callback_on_writable(wsi);
-			}
+			lws_client_http_body_pending(wsi, 1);
+			lws_callback_on_writable(wsi);
 		}
 		break;
 	case LWS_CALLBACK_COMPLETED_CLIENT_HTTP:
