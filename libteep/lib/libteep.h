@@ -46,6 +46,12 @@
 
 struct libteep_ctx;
 
+/*! teep protocol version */
+enum libteep_teep_ver {
+	LIBTEEP_TEEP_VER_OTRP_V3,	/*!< otrp v3 */
+	LIBTEEP_TEEP_VER_TEEP,		/*!< teep */
+};
+
 struct lao_rpc_io {
 	void	*in;
 	size_t	in_len;
@@ -72,7 +78,7 @@ struct lao_rpc_io {
  * Returns 0 if created OK, else error and nothing was allocated.
  */
 int
-libteep_init(struct libteep_ctx **ctx);
+libteep_init(struct libteep_ctx **ctx, enum libteep_teep_ver ver, const char *tam_url);
 
 /**
  * libteep_destroy() - Destroy a libteep context
@@ -135,7 +141,7 @@ typedef enum tam_result {
  * Returns 0 if the communication was started OK, else error.
  */
 int
-libteep_tam_msg(struct libteep_ctx *ctx, const char *urlinfo, const char *proto, struct lao_rpc_io *io);
+libteep_tam_msg(struct libteep_ctx *ctx, struct lao_rpc_io *io);
 
 #endif
 

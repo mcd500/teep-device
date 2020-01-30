@@ -37,11 +37,6 @@
 #include <libwebsockets.h>
 #include <pthread.h>
 
-enum libteep_teep_ver {
-	LIBTEEP_TEEP_VER_OTRP_V3,
-	LIBTEEP_TEEP_VER_TEEP
-};
-
 static const TEEC_UUID uuid_aist_otrp_ta =
         { 0x68373894, 0x5bb3, 0x403c,
                 { 0x9e, 0xec, 0x31, 0x14, 0xa1, 0xf5, 0xd3, 0xfc } };
@@ -54,6 +49,8 @@ struct libteep_ctx {
 	pthread_mutex_t 	lock;
 	struct lws_context	*lws_ctx;
 	struct libteep_async	*laoa_list_head; /* protected by .lock */
+	enum libteep_teep_ver	teep_ver;
+	char	 		*tam_url;
 };
 
 /* This is the user-opaque internal representation of an ongoing TAM message */
@@ -68,7 +65,6 @@ struct libteep_async {
 	struct lws		*wsi;
 	size_t			max_out_len;
 	int			http_resp;
-	int			teep_ver;
 	tam_result		result;
 };
 
@@ -115,8 +111,9 @@ callback_tam(struct lws *wsi, enum lws_callback_reasons reason, void *user,
 		break;
 	case LWS_CALLBACK_CLIENT_APPEND_HANDSHAKE_HEADER:
 		{
-			unsigned char **p = (unsigned char **)in, *end = (*p) + len;
-			const char *accept = accept_header(laoa->teep_ver);
+			unsigned char **p = (unsigned char **)in;
+			unsigned char *end = (*p) + len;
+			const char *accept = accept_header(laoa->ctx->teep_ver);
 			if (lws_add_http_header_by_name(wsi,
 						(const unsigned char *)"Accept:",
 						(const unsigned char *)accept, strlen(accept), p, end)) {
@@ -205,33 +202,18 @@ static const struct lws_protocols protocols[] = {
 	{ NULL, NULL, 0, 0 }
 };
 
-static int parse_teep_ver(const char *cstr_teep_ver) {
-	if (!strcmp(cstr_teep_ver, "teep"))
-		return LIBTEEP_TEEP_VER_TEEP;
-	if (!strcmp(cstr_teep_ver, "otrp"))
-		return LIBTEEP_TEEP_VER_OTRP_V3;
-	return -1;
-}
-
 int
-libteep_tam_msg(struct libteep_ctx *ctx, const char *uri, const char *cstr_teep_ver, struct lao_rpc_io *io)
+libteep_tam_msg(struct libteep_ctx *ctx, struct lao_rpc_io *io)
 {
-	char tmp_uri[200];
+	char tmp_url[200];
 	const char *proto;
 	const char *address;
 	int port;
 	const char *path_slash_dropped;
-	int teep_ver = parse_teep_ver(cstr_teep_ver);
 
-
-	if (teep_ver < 0) {
-		fprintf(stderr, "%s: Unsuported TEEP protocol version %s\n", __func__, cstr_teep_ver);
-		return -1;
-	}
-
-	strncpy(tmp_uri, uri, sizeof(tmp_uri));
-	if (lws_parse_uri(tmp_uri, &proto, &address, &port, &path_slash_dropped)) {
-		fprintf(stderr, "%s: Failed to parse tam URL base %s\n", __func__, uri);
+	strncpy(tmp_url, ctx->tam_url, sizeof(tmp_url));
+	if (lws_parse_uri(tmp_url, &proto, &address, &port, &path_slash_dropped)) {
+		fprintf(stderr, "%s: Failed to parse tam URL base %s\n", __func__, ctx->tam_url);
 		return -1;
 	}
 
@@ -245,14 +227,13 @@ libteep_tam_msg(struct libteep_ctx *ctx, const char *uri, const char *cstr_teep_
 		return 1; /* OOM */
 	}
 
-	memset(laoa, 0, sizeof(*laoa));
+	lws_explicit_bzero(laoa, sizeof(*laoa));
 
 	laoa->ctx = ctx;
 	laoa->io = io;
 	laoa->max_out_len = io->out_len;
 	io->out_len = 0;
 	laoa->wsi = NULL;
-	laoa->teep_ver = teep_ver;
 
 	pthread_mutex_lock(&ctx->lock); /* ++++++++++++++++++++++++ ctx->lock */
 	laoa->laoa_list_next = ctx->laoa_list_head;
@@ -339,14 +320,15 @@ libteep_pta_msg(struct libteep_ctx *ctx, uint32_t cmd,
 }
 
 int
-libteep_init(struct libteep_ctx **ctx)
+libteep_init(struct libteep_ctx **ctx, enum libteep_teep_ver ver, const char *tam_url)
 {
 	struct lws_context_creation_info info;
 	TEEC_Operation op;
 	TEEC_Result r;
-
-	/* allocate an opaque libteep context to the caller */
-
+	if (ver != LIBTEEP_TEEP_VER_TEEP && ver != LIBTEEP_TEEP_VER_OTRP_V3) {
+		lwsl_err("unsupported teep protocol version\n");
+		return 1;
+	}
 	*ctx = malloc(sizeof(**ctx));
 	if (!(*ctx)) {
 		lwsl_err("out of memory\n");
@@ -354,6 +336,10 @@ libteep_init(struct libteep_ctx **ctx)
 	}
 
 	lws_explicit_bzero(*ctx, sizeof(**ctx));
+
+	(*ctx)->teep_ver = ver;
+	(*ctx)->tam_url = strdup(tam_url);
+
 	pthread_mutex_init(&(*ctx)->lock, NULL);
 
 	/* start up TEEC in the context */
@@ -397,6 +383,7 @@ bail2:
 	TEEC_FinalizeContext(&(*ctx)->tee_context);
 bail1:
 	pthread_mutex_destroy(&(*ctx)->lock);
+	free((*ctx)->tam_url);
 	free(*ctx);
 	*ctx = NULL;
 	return 1;
@@ -411,7 +398,7 @@ libteep_destroy(struct libteep_ctx **ctx)
 	(*ctx)->lws_ctx = NULL;
 
 	pthread_mutex_destroy(&(*ctx)->lock);
-
+	free((*ctx)->tam_url);
 	free(*ctx);
 	*ctx = NULL;
 }

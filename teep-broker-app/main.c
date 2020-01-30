@@ -32,7 +32,7 @@
 
 static uint8_t pkt[6 * 1024 * 1024];
 static const char *uri = "http://127.0.0.1:3000/api/tam"; // TAM server uri
-static const char *teep_ver = "teep"; // protocol
+static enum libteep_teep_ver teep_ver = LIBTEEP_TEEP_VER_TEEP; // protocol
 static const char *talist = ""; // installed TA list
 
 static void
@@ -60,8 +60,15 @@ cmdline_parse(int argc, const char *argv[])
 	/* request the TAM ask the TEE to delete the test TA */
 	/* protocol (teep or otrp) */
 	tmp = lws_cmdline_option(argc, argv, "-p");
-	if (tmp)
-		teep_ver = tmp;
+	if (tmp) {
+		if (!strcmp(tmp, "otrp")) {
+			teep_ver = LIBTEEP_TEEP_VER_OTRP_V3;
+		} else if (!strcmp(tmp, "teep")) {
+			teep_ver = LIBTEEP_TEEP_VER_TEEP;
+		} else {
+			usage();
+		}
+	}
 
 	/* ta-list */
 	tmp = lws_cmdline_option(argc, argv, "--talist");
@@ -81,7 +88,7 @@ main(int argc, const char *argv[])
 	fprintf(stderr, "%s compiled at %s %s\n", __FILE__, __DATE__, __TIME__);
 	cmdline_parse(argc, argv);
 
-	res = libteep_init(&lao_ctx);
+	res = libteep_init(&lao_ctx, teep_ver, uri);
 	if (res != TR_OKAY) {
 		fprintf(stderr, "%s: Unable to create lao\n", __func__);
 		return 1;
@@ -95,7 +102,7 @@ main(int argc, const char *argv[])
 	io.out = pkt;
 	io.out_len = sizeof(pkt);
 
-	res = libteep_tam_msg(lao_ctx, uri, teep_ver, &io);
+	res = libteep_tam_msg(lao_ctx, &io);
 	if (res != TR_OKAY) {
 		fprintf(stderr, "%s: libteep_tam_msg: %d\n", __func__, res);
 		return 1;
