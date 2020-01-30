@@ -92,6 +92,24 @@ void
 libteep_destroy(struct libteep_ctx **ctx);
 
 /**
+ * libteep_teep_agent_msg() - Send a message to the TEEP Agent
+ *
+ * \param ctx: pointer to your lao
+ * \param cmd: Message cmd index to send to TA Agent
+ * \param io: pointer to struct pointing to in and out buffers and lengths.  On
+ * 		entry, \p io.out_len must be set to the maximum length that can
+ * 		be written to \p io.out.  On exit, it has been set to the number
+ * 		of bytes actually used at \p io.out.
+ *
+ * Communication to the TEE is blocking by design.
+ *
+ * Returns 0 if the communication went OK, else error.
+ */
+int
+libteep_teep_agent_msg(struct libteep_ctx *ctx, uint32_t cmd,
+		    struct lao_rpc_io *io);
+
+/**
  * libteep_pta_msg() - Send a message to the TEE OTrP PTA and get the result
  *
  * \param ctx: pointer to your lao

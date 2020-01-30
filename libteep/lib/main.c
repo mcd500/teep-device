@@ -202,6 +202,8 @@ static const struct lws_protocols protocols[] = {
 	{ NULL, NULL, 0, 0 }
 };
 
+
+
 int
 libteep_tam_msg(struct libteep_ctx *ctx, struct lao_rpc_io *io)
 {
@@ -283,7 +285,7 @@ libteep_tam_msg(struct libteep_ctx *ctx, struct lao_rpc_io *io)
 }
 
 int
-libteep_pta_msg(struct libteep_ctx *ctx, uint32_t cmd,
+libteep_teep_agent_msg(struct libteep_ctx *ctx, uint32_t cmd,
 		    struct lao_rpc_io *io)
 {
 	TEEC_Result n;

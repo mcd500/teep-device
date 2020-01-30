@@ -117,7 +117,7 @@ main(int argc, const char *argv[])
 	io.out = result;
 	io.out_len = sizeof(result);
 
-	res = libteep_pta_msg(lao_ctx, 1, &io);
+	res = libteep_teep_agent_msg(lao_ctx, 1, &io);
 	if (res != TR_OKAY) {
 		lwsl_err("%s: libteep_pta_msg: fail %d\n", __func__, res);
 	} else
