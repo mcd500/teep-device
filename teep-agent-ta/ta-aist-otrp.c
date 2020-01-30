@@ -67,7 +67,7 @@ int gettimeofday(struct timeval *tv, struct timezone *tz)
 	return 0;
 }
 
-static int hex(char c)
+int hex(char c)
 {
 	if (c >= 'A' && c <= 'F')
 		return 10 + (c - 'A');
@@ -91,7 +91,7 @@ static int hex(char c)
  * On error, return is -1.
  */
 
-static int
+int
 string_to_uuid_octets(const char *s, uint8_t *octets16)
 {
 	const char *end = s + 36;
