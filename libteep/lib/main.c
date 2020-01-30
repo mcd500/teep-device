@@ -114,31 +114,30 @@ callback_tam(struct lws *wsi, enum lws_callback_reasons reason, void *user,
 #endif
 		break;
 	case LWS_CALLBACK_CLIENT_APPEND_HANDSHAKE_HEADER:
-	    {
-		unsigned char **p = (unsigned char **)in, *end = (*p) + len;
-		const char *c_type_str = accept_header(laoa->teep_ver);
-		if (lws_add_http_header_by_name(wsi,
-					(const unsigned char *)"Accept:",
-					(const unsigned char *)c_type_str,
-					strlen(c_type_str), p, end)) {
-			lwsl_notice("%s: Append header error\n", __func__);
-			return -1;
+		{
+			unsigned char **p = (unsigned char **)in, *end = (*p) + len;
+			const char *accept = accept_header(laoa->teep_ver);
+			if (lws_add_http_header_by_name(wsi,
+						(const unsigned char *)"Accept:",
+						(const unsigned char *)accept, strlen(accept), p, end)) {
+				lwsl_notice("%s: Append header error\n", __func__);
+				return -1;
+			}
+			// need to add http request body
+			// int to char*
+			char buf_len[12];
+			size_t len = snprintf(buf_len, 12, "%d", (int)laoa->io->in_len);
+			if (lws_add_http_header_by_token(wsi,
+						WSI_TOKEN_HTTP_CONTENT_LENGTH,
+						(const unsigned char*)buf_len, len, p, end)) {
+				lwsl_notice("%s: Append header error\n", __func__);
+				return -1;
+			}
+			if (laoa->io->in_len > 0) {
+				lws_client_http_body_pending(wsi, 1);
+				lws_callback_on_writable(wsi);
+			}
 		}
-		// need to add http request body
-		// int to char*
-		char buf_len[12];
-		size_t len = snprintf(buf_len, 12, "%d", (int)laoa->io->in_len);
-		if (lws_add_http_header_by_token(wsi,
-					WSI_TOKEN_HTTP_CONTENT_LENGTH,
-					(const unsigned char*)buf_len, len, p, end)) {
-			lwsl_notice("%s: Append header error\n", __func__);
-			return -1;
-		}
-		if (laoa->io->in_len > 0) {
-			lws_client_http_body_pending(wsi, 1);
-			lws_callback_on_writable(wsi);
-		}
-	    }
 		break;
 	case LWS_CALLBACK_COMPLETED_CLIENT_HTTP:
 		lwsl_notice("%s: completed; read %d\n", __func__,
@@ -197,6 +196,7 @@ callback_tam(struct lws *wsi, enum lws_callback_reasons reason, void *user,
 	}
 	return lws_callback_http_dummy(wsi, reason, user, in, len);
 }
+
 
 static const struct lws_protocols protocols[] = {
 	{ "tam", callback_tam, 0, 4096, },
@@ -272,7 +272,6 @@ libteep_tam_msg(struct libteep_ctx *ctx, const char *uri, const char *cstr_teep_
 		.userdata = laoa,
 		.protocol = protocols[1].name,
 		.pwsi = &laoa->wsi,
-		0
 	};
 
 	if (!strcmp(proto, "https")) {
@@ -286,7 +285,7 @@ libteep_tam_msg(struct libteep_ctx *ctx, const char *uri, const char *cstr_teep_
 
 //	lws_client_http_multipart(i.pwsi, NULL, NULL, c_type, i.userdata, i.userdata + 200);
 
-	lwsl_notice("%s://%s:%d/%s\n" , proto, conn_info.address, conn_info.port, conn_info.path);
+	lwsl_notice("%s://%s:%d%s\n" , proto, conn_info.address, conn_info.port, conn_info.path);
 	if (!lws_client_connect_via_info(&conn_info)) {
 		lwsl_err("%s: connect failed\n", __func__);
 		return 1;
@@ -350,12 +349,11 @@ libteep_init(struct libteep_ctx **ctx)
 
 	*ctx = malloc(sizeof(**ctx));
 	if (!(*ctx)) {
-		printf("OOM\n");
-
+		lwsl_err("out of memory\n");
 		return 1;
 	}
 
-	memset(*ctx, 0, sizeof(**ctx));
+	lws_explicit_bzero(*ctx, sizeof(**ctx));
 	pthread_mutex_init(&(*ctx)->lock, NULL);
 
 	/* start up TEEC in the context */
