@@ -73,7 +73,7 @@ teep_unwrap_message(const char *msg, int msg_len, char *out, int *out_len) {
 	}
 #endif
 
-	/* prepare TEE key for encryption*/
+	/* prepare TEE key for decryption*/
 	lws_jwe_init(&jwe, context);
 	n = lws_jwk_import(&jwe.jwk, NULL, NULL, tee_id_privkey_jwk, strlen(tee_id_privkey_jwk));
 	if (n < 0) {
@@ -88,12 +88,13 @@ teep_unwrap_message(const char *msg, int msg_len, char *out, int *out_len) {
 		lwsl_err("%s: unable to import tam public jwk\n", __func__);
 		goto bail1;
 	}
-	n = lws_jwe_json_parse(&jwe, (uint8_t *)msg, msg_len, lws_concat_temp(temp_buf, temp_len), &temp_len);
+	/* JWE decryption */
+	n = lws_jwe_json_parse(&jwe, msg, msg_len, lws_concat_temp(temp_buf, temp_len), &temp_len);
 	if (n < 0) {
 		lwsl_err("%s: lws_jwe_json_parse failed\n", __func__);
 		goto bail1;
 	}
-	/* JWE decryption */
+	lwsl_err("%d error\n", jwe.jws.map.len[LJWE_EKEY]);
 	n = lws_jwe_auth_and_decrypt(&jwe, lws_concat_temp(temp_buf, temp_len), &temp_len);
 	if (n < 0) {
 		lwsl_err("%s: lws_jwe_auth_and_decrypt failed\n", __func__);
@@ -133,8 +134,8 @@ otrp_unwrap_message(const char *msg, int msg_len, char *out, int *out_len) {
 	int temp_len = sizeof(temp_buf);
 	struct lws_jws jws;
 	struct lws_jwe jwe;
-	int n;
-
+	int n = 0;
+#if 0
 	lwsl_user("%s: msg len %d\n", __func__, msg_len);
 	memset(&info, 0, sizeof(info));
 	info.port = CONTEXT_PORT_NO_LISTEN;
@@ -195,6 +196,7 @@ bail1:
 bail:
 	lws_jwk_destroy(&jwk_pubkey_tam);
 	lws_jws_destroy(&jws);
+#endif
 	return n;
 }
 

@@ -31,15 +31,15 @@ async function go() {
 		let oldEnd = res.end
 		let oldWrite = res.write
 		res.write = function (chunk) {
-			res_chunks.push(Buffer.from(chunk, 'utf8'))
+			res_chunks.push(Buffer.from(chunk))
 			oldWrite.apply(res, arguments)
 		}
 		res.end = function (chunk) {
 			if (chunk)
-				res_chunks.push(Buffer.from(chunk, 'utf8'))
+				res_chunks.push(Buffer.from(chunk))
 			oldEnd.apply(res, arguments)
 		}
-		res.on("finish", () => {
+		res.on("finish", function () {
 			let body = Buffer.concat(res_chunks).toString();
 			dumpHttpResponse(res, body)
 		})
@@ -87,7 +87,7 @@ function dumpHttpResponse(res, body) {
 	console.log("status code: " + res.statusCode + " " + res.statusMessage);
 
 	console.log("headers: " + res._header);
-	if (body.length < 128) {
+	if (body.length < 1024 || true) {
 		console.log("body: " + body);
 	} else {
 		// 長いbodyは128文字で区切り

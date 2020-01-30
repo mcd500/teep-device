@@ -158,7 +158,7 @@ TA_InvokeCommandEntryPoint(void __maybe_unused *sess_ctx,
 {
 	int res;
 	switch (cmd_id) {
-	case 1: /* interpret OTrP message */
+	case 1: /* unwrap OTrP message */
 		if ((TEE_PARAM_TYPE_GET(param_types, 0) != TEE_PARAM_TYPE_MEMREF_INPUT) ||
 				(TEE_PARAM_TYPE_GET(param_types, 1) != TEE_PARAM_TYPE_VALUE_INPUT) ||
 				(TEE_PARAM_TYPE_GET(param_types, 2) != TEE_PARAM_TYPE_MEMREF_OUTPUT) ||
@@ -169,9 +169,17 @@ TA_InvokeCommandEntryPoint(void __maybe_unused *sess_ctx,
 			return TEE_ERROR_COMMUNICATION;
 		}
 		return TEE_SUCCESS;
-	case 2: /* interpret TEEP message */
-		/* TODO */
-		return TEE_ERROR_NOT_IMPLEMENTED;
+	case 2: /* unwrap TEEP message */
+		if ((TEE_PARAM_TYPE_GET(param_types, 0) != TEE_PARAM_TYPE_MEMREF_INPUT) ||
+				(TEE_PARAM_TYPE_GET(param_types, 1) != TEE_PARAM_TYPE_VALUE_INPUT) ||
+				(TEE_PARAM_TYPE_GET(param_types, 2) != TEE_PARAM_TYPE_MEMREF_OUTPUT) ||
+				(TEE_PARAM_TYPE_GET(param_types, 3) != TEE_PARAM_TYPE_VALUE_INOUT))
+			return TEE_ERROR_BAD_PARAMETERS;
+		res = teep(params[0].memref.buffer, params[1].value.a, params[2].memref.buffer, params[3].value.a);
+		if (res != 0) {
+			return TEE_ERROR_COMMUNICATION;
+		}
+		return TEE_SUCCESS;
 	deafalt:
 		return TEE_ERROR_NOT_IMPLEMENTED;
 	}

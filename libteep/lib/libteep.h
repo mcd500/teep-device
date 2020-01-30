@@ -161,5 +161,14 @@ typedef enum tam_result {
 int
 libteep_tam_msg(struct libteep_ctx *ctx, struct lao_rpc_io *io);
 
+int
+libteep_msg_unwrap(struct libteep_ctx *ctx, struct lao_rpc_io *io);
+
+int
+libteep_msg_wrap(struct libteep_ctx *ctx, struct lao_rpc_io *io);
+
+int
+libteep_ta_image_unwrap(struct libteep_ctx *ctx, struct lao_rpc_io *io);
+
 #endif
 

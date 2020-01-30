@@ -6,11 +6,20 @@ const TRUSTED_APP_DELETE = 4
 const SUCCESS = 5
 const ERROR = 6
 
+const signParam = {
+	alg: 'RS256',
+	format: 'flattend'
+}
+const encParam = {
+	alg: 'RSA1_5',
+	contentAlg: 'A128CBC-H256',
+	format: 'flattend'
+}
 module.exports = (tamPrivKey, teePubKey, taImage) => ({
 	token: 0,
 	session: {},
-	sign(data) {return JWS.createSign(tamPrivKey).update(data).final()},
-	verify(data) {return JWS.createVerify(teePubKey).verify(data)},
+	sign(data) {return JWS.createSign(signParam, tamPrivKey).update(data).final()},
+	verify(data) {return JWS.createVerify(encParam, teePubKey).verify(data)},
 	encrypt(data) {return JWE.createEncrypt(teePubKey).update(data).final()},
 	decrypt(data) {return JWE.crateDecrypt(tamPrivKey).decrypt(data)},
 
@@ -50,7 +59,8 @@ module.exports = (tamPrivKey, teePubKey, taImage) => ({
 		if (!body) {
 			// if body is empty, goto OTrP:GetDeviceState or TEEP:QueryRequest
 			console.log("handle empty message")
-			return this.sendTeepMessage({message: "hello"}, res, 200)
+			return this.finishTeep(res)
+			return this.sendTeepMessage({"asdfoj":"hoge"}, res, 200)
 		}
 		// parse json for switch TEEP Response
 		let teepRes = await this.unwrap(body)

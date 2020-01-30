@@ -87,7 +87,7 @@ callback_tam(struct lws *wsi, enum lws_callback_reasons reason, void *user,
 	char buffer[1024 + LWS_PRE];
 	char *px = buffer + LWS_PRE;
 	int lenx = sizeof(buffer) - LWS_PRE;
-
+	lwsl_info("callback %d\n", reason);
 	switch (reason) {
 	case LWS_CALLBACK_CLIENT_CONNECTION_ERROR:
 		lwsl_notice("%s: CONNECTION_ERROR: %d\n", __func__, TR_FAIL_CONN_ERR);
@@ -154,7 +154,7 @@ callback_tam(struct lws *wsi, enum lws_callback_reasons reason, void *user,
 	case LWS_CALLBACK_RECEIVE_CLIENT_HTTP:
 		if (lws_http_client_read(wsi, &px, &lenx) < 0)
 			return -1;
-		break;
+		return 0;
 	case LWS_CALLBACK_CLIENT_HTTP_WRITEABLE:
 		if (lws_write(wsi, laoa->io->in, laoa->io->in_len, LWS_WRITE_HTTP) < 0) {
 			lwsl_notice("%s: Write body error\n", __func__);
@@ -403,4 +403,40 @@ libteep_destroy(struct libteep_ctx **ctx)
 	free((*ctx)->tam_url);
 	free(*ctx);
 	*ctx = NULL;
+}
+
+int
+libteep_msg_unwrap(struct libteep_ctx *ctx, struct lao_rpc_io *io)
+{
+	if (ctx->teep_ver == LIBTEEP_TEEP_VER_OTRP_V3) {
+		return libteep_teep_agent_msg(ctx, 1, io);
+	}
+	if (ctx->teep_ver == LIBTEEP_TEEP_VER_TEEP) {
+		return libteep_teep_agent_msg(ctx, 2, io);
+	}
+	return 1;
+}
+
+int
+libteep_msg_wrap(struct libteep_ctx *ctx, struct lao_rpc_io *io)
+{
+	if (ctx->teep_ver == LIBTEEP_TEEP_VER_OTRP_V3) {
+		return libteep_teep_agent_msg(ctx, 3, io);
+	}
+	if (ctx->teep_ver == LIBTEEP_TEEP_VER_TEEP) {
+		return libteep_teep_agent_msg(ctx, 4, io);
+	}
+	return 1;
+}
+
+int
+libteep_ta_image_unwrap(struct libteep_ctx *ctx, struct lao_rpc_io *io)
+{
+	if (ctx->teep_ver == LIBTEEP_TEEP_VER_OTRP_V3) {
+		return libteep_teep_agent_msg(ctx, 4, io);
+	}
+	if (ctx->teep_ver == LIBTEEP_TEEP_VER_TEEP) {
+		return libteep_teep_agent_msg(ctx, 5, io);
+	}
+	return 1;
 }

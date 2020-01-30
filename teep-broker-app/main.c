@@ -111,21 +111,30 @@ main(int argc, const char *argv[])
 	lwsl_notice("%s: received TAM pkt len %d\n", __func__, (int)io.out_len);
 
 	/* pass the encrypted, signed TA into the TEE to deal with */
+	do {
+		io.in = pkt;
+		io.in_len = io.out_len;
+		io.out = result;
+		io.out_len = sizeof(result);
 
-	io.in = pkt;
-	io.in_len = io.out_len;
-	io.out = result;
-	io.out_len = sizeof(result);
-
-	res = libteep_teep_agent_msg(lao_ctx, 1, &io);
-	if (res != TR_OKAY) {
-		lwsl_err("%s: libteep_pta_msg: fail %d\n", __func__, res);
-	} else
-		lwsl_notice("%s: libteep_pta_msg: OK %d\n", __func__,
-				(int)io.out_len);
-
+		if (io.out_len == 0) { // io.in_len == 0 => finish
+			lwsl_notice("teep over http finish packet received");
+			break;
+		}
+		lwsl_notice("unwrap teep message");
+		res = libteep_msg_unwrap(lao_ctx, &io);
+		if (res != TR_OKAY) {
+			lwsl_err("%s: libteep_msg_unwrap: fail %d\n", __func__, res);
+		} else {
+			lwsl_notice("%s: libteep_msg_unwrap: OK %d\n", __func__,
+					(int)io.out_len);
+		}
+		lwsl_notice("do some thing and return result to TAM");
+		// TODO
+	} while (0);
 	libteep_destroy(&lao_ctx);
 
 	return 0;
 }
+
 
