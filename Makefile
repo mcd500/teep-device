@@ -39,9 +39,9 @@ check-jwks: $(TEEP_KEYS)
 
 .PHONY: generate-jwk-headers
 generate-jwk-headers $(TEEP_KEY_SRCS): $(TAM_PUB_JWK) $(SP_PUB_JWK)
-	cat $(TAM_PUB_JWK) | sed 's/\"/\\\"/g' | sed 's/^/\"/g' | sed 's/$$/\\\n\"/g' > \
+	cat $(TAM_PUB_JWK) | sed 's/\"/\\\"/g' | sed 's/^/\"/g' | sed 's/$$/\\\n\"\n/g' > \
                teep-agent-ta/tam_id_pubkey_jwk.h
-	cat $(SP_PUB_JWK) | sed 's/\"/\\\"/g' | sed 's/^/\"/g' | sed 's/$$/\\\n\"/g' > \
+	cat $(SP_PUB_JWK) | sed 's/\"/\\\"/g' | sed 's/^/\"/g' | sed 's/$$/\\\n\"\n/g' > \
                teep-agent-ta/sp_pubkey_jwk.h
 
 .PHONY: teep-agent-ta
