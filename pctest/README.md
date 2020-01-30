@@ -17,9 +17,8 @@ sudo apt-get install libssl-dev libmbedtls-dev
 mkdir build
 cd build
 cmake -DLWS_WITH_SSL=1 -DLWS_WITH_MBEDTLS=1 -DLWS_WITH_JOSE=1 ..
-make
-sudo make install
-sudo ldconfig
+make -j `nproc`
+sudo ldconfig `pwd`/lib
 cd ../..
 ```
 
@@ -32,13 +31,10 @@ make
 ## run
 
 ```bash
-./pctest
+./pctest --tamurl http://{ip_adress_of_tam}:{port}
 ```
 
+Show help
 ```bash
-./pctest "{\"GetDeviceStateResponse\": {}}"
-```
-
-```bash
-./pctest "{\"InstallTAResponse\": {}}"
+./pctest --help
 ```
