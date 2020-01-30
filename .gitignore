@@ -13,6 +13,7 @@ test-jw/
 tam_id_pubkey_jwk.h
 tam_root_cert.h
 tee_privkey_jwk.h
+sp_pubkey_jwk.h
 *.dmp
 *.elf
 *.map
