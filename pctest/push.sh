@@ -1,10 +1,6 @@
 #!/bin/bash
 git push || true
-cd ..
-git add libteep
-git commit -m "bump submodule"
-git push || true
-cd ..
+cd ../..
 git add aist-teep
 git commit -m "bump submodule"
 git push || true
