@@ -82,3 +82,8 @@ clean:
 clean-ta:
 	make -C teep-agent-ta TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) clean
 	make -C sp-hello-ta TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) clean
+
+.PHONY: distclean
+distclean:
+	rm -fr pctest/libwebsockets
+	rm -fr sample-senario/node_modules/ sample-senario/package-lock.json
