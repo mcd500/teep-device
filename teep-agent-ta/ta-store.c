@@ -83,13 +83,13 @@ string_to_uuid_octets(const char *s, uint8_t *octets16)
 
 /* install given a TA Image into secure storage using optee pta*/
 int
-install_ta(const char *ta_image, size_t ta_image_len)
+ta_store_install(const char *ta_image, size_t ta_image_len)
 {
 	TEE_TASessionHandle sess = TEE_HANDLE_NULL;
 	const TEE_UUID secstor_uuid = PTA_SECSTOR_TA_MGMT_UUID;
 	TEE_Param pars[TEE_NUM_PARAMS];
 	TEE_Result res;
-
+	lwsl_err("%s:TODO verify hand decryption", __func__);
 	res = TEE_OpenTASession(&secstor_uuid, 0, 0, NULL, &sess, NULL);
 	if (res != TEE_SUCCESS) {
 		lwsl_err("%s: Unable to open session to secstor\n", __func__);
@@ -97,7 +97,7 @@ install_ta(const char *ta_image, size_t ta_image_len)
 	}
 
 	memset(pars, 0, sizeof(pars));
-	pars[0].memref.buffer = ta_image;
+	pars[0].memref.buffer = (void *)ta_image;
 	pars[0].memref.size = ta_image_len;
 	res = TEE_InvokeTACommand(sess, 0,
 			PTA_SECSTOR_TA_MGMT_BOOTSTRAP,
@@ -118,7 +118,7 @@ install_ta(const char *ta_image, size_t ta_image_len)
 
 /* delete a TA Image corresponds to UUID from secure storage using optee pta */
 int
-delete_ta(const char *uuid_string)
+ta_store_delete(const char *uuid_string, size_t uuid_string_len)
 {
 	uint8_t uuid_octets[16];
 	TEE_TASessionHandle sess = TEE_HANDLE_NULL;

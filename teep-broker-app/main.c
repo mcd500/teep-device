@@ -34,6 +34,7 @@ static uint8_t pkt[6 * 1024 * 1024];
 static const char *uri = "http://127.0.0.1:3000/api/tam"; // TAM server uri
 static enum libteep_teep_ver teep_ver = LIBTEEP_TEEP_VER_TEEP; // protocol
 static const char *talist = ""; // installed TA list
+static bool jose = false;
 
 static void
 usage(void)
@@ -70,11 +71,36 @@ cmdline_parse(int argc, const char *argv[])
 		}
 	}
 
+	/* request the TAM ask the TEE to delete the test TA */
+	/* protocol (teep or otrp) */
+	tmp = lws_cmdline_option(argc, argv, "--jose");
+	if (tmp) {
+		jose = true;
+	}
+
 	/* ta-list */
 	tmp = lws_cmdline_option(argc, argv, "--talist");
 	if (tmp)
 		talist = tmp;
 
+}
+
+static int io_copy(struct lao_rpc_io *io) {
+	if (io->in_len > io->out_len) {
+		return 1;
+	}
+	memmove(io->out, io->in, io->in_len);
+	io->out_len = io->in_len;
+	return 0;
+}
+
+static int get_teep_request(struct libteep_ctx *lao_ctx, struct lao_rpc_io *io) {
+	if (jose) {
+		lwsl_notice("unwrap teep message");
+		return libteep_msg_unwrap(lao_ctx, io);
+	} else {
+		return io_copy(io);
+	}
 }
 
 int
@@ -85,8 +111,9 @@ main(int argc, const char *argv[])
 	uint8_t result[64];
 	int res;
 
-	fprintf(stderr, "%s compiled at %s %s\n", __FILE__, __DATE__, __TIME__);
 	cmdline_parse(argc, argv);
+	fprintf(stderr, "%s compiled at %s %s\n", __FILE__, __DATE__, __TIME__);
+	fprintf(stderr, "uri = %s, teep_ver = %d, talist=%s\n", uri, teep_ver, talist);
 
 	res = libteep_init(&lao_ctx, teep_ver, uri);
 	if (res != TR_OKAY) {
@@ -120,9 +147,7 @@ main(int argc, const char *argv[])
 		io.in_len = io.out_len;
 		io.out = result;
 		io.out_len = sizeof(result);
-
-		lwsl_notice("unwrap teep message");
-		res = libteep_msg_unwrap(lao_ctx, &io);
+		res = get_teep_request(lao_ctx, &io);
 		if (res != TR_OKAY) {
 			lwsl_err("%s: libteep_msg_unwrap: fail %d\n", __func__, res);
 		} else {

@@ -43,11 +43,16 @@ module.exports = (tamPrivKey, teePubKey, taImage) => ({
 		res.end()
 	},
 
-	async sendTeepMessage(mesg, res, statusCode) {
+	async sendTeepMessage(jose, mesg, res, statusCode) {
 		this.token += 1;
 		mesg.TOKEN = this.token.toString()
 		this.session[mesg.TOKEN] = mesg
-		wrapped = await this.wrap(mesg);
+		let wrapped
+		if (jose) {
+			wrapped = await this.wrap(mesg);
+		} else {
+			wrapped = JSON.stringify(mesg)
+		}
 		res.statusCode = statusCode
 		res.setHeader('Content-Type', 'application/teep+json')
 		res.setHeader('Content-Length', wrapped.length)
@@ -56,19 +61,30 @@ module.exports = (tamPrivKey, teePubKey, taImage) => ({
 	
 	async handleMessage(req, body, res) {
 		console.log("teep message detected")
+		let jose;
+		if (req.url == '/tam') {
+			jose = false
+		} else if (req.url == '/tam_jose') {
+			jose = true
+		}
 		if (!body) {
 			// if body is empty, goto OTrP:GetDeviceState or TEEP:QueryRequest
 			console.log("handle empty message")
-			return this.sendTeepMessage({"asdfoj":"hoge"}, res, 200)
+			return this.sendTeepMessage(jose, {"asdfoj":"hoge"}, res, 200)
 		}
-		// parse json for switch TEEP Response
-		let teepRes = await this.unwrap(body)
+		// parse json for switch TEEP Response	
+		let teepRes
+		if (jose) {
+			teepRes = await this.unwrap(req, body)
+		} else {
+			teepRes = JSON.parse(body)
+		}
 		if (teepRes) {
-			return this.sendTeepMessage({}, res, 200)
+			return this.sendTeepMessage(jose, res, {}, 200)
 		}
 		console.log("parsed JSON:", bodyJson)
 		if (teepRes.TYPE == QUERY_RESPONSE) {
-			return this.sendTeepMessage({}, res, 200)
+			return this.sendTeepMessage(jose, res, {}, 200)
 		}
 		teepReq = this.session[bodyJson.TOKEN]
 		if (teepReq.TYPE == TRUSTED_APP_INSTALL) {

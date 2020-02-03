@@ -33,14 +33,14 @@
 // TA Store Stub
 
 int
-install_ta(const char *ta_image, size_t ta_image_len)
+ta_store_install(const char *ta_image, size_t ta_image_len)
 {
 	lwsl_user("%s: stub called\n", __func__);
 	return 0;
 }
 
 int
-delete_ta(const char *uuid_string)
+ta_store_delete(const char *uuid_string, size_t uuid_string_len)
 {
 	lwsl_user("%s: stub called\n", __func__);
 	return 0;
@@ -88,21 +88,34 @@ TEEC_Result TEEC_InvokeCommand(TEEC_Session *session,
 	uint32_t type = operation->paramTypes;
 	TEEC_Parameter *params = operation->params;
 	switch (commandID) {
-	case 1: /* OTrP */
+	case 1: /* unwrap TEEP message*/
 		if ((TEEC_PARAM_TYPE_GET(type, 0) != TEEC_MEMREF_TEMP_INPUT) ||
 				(TEEC_PARAM_TYPE_GET(type, 1) != TEEC_VALUE_INPUT) ||
 				(TEEC_PARAM_TYPE_GET(type, 2) != TEEC_MEMREF_TEMP_OUTPUT) ||
 				(TEEC_PARAM_TYPE_GET(type, 3) != TEEC_VALUE_INOUT))
 			return TEEC_ERROR_BAD_PARAMETERS;
-		return otrp(params[0].tmpref.buffer, params[1].value.a, params[2].tmpref.buffer, params[3].value.a);
-	case 2: /* TEEP */
+		return teep_message_wrap(params[0].tmpref.buffer, params[1].value.a, params[2].tmpref.buffer, &params[3].value.a);
+	case 2: /* wrap TEEP message*/
 		if ((TEEC_PARAM_TYPE_GET(type, 0) != TEEC_MEMREF_TEMP_INPUT) ||
 				(TEEC_PARAM_TYPE_GET(type, 1) != TEEC_VALUE_INPUT) ||
 				(TEEC_PARAM_TYPE_GET(type, 2) != TEEC_MEMREF_TEMP_OUTPUT) ||
 				(TEEC_PARAM_TYPE_GET(type, 3) != TEEC_VALUE_INOUT))
 			return TEEC_ERROR_BAD_PARAMETERS;
-		return teep(params[0].tmpref.buffer, params[1].value.a, params[2].tmpref.buffer, params[3].value.a);
-		return TEEC_ERROR_NOT_IMPLEMENTED;
+		return teep_message_unwrap(params[0].tmpref.buffer, params[1].value.a, params[2].tmpref.buffer, &params[3].value.a);
+	case 101: /* Install TA */
+		if ((TEEC_PARAM_TYPE_GET(type, 0) != TEEC_MEMREF_TEMP_INPUT) ||
+				(TEEC_PARAM_TYPE_GET(type, 1) != TEEC_VALUE_INPUT) ||
+				(TEEC_PARAM_TYPE_GET(type, 2) != TEEC_NONE) ||
+				(TEEC_PARAM_TYPE_GET(type, 3) != TEEC_NONE))
+			return TEEC_ERROR_BAD_PARAMETERS;
+		return ta_store_install(params[0].tmpref.buffer, params[1].value.a);
+	case 102: /* Delete TA */
+		if ((TEEC_PARAM_TYPE_GET(type, 0) != TEEC_MEMREF_TEMP_INPUT) ||
+				(TEEC_PARAM_TYPE_GET(type, 1) != TEEC_VALUE_INPUT) ||
+				(TEEC_PARAM_TYPE_GET(type, 2) != TEEC_NONE) ||
+				(TEEC_PARAM_TYPE_GET(type, 3) != TEEC_NONE))
+			return TEEC_ERROR_BAD_PARAMETERS;
+		return ta_store_delete(params[0].tmpref.buffer, params[1].value.a);
 	default:
 		return TEEC_ERROR_NOT_IMPLEMENTED;
 	}
