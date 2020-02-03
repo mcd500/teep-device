@@ -28,7 +28,6 @@
 
 #include <libwebsockets.h>
 #include "teep_message.h"
-#include "ta-store.h"
 #define TEMP_BUF_SIZE (800 * 1024)
 
 static char temp_buf[TEMP_BUF_SIZE];

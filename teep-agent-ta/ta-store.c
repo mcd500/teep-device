@@ -26,10 +26,12 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef PCTEST
 #include <tee_internal_api.h>
 #include <tee_internal_api_extensions.h>
-#include <libwebsockets.h>
 #include <pta_secstor_ta_mgmt.h>
+#endif
+#include <libwebsockets.h>
 #include "ta-store.h"
 
 /* These are in other c file */
@@ -40,6 +42,10 @@ int string_to_uuid_octets(const char *s, uint8_t *octets16);
 int
 ta_store_install(const char *ta_image, size_t ta_image_len)
 {
+#ifdef PCTEST
+	lwsl_user("%s: stub called\n", __func__);
+	return 0;
+#else
 	TEE_TASessionHandle sess = TEE_HANDLE_NULL;
 	const TEE_UUID secstor_uuid = PTA_SECSTOR_TA_MGMT_UUID;
 	TEE_Param pars[TEE_NUM_PARAMS];
@@ -69,12 +75,17 @@ ta_store_install(const char *ta_image, size_t ta_image_len)
 	}
 	lwsl_notice("Wrote TA to secure storage\n");
 	return 0;
+#endif
 }
 
 /* delete a TA Image corresponds to UUID from secure storage using optee pta */
 int
 ta_store_delete(const char *uuid_string, size_t uuid_string_len)
 {
+#ifdef PCTEST
+	lwsl_user("%s: stub called\n", __func__);
+	return 0;
+#else 
 	uint8_t uuid_octets[16];
 	TEE_TASessionHandle sess = TEE_HANDLE_NULL;
 	const TEE_UUID secstor_uuid = PTA_SECSTOR_TA_MGMT_UUID;
@@ -110,4 +121,5 @@ ta_store_delete(const char *uuid_string, size_t uuid_string_len)
 	}
 	lwsl_notice("Deleted TA from secure storage\n");
 	return 0;
+#endif
 }

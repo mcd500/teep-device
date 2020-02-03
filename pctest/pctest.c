@@ -29,22 +29,7 @@
 #include <libwebsockets.h>
 #include <tee_client_api.h>
 #include "teep_message.h"
-
-// TA Store Stub
-
-int
-ta_store_install(const char *ta_image, size_t ta_image_len)
-{
-	lwsl_user("%s: stub called\n", __func__);
-	return 0;
-}
-
-int
-ta_store_delete(const char *uuid_string, size_t uuid_string_len)
-{
-	lwsl_user("%s: stub called\n", __func__);
-	return 0;
-}
+#include "ta-store.h"
 
 // TEEC Stub
 

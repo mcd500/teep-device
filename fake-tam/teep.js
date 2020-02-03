@@ -72,6 +72,20 @@ module.exports = (tamPrivKey, teePubKey, taImage) => ({
 		}
 		this.sendTeepMessage(jose, mes, res, 200)
 	},
+	sendTrustedAppDelete(jose, res) {
+		const mes = {
+			TYPE: TRUSTED_APP_DELETE,
+			TA_LIST: [
+				{
+					Vecndor_ID: "ietf-teep-wg",
+					Class_ID: "8d82573a-926d-4754-9353-32dc29997f74",
+					Device_ID: "teep-device"
+				}
+			]
+		}
+		this.sendTeepMessage(jose, mes, res, 200)
+	},
+
 	async handleMessage(req, body, res) {
 		console.log("teep message detected")
 		let jose;
@@ -99,11 +113,9 @@ module.exports = (tamPrivKey, teePubKey, taImage) => ({
 		console.log("parsed JSON:", teepRes)
 		if (teepRes.TYPE == QUERY_RESPONSE) {
 			if (teepRes.TA_LIST.find((triple) => triple.Class_ID == '8d82573a-926d-4754-9353-32dc29997f74')) {
-				console.log("TODO: implement trustedAppDelete")
-				return this.trustedAppDelete()
+				return this.sendTrustedAppDelete(jose, res)
 			} else {
-				console.log("trustedAppInstall")
-				return this.trustedAppInstall(jose, res);
+				return this.sendTrustedAppInstall(jose, res);
 			}
 		}
 		teepReq = this.session[teepRes.TOKEN]
