@@ -266,12 +266,15 @@ main(int argc, const char *argv[])
 		switch (m.type) {
 		case QUERY_REQUEST:
 			lwsl_err("%s: TODO implement \n", __func__);
+			goto bail;
 			break;
 		case TRUSTED_APP_INSTALL:
 			lwsl_err("%s: TODO implement \n", __func__);
+			goto bail;
 			break;
 		case TRUSTED_APP_DELETE:
 			lwsl_err("%s: TODO implement \n", __func__);
+			goto bail;
 			break;
 		default:
 			lwsl_err("%s: requested message type is invalid %d\n", __func__, m.type);
