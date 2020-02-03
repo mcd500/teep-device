@@ -10,24 +10,39 @@ Then use npm to install the node package for JOSE.
 sudo npm install --global node-jose
 ```
 
-## Setting up pki pieces and test ta
+## File structures
 
 The "Fake TAM" is a node.js application that listens on port 3000
-and serves an encrypted + signed test TA to anyone making requests.
 
-To do that, it needs the following assets (in `/var/www/node` as
-currently configured).
+| File name | Function |
+|-----------|----------|
+| ./app.js | TAM server application program |
+| ./otrp.js | OTrP message handling |
+| ./teep.js | TEEP message handling |
+| ./config.json | configuration file for `jwk` files and/or TA-image file to be installed |
 
-|Remote Filename on server|Source|Function|
-|---|---|---|
-|8d82573a-926d-4754-9353-32dc29997f74.ta|./aist-teep/sp-hello-ta|Unencrypted stub TA that just says hello when installed and you open a session to it|
-|app.js|./aist-teep/fake-tam|The Fake TAM node.js application|
-|spaik-pub.jwk|./aist-teep/test-jw/tee/sds/xbank/spaik-pub.jwk|The PKI TEE SPAIK public part|
-|tam-mytam-rsa-key.pem|./aist-teep/pki/tam/tam/tam-mytam-rsa-key.pem|The TAM private key|
+## Setting up pki pieces and test ta
 
-### Force Padding Scheme in spaik pubkey
+The "Fake TAM" serves an encrypted + signed test TA to anyone making requests.
+To do that, following assets should be configured on `config.json`
 
-Edit `spaik-pub.jwk` to force the RSA1_5 padding scheme.  At the top, change
+| Setting | Function | Default |
+|---------|----------|---------|
+|`tam_priv_key` | TAM server private JWK | : "../test-jw/tsm/identity/private/tam-mytam-private.jwk" |
+|`tee_pub_key` | TEE public JWK | ../test-jw/tee/identity/tee-mytee-public.jwk |
+|`sp_priv_key` | SP private JWK | ../test-jw/tee/sds/xbank/spaik-priv.jwk |
+|`ta` | TA-image (plain) | ../sp-hello-ta/8d82573a-926d-4754-9353-32dc29997f74.ta |
+
+## API endpoint (work in progress)
+
+| URL | Method | Function |
+|-----|--------|----------|
+| `/tam` | `PUSH` |TEEP/OTrP over HTTP without encryption and sign |
+| `/tam_jose` | `PUSH` |TEEP/OTrP over HTTP without encryption and sign |
+
+### Force Padding Scheme in spaik pubkey (work in progress)
+
+Edit `spaik-pub.jwk` to force the `RSA1_5` padding scheme.  At the top, change
 
 ```
 ..."kty":"RSA","n":...
