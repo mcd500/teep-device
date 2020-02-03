@@ -66,6 +66,7 @@ module.exports = (tamPrivKey, teePubKey, taImage) => ({
 		this.sendTeepMessage(jose, mes, res, 200)
 	},
 	sendTrustedAppInstall(jose, res) {
+		console.log("sendTrustedAppInstall");
 		const mes = {
 			TYPE: TRUSTED_APP_INSTALL,
 			MANIFEST_LIST: ["http://127.0.0.1/TAs/8d82573a-926d-4754-9353-32dc29997f74.ta"] // TA list
@@ -73,6 +74,7 @@ module.exports = (tamPrivKey, teePubKey, taImage) => ({
 		this.sendTeepMessage(jose, mes, res, 200)
 	},
 	sendTrustedAppDelete(jose, res) {
+		console.log("sendTrustedAppDelete");
 		const mes = {
 			TYPE: TRUSTED_APP_DELETE,
 			TA_LIST: [
@@ -106,12 +108,13 @@ module.exports = (tamPrivKey, teePubKey, taImage) => ({
 		} else {
 			teepRes = JSON.parse(body)
 		}
-		if (!teepRes || teepRes.TOKEN !== undefined || typeof(teepRes.TYPE) !== int) {
+		if (!teepRes || typeof(teepRes.TOKEN) !== 'string' || typeof(teepRes.TYPE) !== 'number') {
 			console.log("failed to parse json body" , teepRes)
 			return this.finishTeep()
 		}
 		console.log("parsed JSON:", teepRes)
 		if (teepRes.TYPE == QUERY_RESPONSE) {
+			console.log("detect QUERY_RESPONSE")
 			if (teepRes.TA_LIST.find((triple) => triple.Class_ID == '8d82573a-926d-4754-9353-32dc29997f74')) {
 				return this.sendTrustedAppDelete(jose, res)
 			} else {

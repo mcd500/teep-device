@@ -30,7 +30,11 @@
 #include <libteep.h>
 #include <libwebsockets.h>
 
-static uint8_t pkt[6 * 1024 * 1024];
+static uint8_t http_res_buf[6 * 1024 * 1024];
+static char teep_req_buf[5 * 1024];
+static char teep_res_buf[5 * 1024];
+static uint8_t http_req_buf[5 * 1024];
+
 static const char *uri = "http://127.0.0.1:3000/api/tam"; // TAM server uri
 static enum libteep_teep_ver teep_ver = LIBTEEP_TEEP_VER_TEEP; // protocol
 static const char *talist = ""; // installed TA list
@@ -95,8 +99,6 @@ cmdline_parse(int argc, const char *argv[])
 
 }
 
-
-
 static int io_copy(struct lao_rpc_io *io) {
 	if (io->in_len > io->out_len) {
 		return 1;
@@ -106,7 +108,7 @@ static int io_copy(struct lao_rpc_io *io) {
 	return 0;
 }
 
-static int get_teep_request(struct libteep_ctx *lao_ctx, struct lao_rpc_io *io) {
+static int unwrap_teep_request(struct libteep_ctx *lao_ctx, struct lao_rpc_io *io) {
 	if (jose) {
 		lwsl_notice("unwrap teep message");
 		return libteep_msg_unwrap(lao_ctx, io);
@@ -114,6 +116,16 @@ static int get_teep_request(struct libteep_ctx *lao_ctx, struct lao_rpc_io *io) 
 		return io_copy(io);
 	}
 }
+
+static int wrap_teep_request(struct libteep_ctx *lao_ctx, struct lao_rpc_io *io) {
+	if (jose) {
+		lwsl_notice("wrap teep message");
+		return libteep_msg_wrap(lao_ctx, io);
+	} else {
+		return io_copy(io);
+	}
+}
+
 
 static const char * const reason_names[] = {
 	"LEJPCB_CONSTRUCTED",
@@ -139,7 +151,6 @@ static const char * const reason_names[] = {
 struct teep_mesg {
 	int type;
 	char *token;
-	size_t token_len;
 	size_t token_max_len;
 };
 
@@ -204,12 +215,98 @@ parse_type_token_cb(struct lejp_ctx *ctx, char reason)
 	return 0;
 }
 
+int loop(struct libteep_ctx *lao_ctx) {
+	struct lao_rpc_io io = {
+		.in = "",
+		.in_len = 0,
+		.out = http_res_buf,
+		.out_len = sizeof(http_res_buf)
+	};
+
+	/* pass the encrypted, signed TA into the TEE to deal with */
+	do {
+		int res = libteep_tam_msg(lao_ctx, &io);
+		if (res != TR_OKAY) {
+			fprintf(stderr, "%s: libteep_tam_msg: %d\n", __func__, res);
+			return 1;
+		}
+		lwsl_notice("%s: received TAM pkt len %d\n", __func__, (int)io.out_len);
+
+		if (io.out_len == 0) { // io.in_len == 0 => finish
+			lwsl_user("teep over http finish packet received\n");
+			return 0;
+		}
+		io.in = http_res_buf;
+		io.in_len = io.out_len;
+		io.out = teep_req_buf;
+		io.out_len = sizeof(teep_req_buf);
+		res = unwrap_teep_request(lao_ctx, &io);
+		if (res < 0) {
+			lwsl_err("%s: unwrap_teep_request: fail %d\n", __func__, res);
+			return res;
+		}
+		lwsl_notice("%s: unwrap_teep_request: OK %d\n", __func__, (int)io.out_len);
+		lwsl_notice("%s: received message: %*s\n", __func__, (int)io.out_len, (char *)io.out);
+		struct lejp_ctx jp_ctx;
+		char token[100] = "";
+		struct teep_mesg m = {
+			.type = -1,
+			.token = token,
+			.token_max_len = 99
+		};
+		lejp_construct(&jp_ctx, parse_type_token_cb, &m, NULL, 0);
+		lejp_parse(&jp_ctx, io.out, io.out_len);
+		char ta_list[1000];
+		switch (m.type) {
+		case QUERY_REQUEST:
+			lwsl_notice("detect QUERY_REQUEST");
+			/* TODO: check entries in REQUEST */
+			lws_snprintf(ta_list, sizeof(ta_list),
+				"{\"Vendor_ID\":\"%s\",\"Class_ID\":\"%s\",\"Device_ID\":\"%s\"}",
+				"ietf-teep-wg", "3cfa03b5-d4b1-453a-9104-4e4bef53b37e", "teep-device");
+			lws_snprintf(teep_res_buf, sizeof(teep_res_buf), 
+				"{\"TYPE\":%d,\"TOKEN\":\"%s\",\"TA_LIST\":[%s]}", QUERY_RESPONSE, m.token, ta_list);
+			io.in = teep_res_buf;
+			io.in_len = strlen(teep_res_buf);
+			io.out = http_req_buf;
+			io.out_len = sizeof(http_req_buf);
+			res = wrap_teep_request(lao_ctx, &io);
+			if (res < 0) {
+				return 1;
+			}
+			io.in = io.out;
+			io.in_len = io.out_len;
+			io.out = http_res_buf;
+			io.out_len = sizeof(http_res_buf);
+			break;
+		case TRUSTED_APP_INSTALL:
+			lwsl_notice("detect TRUSTED_APP_INSTALL");
+			/* TODO implement GET TA image */
+			lws_snprintf(teep_res_buf, sizeof(teep_res_buf), 
+				"{\"TYPE\":%d,\"TOKEN\":\"%s\"}", SUCCESS, m.token);
+			io.in = teep_res_buf;
+			io.in_len = strlen(teep_res_buf);
+			io.out = http_req_buf;
+			io.out_len = sizeof(http_req_buf);
+			res = wrap_teep_request(lao_ctx, &io);
+			if (res < 0) {
+				return 1;
+			}
+			break;
+		case TRUSTED_APP_DELETE:
+			lwsl_err("%s: TODO implement TRUSTED_APP_DELETE\n", __func__);
+			return 0;
+		default:
+			lwsl_err("%s: requested message type is invalid %d\n", __func__, m.type);
+			return 1;
+		}
+	} while (1);
+}
+
 int
 main(int argc, const char *argv[])
 {
 	struct libteep_ctx *lao_ctx = NULL;
-	struct lao_rpc_io io;
-	uint8_t result[64];
 	int res;
 
 	cmdline_parse(argc, argv);
@@ -222,67 +319,11 @@ main(int argc, const char *argv[])
 		return 1;
 	}
 
+	loop(lao_ctx);
+
 	/* ask the TAM to give us an encrypted, signed TA... we can't
 	 * decrypt it because it's encrypted using the TEE's pubkey */
 
-	io.in = "";
-	io.in_len = 0;
-	io.out = pkt;
-	io.out_len = sizeof(pkt);
-
-	res = libteep_tam_msg(lao_ctx, &io);
-	if (res != TR_OKAY) {
-		fprintf(stderr, "%s: libteep_tam_msg: %d\n", __func__, res);
-		return 1;
-	}
-	lwsl_notice("%s: received TAM pkt len %d\n", __func__, (int)io.out_len);
-
-	/* pass the encrypted, signed TA into the TEE to deal with */
-	do {
-		if (io.out_len == 0) { // io.in_len == 0 => finish
-			lwsl_notice("teep over http finish packet received\n");
-			break;
-		}
-		io.in = pkt;
-		io.in_len = io.out_len;
-		io.out = result;
-		io.out_len = sizeof(result);
-		res = get_teep_request(lao_ctx, &io);
-		if (res != TR_OKAY) {
-			lwsl_err("%s: get_teep_request: fail %d\n", __func__, res);
-			break;
-		}
-		lwsl_notice("%s: get_teep_request: OK %d\n", __func__, (int)io.out_len);
-		lwsl_notice("%s: received message: %*s\n", __func__, (int)io.out_len, (char *)io.out);
-		struct lejp_ctx ctx;
-		char token[100] = "";
-		struct teep_mesg m = {
-			.type = -1,
-			.token = token,
-			.token_max_len = 99
-		};
-		lejp_construct(&ctx, parse_type_token_cb, &m, NULL, 0);
-		lejp_parse(&ctx, io.out, io.out_len);
-		switch (m.type) {
-		case QUERY_REQUEST:
-			lwsl_err("%s: TODO implement \n", __func__);
-			goto bail;
-			break;
-		case TRUSTED_APP_INSTALL:
-			lwsl_err("%s: TODO implement \n", __func__);
-			goto bail;
-			break;
-		case TRUSTED_APP_DELETE:
-			lwsl_err("%s: TODO implement \n", __func__);
-			goto bail;
-			break;
-		default:
-			lwsl_err("%s: requested message type is invalid %d\n", __func__, m.type);
-			goto bail;
-			break;
-		}
-	} while (1);
-bail:
 	libteep_destroy(&lao_ctx);
 	return 0;
 }
