@@ -40,8 +40,9 @@ static void
 usage(void)
 {
 	fprintf(stderr, "aist-otrp-testapp [--tamurl http://tamserver:port] [-d]\n");
-	fprintf(stderr, "     -d: ask TAM to send an encrypted request \n"
-			"         for the TEE to delete the test TA\n"
+	fprintf(stderr, "     --tamurl: TAM server url \n"
+			"     --jose: enable encryption and sign \n"
+			"     --talist: installed ta list \n"
 			"     -p: teep protocol otrp or teep \n");
 	exit(1);
 }
