@@ -2,8 +2,9 @@
 	"development": {
 		"hostname": "127.0.0.1",
 		"port": 3000,
-		"tam_key": "../test-jw/tsm/identity/private/tam-mytam-private.jwk",
-		"ta_pub_key": "../test-jw/tee/sds/xbank/spaik-pub.jwk",
+		"tam_priv_key": "../test-jw/tsm/identity/private/tam-mytam-private.jwk",
+		"tee_pub_key": "../test-jw/tee/identity/tee-mytee-public.jwk",
+		"sp_priv_key": "../test-jw/tee/sds/xbank/spaik-priv.jwk",
 		"ta": "../sp-hello-ta/8d82573a-926d-4754-9353-32dc29997f74.ta"
 	}
 }

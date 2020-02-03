@@ -31,6 +31,7 @@
 #include <tee_internal_api_extensions.h>
 #include <libwebsockets.h>
 #include "teep_message.h"
+#include "ta-store.h"
 
 #define TA_NAME		"aist-otrp.ta"
 #define TA_PRINT_PREFIX	"AIST-OTRP: "
@@ -158,21 +159,35 @@ TA_InvokeCommandEntryPoint(void __maybe_unused *sess_ctx,
 {
 	int res;
 	switch (cmd_id) {
-	case 1: /* interpret OTrP message */
+	case 1: /* wrap TEEP message */
 		if ((TEE_PARAM_TYPE_GET(param_types, 0) != TEE_PARAM_TYPE_MEMREF_INPUT) ||
 				(TEE_PARAM_TYPE_GET(param_types, 1) != TEE_PARAM_TYPE_VALUE_INPUT) ||
 				(TEE_PARAM_TYPE_GET(param_types, 2) != TEE_PARAM_TYPE_MEMREF_OUTPUT) ||
 				(TEE_PARAM_TYPE_GET(param_types, 3) != TEE_PARAM_TYPE_VALUE_INOUT))
 			return TEE_ERROR_BAD_PARAMETERS;
-		res = otrp(params[0].memref.buffer, params[1].value.a, params[2].memref.buffer, params[3].value.a);
-		if (res != 0) {
-			return TEE_ERROR_COMMUNICATION;
-		}
-		return TEE_SUCCESS;
-	case 2: /* interpret TEEP message */
-		/* TODO */
-		return TEE_ERROR_NOT_IMPLEMENTED;
-	deafalt:
+		return teep_message_wrap(params[0].memref.buffer, params[1].value.a, params[2].memref.buffer, &params[3].value.a);
+	case 2: /* unwrap TEEP message */
+		if ((TEE_PARAM_TYPE_GET(param_types, 0) != TEE_PARAM_TYPE_MEMREF_INPUT) ||
+				(TEE_PARAM_TYPE_GET(param_types, 1) != TEE_PARAM_TYPE_VALUE_INPUT) ||
+				(TEE_PARAM_TYPE_GET(param_types, 2) != TEE_PARAM_TYPE_MEMREF_OUTPUT) ||
+				(TEE_PARAM_TYPE_GET(param_types, 3) != TEE_PARAM_TYPE_VALUE_INOUT))
+			return TEE_ERROR_BAD_PARAMETERS;
+		return teep_message_unwrap(params[0].memref.buffer, params[1].value.a, params[2].memref.buffer, &params[3].value.a);
+	case 101: /* Install TA */
+		if ((TEE_PARAM_TYPE_GET(param_types, 0) != TEE_PARAM_TYPE_MEMREF_INPUT) ||
+				(TEE_PARAM_TYPE_GET(param_types, 1) != TEE_PARAM_TYPE_VALUE_INPUT) ||
+				(TEE_PARAM_TYPE_GET(param_types, 2) != TEE_PARAM_TYPE_NONE) ||
+				(TEE_PARAM_TYPE_GET(param_types, 3) != TEE_PARAM_TYPE_NONE))
+			return TEE_ERROR_BAD_PARAMETERS;
+		return ta_store_install(params[0].memref.buffer, params[1].value.a);
+	case 102: /* Delete TA */
+		if ((TEE_PARAM_TYPE_GET(param_types, 0) != TEE_PARAM_TYPE_MEMREF_INPUT) ||
+				(TEE_PARAM_TYPE_GET(param_types, 1) != TEE_PARAM_TYPE_VALUE_INPUT) ||
+				(TEE_PARAM_TYPE_GET(param_types, 2) != TEE_PARAM_TYPE_NONE) ||
+				(TEE_PARAM_TYPE_GET(param_types, 3) != TEE_PARAM_TYPE_NONE))
+			return TEE_ERROR_BAD_PARAMETERS;
+		return ta_store_delete(params[0].memref.buffer, params[1].value.a);
+	default:
 		return TEE_ERROR_NOT_IMPLEMENTED;
 	}
 }

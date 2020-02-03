@@ -46,6 +46,12 @@
 
 struct libteep_ctx;
 
+/*! teep protocol version */
+enum libteep_teep_ver {
+	LIBTEEP_TEEP_VER_OTRP_V3,	/*!< otrp v3 */
+	LIBTEEP_TEEP_VER_TEEP,		/*!< teep */
+};
+
 struct lao_rpc_io {
 	void	*in;
 	size_t	in_len;
@@ -72,7 +78,7 @@ struct lao_rpc_io {
  * Returns 0 if created OK, else error and nothing was allocated.
  */
 int
-libteep_init(struct libteep_ctx **ctx, const char *tam_url_base);
+libteep_init(struct libteep_ctx **ctx, enum libteep_teep_ver ver, const char *tam_url);
 
 /**
  * libteep_destroy() - Destroy a libteep context
@@ -84,6 +90,24 @@ libteep_init(struct libteep_ctx **ctx, const char *tam_url_base);
  */
 void
 libteep_destroy(struct libteep_ctx **ctx);
+
+/**
+ * libteep_teep_agent_msg() - Send a message to the TEEP Agent
+ *
+ * \param ctx: pointer to your lao
+ * \param cmd: Message cmd index to send to TA Agent
+ * \param io: pointer to struct pointing to in and out buffers and lengths.  On
+ * 		entry, \p io.out_len must be set to the maximum length that can
+ * 		be written to \p io.out.  On exit, it has been set to the number
+ * 		of bytes actually used at \p io.out.
+ *
+ * Communication to the TEE is blocking by design.
+ *
+ * Returns 0 if the communication went OK, else error.
+ */
+int
+libteep_teep_agent_msg(struct libteep_ctx *ctx, uint32_t cmd,
+		    struct lao_rpc_io *io);
 
 /**
  * libteep_pta_msg() - Send a message to the TEE OTrP PTA and get the result
@@ -135,8 +159,16 @@ typedef enum tam_result {
  * Returns 0 if the communication was started OK, else error.
  */
 int
-libteep_tam_msg(struct libteep_ctx *ctx, const char *urlinfo,
-		    struct lao_rpc_io *io);
+libteep_tam_msg(struct libteep_ctx *ctx, struct lao_rpc_io *io);
+
+int
+libteep_msg_unwrap(struct libteep_ctx *ctx, struct lao_rpc_io *io);
+
+int
+libteep_msg_wrap(struct libteep_ctx *ctx, struct lao_rpc_io *io);
+
+int
+libteep_ta_image_unwrap(struct libteep_ctx *ctx, struct lao_rpc_io *io);
 
 #endif
 

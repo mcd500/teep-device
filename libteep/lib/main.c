@@ -44,16 +44,13 @@ static const TEEC_UUID uuid_aist_otrp_ta =
 /* this is wholly opaque to library users */
 
 struct libteep_ctx {
-	TEEC_Context		 tee_context;
-	TEEC_Session		 tee_session;
-	pthread_mutex_t 	 lock;
-	struct lws_context	 *lws_ctx;
-	struct libteep_async *laoa_list_head; /* protected by .lock */
-	char			 *tam_url_base;
-	int			 tam_port;
-	const char		 *tam_address;
-	const char		 *tam_protocol;
-	const char		 *tam_path;
+	TEEC_Context		tee_context;
+	TEEC_Session		tee_session;
+	pthread_mutex_t 	lock;
+	struct lws_context	*lws_ctx;
+	struct libteep_async	*laoa_list_head; /* protected by .lock */
+	enum libteep_teep_ver	teep_ver;
+	char	 		*tam_url;
 };
 
 /* This is the user-opaque internal representation of an ongoing TAM message */
@@ -62,17 +59,25 @@ struct libteep_ctx {
 //static uint8_t *rr;
 
 struct libteep_async {
-	struct libteep_async *laoa_list_next; /* protected by .lock */
-	struct libteep_ctx	 *ctx;
-	struct lao_rpc_io	 *io;
-	struct lws		 *wsi;
-
-	size_t			 max_out_len;
-
-	int			 http_resp;
-	tam_result		 result;
+	struct libteep_async	*laoa_list_next; /* protected by .lock */
+	struct libteep_ctx	*ctx;
+	struct lao_rpc_io	*io;
+	struct lws		*wsi;
+	size_t			max_out_len;
+	int			http_resp;
+	tam_result		result;
 };
 
+static const char *accept_header(int teep_ver) {
+	switch (teep_ver) {
+	case LIBTEEP_TEEP_VER_TEEP:
+		return "application/teep+json";
+	case LIBTEEP_TEEP_VER_OTRP_V3:
+		return "application/otrp+json";	
+	default:
+		return NULL;
+	}
+}
 
 static int
 callback_tam(struct lws *wsi, enum lws_callback_reasons reason, void *user,
@@ -82,7 +87,7 @@ callback_tam(struct lws *wsi, enum lws_callback_reasons reason, void *user,
 	char buffer[1024 + LWS_PRE];
 	char *px = buffer + LWS_PRE;
 	int lenx = sizeof(buffer) - LWS_PRE;
-
+	lwsl_info("callback %d\n", reason);
 	switch (reason) {
 	case LWS_CALLBACK_CLIENT_CONNECTION_ERROR:
 		lwsl_notice("%s: CONNECTION_ERROR: %d\n", __func__, TR_FAIL_CONN_ERR);
@@ -105,32 +110,29 @@ callback_tam(struct lws *wsi, enum lws_callback_reasons reason, void *user,
 #endif
 		break;
 	case LWS_CALLBACK_CLIENT_APPEND_HANDSHAKE_HEADER:
-	    {
-		unsigned char **p = (unsigned char **)in, *end = (*p) + len;
-		char *c_type_str = "application/otrp+json";
-
-		if (lws_add_http_header_by_name(wsi,
-					(const unsigned char *)"Accept:",
-					(const unsigned char *)c_type_str,
-					strlen(c_type_str), p, end)) {
-			lwsl_notice("%s: Append header error\n", __func__);
-			return -1;
-		}
-		// need to add http request body
-		// int to char*
-		char buf_len[12];
-		size_t len = snprintf(buf_len, 12, "%d", (int)laoa->io->in_len);
-		if (lws_add_http_header_by_token(wsi,
-					WSI_TOKEN_HTTP_CONTENT_LENGTH,
-					(const unsigned char*)buf_len, len, p, end)) {
-			lwsl_notice("%s: Append header error\n", __func__);
-			return -1;
-		}
-		if (laoa->io->in_len > 0) {
+		{
+			unsigned char **p = (unsigned char **)in;
+			unsigned char *end = (*p) + len;
+			const char *accept = accept_header(laoa->ctx->teep_ver);
+			if (lws_add_http_header_by_name(wsi,
+						(const unsigned char *)"Accept:",
+						(const unsigned char *)accept, strlen(accept), p, end)) {
+				lwsl_notice("%s: Append header error\n", __func__);
+				return -1;
+			}
+			// need to add http request body
+			// int to char*
+			char buf_len[12];
+			size_t len = snprintf(buf_len, 12, "%d", (int)laoa->io->in_len);
+			if (lws_add_http_header_by_token(wsi,
+						WSI_TOKEN_HTTP_CONTENT_LENGTH,
+						(const unsigned char*)buf_len, len, p, end)) {
+				lwsl_notice("%s: Append header error\n", __func__);
+				return -1;
+			}
 			lws_client_http_body_pending(wsi, 1);
 			lws_callback_on_writable(wsi);
 		}
-	    }
 		break;
 	case LWS_CALLBACK_COMPLETED_CLIENT_HTTP:
 		lwsl_notice("%s: completed; read %d\n", __func__,
@@ -150,7 +152,7 @@ callback_tam(struct lws *wsi, enum lws_callback_reasons reason, void *user,
 	case LWS_CALLBACK_RECEIVE_CLIENT_HTTP:
 		if (lws_http_client_read(wsi, &px, &lenx) < 0)
 			return -1;
-		break;
+		return 0;
 	case LWS_CALLBACK_CLIENT_HTTP_WRITEABLE:
 		if (lws_write(wsi, laoa->io->in, laoa->io->in_len, LWS_WRITE_HTTP) < 0) {
 			lwsl_notice("%s: Write body error\n", __func__);
@@ -190,24 +192,42 @@ callback_tam(struct lws *wsi, enum lws_callback_reasons reason, void *user,
 	return lws_callback_http_dummy(wsi, reason, user, in, len);
 }
 
+
 static const struct lws_protocols protocols[] = {
 	{ "tam", callback_tam, 0, 4096, },
 	{ "application/teep+json", callback_tam, 0, 4096, },
+	{ "application/otrp+json", callback_tam, 0, 4096, },
 	{ NULL, NULL, 0, 0 }
 };
 
+
+
 int
-libteep_tam_msg(struct libteep_ctx *ctx, const char *urlinfo,
-		    struct lao_rpc_io *io)
+libteep_tam_msg(struct libteep_ctx *ctx, struct lao_rpc_io *io)
 {
+	char tmp_url[200];
+	const char *proto;
+	const char *address;
+	int port;
+	const char *path_slash_dropped;
+
+	strncpy(tmp_url, ctx->tam_url, sizeof(tmp_url));
+	if (lws_parse_uri(tmp_url, &proto, &address, &port, &path_slash_dropped)) {
+		fprintf(stderr, "%s: Failed to parse tam URL base %s\n", __func__, ctx->tam_url);
+		return -1;
+	}
+
+	char path[200] = "/";
+	strncpy(&path[1], path_slash_dropped, sizeof(path) - 1);
+
 	struct libteep_async *laoa = malloc(sizeof(*laoa));
-	struct lws_client_connect_info i;
-	char path[200];
 
-	if (!laoa)
-		return -1; /* OOM */
+	if (!laoa) {
+		fprintf(stderr, "%s: Failed to alloc memory\n", __func__);
+		return 1; /* OOM */
+	}
 
-	memset(laoa, 0, sizeof(struct libteep_async));
+	lws_explicit_bzero(laoa, sizeof(*laoa));
 
 	laoa->ctx = ctx;
 	laoa->io = io;
@@ -220,54 +240,34 @@ libteep_tam_msg(struct libteep_ctx *ctx, const char *urlinfo,
 	ctx->laoa_list_head = laoa;
 	pthread_mutex_unlock(&ctx->lock); /* ctx->lock ---------------------- */
 
-	memset(&i, 0, sizeof(i));
 
-	i.context = ctx->lws_ctx;
-	if (!strcmp(ctx->tam_protocol, "https"))
-		i.ssl_connection = LCCSCF_USE_SSL | LCCSCF_ALLOW_SELFSIGNED;
+	struct lws_client_connect_info conn_info = {
+		.context = ctx->lws_ctx,
+		.address = address,
+		.port = port,
+		.alpn = "http/1.1",
+		.path = path,
+		.host = "example.com",
+		.origin = "192.168.11.3",
+		.method = "POST",
+		.userdata = laoa,
+		.protocol = protocols[1].name,
+		.pwsi = &laoa->wsi,
+	};
 
-	i.port = ctx->tam_port;
-	i.address = ctx->tam_address;
-	i.alpn = "http/1.1";
-	memset(path, 0, sizeof(path));
-	if (ctx->tam_path[strlen(ctx->tam_path) - 1] == '/') {
-		lws_snprintf(path, sizeof(path),
-				"%s%s", ctx->tam_path,  urlinfo);
+	if (!strcmp(proto, "https")) {
+		conn_info.ssl_connection = LCCSCF_USE_SSL | LCCSCF_ALLOW_SELFSIGNED | LCCSCF_SKIP_SERVER_CERT_HOSTNAME_CHECK ;
+	} else if (!strcmp(proto, "http")) {
+		;
 	} else {
-		lws_snprintf(path, sizeof(path),
-				"%s/%s", ctx->tam_path,  urlinfo);
+		fprintf(stderr, "%s: Unsupported protocol %s\n", __func__, proto);
+		return 1;
 	}
-
-#if 1
-//	i.path = "/api/tam";
-	i.path = path;
-	i.host = "example.com";
-	i.origin = "192.168.11.3";
-	i.method = "POST";
-	i.userdata = laoa;
-	i.protocol = protocols[1].name;
-#else
-
-	i.path = path;
-	i.host = i.address;
-	i.origin = i.address;
-//	i.method = "GET";
-	i.method = "POST";
-	i.userdata = laoa;
-	i.protocol = protocols[0].name;
-#endif
-	i.pwsi = &laoa->wsi;
-
-//	char *c_type = "application/teep+json";
 
 //	lws_client_http_multipart(i.pwsi, NULL, NULL, c_type, i.userdata, i.userdata + 200);
 
-	lwsl_notice(	"\n"
-			"%s://%s:%d%s\n"
-			, ctx->tam_protocol, ctx->tam_address,
-					   ctx->tam_port, i.path);
-
-	if (!lws_client_connect_via_info(&i)) {
+	lwsl_notice("%s://%s:%d%s\n" , proto, conn_info.address, conn_info.port, conn_info.path);
+	if (!lws_client_connect_via_info(&conn_info)) {
 		lwsl_err("%s: connect failed\n", __func__);
 		return 1;
 	}
@@ -279,96 +279,11 @@ libteep_tam_msg(struct libteep_ctx *ctx, const char *urlinfo,
 	while (!lws_service(ctx->lws_ctx, 1000) && laoa->result == TR_ONGOING)
 		;
 
-#if 0
-	char str[200];
-	char ta_path[200];
-
-	sleep(1);
-
-	memset(laoa, 0, sizeof(struct libteep_async));
-
-	laoa->ctx = ctx;
-	laoa->io = io;
-	laoa->max_out_len = io->out_len;
-	io->out_len = 0;
-	laoa->wsi = NULL;
-
-	pthread_mutex_lock(&ctx->lock); /* ++++++++++++++++++++++++ ctx->lock */
-	laoa->laoa_list_next = ctx->laoa_list_head;
-	ctx->laoa_list_head = laoa;
-	pthread_mutex_unlock(&ctx->lock); /* ctx->lock ---------------------- */
-
-	memset(&i, 0, sizeof(i));
-
-	i.context = ctx->lws_ctx;
-	if (!strcmp(ctx->tam_protocol, "https"))
-		i.ssl_connection = LCCSCF_USE_SSL | LCCSCF_ALLOW_SELFSIGNED;
-
-	i.port = ctx->tam_port;
-	i.address = ctx->tam_address;
-	i.alpn = "http/1.1";
-	if (ctx->tam_path[strlen(ctx->tam_path) - 1] == '/') {
-		lws_snprintf(str, sizeof(str),
-				"/api/tam HTTP/1.1\r\n"
-				"Host: example.com\r\n"
-				"Accept: application/otrp+json\r\n"
-				"Content-Type: application/otrp+json\r\n"
-				);
-	} else {
-		lws_snprintf(str, sizeof(str),
-				"/api/tam HTTP/1.1\r\n"
-				"%s/%s", ctx->tam_path,  urlinfo);
-	}
-
-	lws_snprintf(ta_path, sizeof(ta_path),
-				"{ \"taname\": \"%s\" }"
-//				"{ \"taname\": \"dummy\" }"
-//				"hi"
-				, urlinfo
-		    );
-
-	lws_snprintf(path, sizeof(path),
-				"%s"
-				"Content-Length: %ld\r\n"
-//				"Content-Length: 0\r\n"
-				"%s\n"
-				, str
-				, strlen(ta_path)
-				, ta_path
-		    );
-
-	i.path = path;
-	i.host = i.address;
-	i.origin = i.address;
-//	i.method = "GET";
-	i.method = "POST";
-	i.userdata = laoa;
-	i.protocol = protocols[0].name;
-	i.pwsi = &laoa->wsi;
-
-	lwsl_notice(	"\n"
-			"%s://%s:%d%s\n"
-			, ctx->tam_protocol, ctx->tam_address,
-					   ctx->tam_port, i.path);
-
-	if (!lws_client_connect_via_info(&i)) {
-//		lwsl_err("%s: connect failed\n", __func__);
-//		return 1;
-	}
-
-	laoa->result = TR_ONGOING;
-
-	/* spin the event loop until we're done */
-
-	while (!lws_service(ctx->lws_ctx, 1000) && laoa->result == TR_ONGOING)
-		;
-#endif
-
 	return laoa->result;
 }
 
 int
-libteep_pta_msg(struct libteep_ctx *ctx, uint32_t cmd,
+libteep_teep_agent_msg(struct libteep_ctx *ctx, uint32_t cmd,
 		    struct lao_rpc_io *io)
 {
 	TEEC_Result n;
@@ -405,23 +320,26 @@ libteep_pta_msg(struct libteep_ctx *ctx, uint32_t cmd,
 }
 
 int
-libteep_init(struct libteep_ctx **ctx, const char *tam_url_base)
+libteep_init(struct libteep_ctx **ctx, enum libteep_teep_ver ver, const char *tam_url)
 {
 	struct lws_context_creation_info info;
 	TEEC_Operation op;
 	TEEC_Result r;
-
-	/* allocate an opaque libteep context to the caller */
-
+	if (ver != LIBTEEP_TEEP_VER_TEEP && ver != LIBTEEP_TEEP_VER_OTRP_V3) {
+		lwsl_err("unsupported teep protocol version\n");
+		return 1;
+	}
 	*ctx = malloc(sizeof(**ctx));
 	if (!(*ctx)) {
-		printf("OOM\n");
-
+		lwsl_err("out of memory\n");
 		return 1;
 	}
 
-	memset(*ctx, 0, sizeof(**ctx));
-	(*ctx)->tam_url_base = strdup(tam_url_base);
+	lws_explicit_bzero(*ctx, sizeof(**ctx));
+
+	(*ctx)->teep_ver = ver;
+	(*ctx)->tam_url = strdup(tam_url);
+
 	pthread_mutex_init(&(*ctx)->lock, NULL);
 
 	/* start up TEEC in the context */
@@ -449,7 +367,7 @@ libteep_init(struct libteep_ctx **ctx, const char *tam_url_base)
 	 * connections at will later.
 	 */
 
-	memset(&info, 0, sizeof info);
+	memset(&info, 0, sizeof(info));
 	info.port = CONTEXT_PORT_NO_LISTEN;
 	info.options = LWS_SERVER_OPTION_DO_SSL_GLOBAL_INIT;
 	info.protocols = protocols;
@@ -458,32 +376,16 @@ libteep_init(struct libteep_ctx **ctx, const char *tam_url_base)
 
 	if (!(*ctx)->lws_ctx)
 		goto bail3;
-
-	if (lws_parse_uri((*ctx)->tam_url_base, &(*ctx)->tam_protocol,
-			  &(*ctx)->tam_address, &(*ctx)->tam_port,
-			  &(*ctx)->tam_path)) {
-		fprintf(stderr, "%s: Failed to parse tam URL base %s\n",
-			__func__, tam_url_base);
-
-		goto bail4;
-	}
-
 	return 0;
-
-bail4:
-	lws_context_destroy((*ctx)->lws_ctx);
-	(*ctx)->lws_ctx = NULL;
 bail3:
 	TEEC_CloseSession(&(*ctx)->tee_session);
 bail2:
 	TEEC_FinalizeContext(&(*ctx)->tee_context);
 bail1:
-	free((*ctx)->tam_url_base);
 	pthread_mutex_destroy(&(*ctx)->lock);
-
+	free((*ctx)->tam_url);
 	free(*ctx);
 	*ctx = NULL;
-
 	return 1;
 }
 
@@ -496,7 +398,43 @@ libteep_destroy(struct libteep_ctx **ctx)
 	(*ctx)->lws_ctx = NULL;
 
 	pthread_mutex_destroy(&(*ctx)->lock);
-
+	free((*ctx)->tam_url);
 	free(*ctx);
 	*ctx = NULL;
+}
+
+int
+libteep_msg_unwrap(struct libteep_ctx *ctx, struct lao_rpc_io *io)
+{
+	if (ctx->teep_ver == LIBTEEP_TEEP_VER_OTRP_V3) {
+		return libteep_teep_agent_msg(ctx, 1, io);
+	}
+	if (ctx->teep_ver == LIBTEEP_TEEP_VER_TEEP) {
+		return libteep_teep_agent_msg(ctx, 2, io);
+	}
+	return 1;
+}
+
+int
+libteep_msg_wrap(struct libteep_ctx *ctx, struct lao_rpc_io *io)
+{
+	if (ctx->teep_ver == LIBTEEP_TEEP_VER_OTRP_V3) {
+		return libteep_teep_agent_msg(ctx, 3, io);
+	}
+	if (ctx->teep_ver == LIBTEEP_TEEP_VER_TEEP) {
+		return libteep_teep_agent_msg(ctx, 4, io);
+	}
+	return 1;
+}
+
+int
+libteep_ta_image_unwrap(struct libteep_ctx *ctx, struct lao_rpc_io *io)
+{
+	if (ctx->teep_ver == LIBTEEP_TEEP_VER_OTRP_V3) {
+		return libteep_teep_agent_msg(ctx, 4, io);
+	}
+	if (ctx->teep_ver == LIBTEEP_TEEP_VER_TEEP) {
+		return libteep_teep_agent_msg(ctx, 5, io);
+	}
+	return 1;
 }
