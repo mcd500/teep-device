@@ -58,7 +58,20 @@ module.exports = (tamPrivKey, teePubKey, taImage) => ({
 		res.setHeader('Content-Length', wrapped.length)
 		res.end(wrapped)
 	},
-	
+	sendQueryRequest(jose, res) {
+		const mes = {
+			TYPE: QUERY_REQUEST,
+			REQUEST:[2] // TA list
+		}
+		this.sendTeepMessage(jose, mes, res, 200)
+	},
+	sendTrustedAppInstall(jose, res) {
+		const mes = {
+			TYPE: TRUSTED_APP_INSTALL,
+			MANIFEST_LIST: ["http://127.0.0.1/TAs/8d82573a-926d-4754-9353-32dc29997f74.ta"] // TA list
+		}
+		this.sendTeepMessage(jose, mes, res, 200)
+	},
 	async handleMessage(req, body, res) {
 		console.log("teep message detected")
 		let jose;
@@ -70,7 +83,7 @@ module.exports = (tamPrivKey, teePubKey, taImage) => ({
 		if (!body) {
 			// if body is empty, goto OTrP:GetDeviceState or TEEP:QueryRequest
 			console.log("handle empty message")
-			return this.sendTeepMessage(jose, {"asdfoj":"hoge"}, res, 200)
+			return this.sendQueryRequest(jose, res);
 		}
 		// parse json for switch TEEP Response	
 		let teepRes
@@ -79,32 +92,38 @@ module.exports = (tamPrivKey, teePubKey, taImage) => ({
 		} else {
 			teepRes = JSON.parse(body)
 		}
-		if (teepRes) {
-			return this.sendTeepMessage(jose, res, {}, 200)
+		if (!teepRes || teepRes.TOKEN !== undefined || typeof(teepRes.TYPE) !== int) {
+			console.log("failed to parse json body" , teepRes)
+			return this.finishTeep()
 		}
-		console.log("parsed JSON:", bodyJson)
+		console.log("parsed JSON:", teepRes)
 		if (teepRes.TYPE == QUERY_RESPONSE) {
-			return this.sendTeepMessage(jose, res, {}, 200)
+			if (teepRes.TA_LIST.find((triple) => triple.Class_ID == '8d82573a-926d-4754-9353-32dc29997f74')) {
+				console.log("TODO: implement trustedAppDelete")
+				return this.trustedAppDelete()
+			} else {
+				console.log("trustedAppInstall")
+				return this.trustedAppInstall(jose, res);
+			}
 		}
-		teepReq = this.session[bodyJson.TOKEN]
+		teepReq = this.session[teepRes.TOKEN]
 		if (teepReq.TYPE == TRUSTED_APP_INSTALL) {
 			if (teepRes.TYPE == SUCCESS) {
+				console.log("trusted app install succeed")
 				return this.finishTeep(res)
 			} else if (teepRes.TYPE == ERROR) {
-				return this.finishTeep(res)
-			} else {
+				console.log("trusted app install failed")
 				return this.finishTeep(res)
 			}
 		}
 		if (teepReq.TYPE == TRUSTED_APP_DELETE) {
 			if (teepRes.TYPE == SUCCESS) {
+				console.log("trusted app delete succeed")
 				return this.finishTeep(res)
 			} else if (teepRes.TYPE == ERROR) {
-				return this.finishTeep(res)
-			} else {
+				console.log("trusted app delete failed")
 				return this.finishTeep(res)
 			}
-			return
 		}
 	}
 })
