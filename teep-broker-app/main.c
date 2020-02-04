@@ -35,7 +35,7 @@ static char teep_req_buf[5 * 1024];
 static char teep_res_buf[5 * 1024];
 static uint8_t http_req_buf[5 * 1024];
 
-static const char *uri = "http://127.0.0.1:3000/api/tam"; // TAM server uri
+static const char *uri = "http://127.0.0.1:3000/tam"; // TAM server uri
 static enum libteep_teep_ver teep_ver = LIBTEEP_TEEP_VER_TEEP; // protocol
 static const char *talist = ""; // installed TA list
 static bool jose = false;
@@ -110,7 +110,7 @@ static int io_copy(struct lao_rpc_io *io) {
 
 static int unwrap_teep_request(struct libteep_ctx *lao_ctx, struct lao_rpc_io *io) {
 	if (jose) {
-		lwsl_notice("unwrap teep message");
+		lwsl_notice("unwrap teep message\n");
 		return libteep_msg_unwrap(lao_ctx, io);
 	} else {
 		return io_copy(io);
@@ -119,34 +119,12 @@ static int unwrap_teep_request(struct libteep_ctx *lao_ctx, struct lao_rpc_io *i
 
 static int wrap_teep_request(struct libteep_ctx *lao_ctx, struct lao_rpc_io *io) {
 	if (jose) {
-		lwsl_notice("wrap teep message");
+		lwsl_notice("wrap teep message\n");
 		return libteep_msg_wrap(lao_ctx, io);
 	} else {
 		return io_copy(io);
 	}
 }
-
-
-static const char * const reason_names[] = {
-	"LEJPCB_CONSTRUCTED",
-	"LEJPCB_DESTRUCTED",
-	"LEJPCB_START",
-	"LEJPCB_COMPLETE",
-	"LEJPCB_FAILED",
-	"LEJPCB_PAIR_NAME",
-	"LEJPCB_VAL_TRUE",
-	"LEJPCB_VAL_FALSE",
-	"LEJPCB_VAL_NULL",
-	"LEJPCB_VAL_NUM_INT",
-	"LEJPCB_VAL_NUM_FLOAT",
-	"LEJPCB_VAL_STR_START",
-	"LEJPCB_VAL_STR_CHUNK",
-	"LEJPCB_VAL_STR_END",
-	"LEJPCB_ARRAY_START",
-	"LEJPCB_ARRAY_END",
-	"LEJPCB_OBJECT_START",
-	"LEJPCB_OBJECT_END",
-};
 
 struct teep_mesg {
 	int type;
@@ -157,61 +135,28 @@ struct teep_mesg {
 static signed char
 parse_type_token_cb(struct lejp_ctx *ctx, char reason)
 {
-	char buf[1024];
-	char *p = buf;
-	char *end = &buf[sizeof(buf)];
 	struct teep_mesg *m = (void *)ctx->user;
 	if (!strcmp(ctx->path, "TYPE") && reason == LEJPCB_VAL_NUM_INT) {
 		m->type = atoi(ctx->buf);
-		lwsl_notice("TYPE: %d\n", m->type);
+		lwsl_user("TYPE: %d\n", m->type);
 		return 0;
 	}
 
 	if (!strcmp(ctx->path, "TOKEN")) {
 		if (reason == LEJPCB_VAL_STR_START) {
-			lwsl_notice("TOKEN start: %s\n", ctx->buf);
 			lws_snprintf(m->token, m->token_max_len, "%s", ctx->buf);
 			return 0;
 		}
 		if (reason == LEJPCB_VAL_STR_CHUNK) {
-			lwsl_notice("TOKEN chunk: %s\n", ctx->buf);
 			lws_snprintf(m->token, m->token_max_len, "%s%s", m->token, ctx->buf);
 			return 0;
 		}
 		if (reason == LEJPCB_VAL_STR_END) {
-			lwsl_notice("TOKEN end: %s\n", ctx->buf);
 			lws_snprintf(m->token, m->token_max_len, "%s%s", m->token, ctx->buf);
-			lwsl_notice("TOKEN: %s\n", m->token);
+			lwsl_user("TOKEN: %s\n", m->token);
 			return 0;
 		}
 	}
-	
-	if (reason & LEJP_FLAG_CB_IS_VALUE) {
-		p += lws_snprintf(p, p - end, "   value '%s' ", ctx->buf);
-		if (ctx->ipos) {
-			int n;
-			p += lws_snprintf(p, p - end, "(array indexes: ");
-			for (n = 0; n < ctx->ipos; n++)
-				p += lws_snprintf(p, p - end, "%d ", ctx->i[n]);
-			p += lws_snprintf(p, p - end, ") ");
-		}
-		lwsl_notice("%s (%s)\r\n", buf,
-		       reason_names[(unsigned int)
-			(reason) & (LEJP_FLAG_CB_IS_VALUE - 1)]);
-
-		(void)reason_names; /* NO_LOGS... */
-		return 0;
-	}
-
-	switch (reason) {
-	case LEJPCB_COMPLETE:
-		lwsl_notice("Parsing Completed (LEJPCB_COMPLETE)\n");
-		break;
-	case LEJPCB_PAIR_NAME:
-		lwsl_notice("path: '%s' (LEJPCB_PAIR_NAME)\n", ctx->path);
-		break;
-	}
-
 	return 0;
 }
 
@@ -230,10 +175,8 @@ int loop(struct libteep_ctx *lao_ctx) {
 			fprintf(stderr, "%s: libteep_tam_msg: %d\n", __func__, res);
 			return 1;
 		}
-		lwsl_notice("%s: received TAM pkt len %d\n", __func__, (int)io.out_len);
-
 		if (io.out_len == 0) { // io.in_len == 0 => finish
-			lwsl_user("teep over http finish packet received\n");
+			lwsl_notice("teep over http finish packet received\n");
 			return 0;
 		}
 		io.in = http_res_buf;
@@ -245,7 +188,6 @@ int loop(struct libteep_ctx *lao_ctx) {
 			lwsl_err("%s: unwrap_teep_request: fail %d\n", __func__, res);
 			return res;
 		}
-		lwsl_notice("%s: unwrap_teep_request: OK %d\n", __func__, (int)io.out_len);
 		lwsl_notice("%s: received message: %*s\n", __func__, (int)io.out_len, (char *)io.out);
 		struct lejp_ctx jp_ctx;
 		char token[100] = "";
@@ -259,8 +201,10 @@ int loop(struct libteep_ctx *lao_ctx) {
 		char ta_list[1000];
 		switch (m.type) {
 		case QUERY_REQUEST:
-			lwsl_notice("detect QUERY_REQUEST");
+			lwsl_notice("detect QUERY_REQUEST\n");
 			/* TODO: check entries in REQUEST */
+
+			lwsl_notice("send QUERY_RESPONSE\n");
 			lws_snprintf(ta_list, sizeof(ta_list),
 				"{\"Vendor_ID\":\"%s\",\"Class_ID\":\"%s\",\"Device_ID\":\"%s\"}",
 				"ietf-teep-wg", "3cfa03b5-d4b1-453a-9104-4e4bef53b37e", "teep-device");
@@ -272,6 +216,7 @@ int loop(struct libteep_ctx *lao_ctx) {
 			io.out_len = sizeof(http_req_buf);
 			res = wrap_teep_request(lao_ctx, &io);
 			if (res < 0) {
+				lwsl_err("%s: wrap_teep_request failed", __func__);
 				return 1;
 			}
 			io.in = io.out;
@@ -280,8 +225,9 @@ int loop(struct libteep_ctx *lao_ctx) {
 			io.out_len = sizeof(http_res_buf);
 			break;
 		case TRUSTED_APP_INSTALL:
-			lwsl_notice("detect TRUSTED_APP_INSTALL");
+			lwsl_notice("detect TRUSTED_APP_INSTALL\n");
 			/* TODO implement GET TA image */
+			lwsl_notice("send SUCCESS\n");
 			lws_snprintf(teep_res_buf, sizeof(teep_res_buf), 
 				"{\"TYPE\":%d,\"TOKEN\":\"%s\"}", SUCCESS, m.token);
 			io.in = teep_res_buf;
@@ -290,6 +236,7 @@ int loop(struct libteep_ctx *lao_ctx) {
 			io.out_len = sizeof(http_req_buf);
 			res = wrap_teep_request(lao_ctx, &io);
 			if (res < 0) {
+				lwsl_err("%s: wrap_teep_request failed", __func__);
 				return 1;
 			}
 			break;

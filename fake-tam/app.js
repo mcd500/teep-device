@@ -55,7 +55,7 @@ async function go() {
 			if (accept == 'application/otrp+json' && method == 'POST') {
 				return otrpHandler.handleMessage(req, body, res).catch(console.log)
 			}
-			if (method == 'POST') {
+			if (accept == 'application/teep+json' && method == 'POST') {
 				return teepHandler.handleMessage(req, body, res).catch(console.log)
 			}
 			console.error("Unknown protocol");
@@ -87,7 +87,7 @@ function dumpHttpResponse(res, body) {
 	console.log("status code: " + res.statusCode + " " + res.statusMessage);
 
 	console.log("headers: " + res._header);
-	if (body.length < 1024 || true) {
+	if (body.length < 128 || true) {
 		console.log("body: " + body);
 	} else {
 		// 長いbodyは128文字で区切り

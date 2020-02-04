@@ -90,7 +90,7 @@ callback_tam(struct lws *wsi, enum lws_callback_reasons reason, void *user,
 	lwsl_info("callback %d\n", reason);
 	switch (reason) {
 	case LWS_CALLBACK_CLIENT_CONNECTION_ERROR:
-		lwsl_notice("%s: CONNECTION_ERROR: %d\n", __func__, TR_FAIL_CONN_ERR);
+		lwsl_err("%s: CONNECTION_ERROR: %d\n", __func__, TR_FAIL_CONN_ERR);
 		laoa->result = TR_FAIL_CONN_ERR;
 		break;
 	case LWS_CALLBACK_CLOSED_CLIENT_HTTP:
@@ -99,7 +99,7 @@ callback_tam(struct lws *wsi, enum lws_callback_reasons reason, void *user,
 		break;
 	case LWS_CALLBACK_ESTABLISHED_CLIENT_HTTP:
 		laoa->http_resp = lws_http_client_http_response(wsi);
-		lwsl_notice("%s: established, resp %d\n", __func__,
+		lwsl_info("%s: established, resp %d\n", __func__,
 				laoa->http_resp);
 #if 0
 		if (laoa->http_resp != 200) {
@@ -117,7 +117,7 @@ callback_tam(struct lws *wsi, enum lws_callback_reasons reason, void *user,
 			if (lws_add_http_header_by_name(wsi,
 						(const unsigned char *)"Accept:",
 						(const unsigned char *)accept, strlen(accept), p, end)) {
-				lwsl_notice("%s: Append header error\n", __func__);
+				lwsl_err("%s: Append header error\n", __func__);
 				return -1;
 			}
 			// need to add http request body
@@ -127,7 +127,7 @@ callback_tam(struct lws *wsi, enum lws_callback_reasons reason, void *user,
 			if (lws_add_http_header_by_token(wsi,
 						WSI_TOKEN_HTTP_CONTENT_LENGTH,
 						(const unsigned char*)buf_len, len, p, end)) {
-				lwsl_notice("%s: Append header error\n", __func__);
+				lwsl_err("%s: Append header error\n", __func__);
 				return -1;
 			}
 			lws_client_http_body_pending(wsi, 1);
@@ -135,14 +135,13 @@ callback_tam(struct lws *wsi, enum lws_callback_reasons reason, void *user,
 		}
 		break;
 	case LWS_CALLBACK_COMPLETED_CLIENT_HTTP:
-		lwsl_notice("%s: completed; read %d\n", __func__,
+		lwsl_info("%s: completed; read %d\n", __func__,
 			    (int)laoa->io->out_len);
-		lwsl_notice("\n%s\n", (char *)(laoa->io->out));
 		laoa->result = TR_OKAY;
 		break;
 	case LWS_CALLBACK_RECEIVE_CLIENT_HTTP_READ:
 		if (laoa->io->out_len + len > laoa->max_out_len) {
-			lwsl_notice("%s: too large\n", __func__);
+			lwsl_err("%s: too large\n", __func__);
 			laoa->result = TR_FAIL_OVERSIZE;
 			return -1;
 		}
@@ -155,7 +154,7 @@ callback_tam(struct lws *wsi, enum lws_callback_reasons reason, void *user,
 		return 0;
 	case LWS_CALLBACK_CLIENT_HTTP_WRITEABLE:
 		if (lws_write(wsi, laoa->io->in, laoa->io->in_len, LWS_WRITE_HTTP) < 0) {
-			lwsl_notice("%s: Write body error\n", __func__);
+			lwsl_err("%s: Write body error\n", __func__);
 			return -1;
 		}
 		lws_client_http_body_pending(wsi, 0);

@@ -6,5 +6,8 @@
   "scripts": {},
   "dependencies": {
     "node-jose": "1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.2"
   }
 }

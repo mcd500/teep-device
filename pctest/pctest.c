@@ -35,7 +35,7 @@
 
 TEEC_Result TEEC_InitializeContext(const char *name, TEEC_Context *context)
 {
-	lws_set_log_level(LLL_USER | LLL_ERR | LLL_WARN | LLL_INFO | LLL_NOTICE
+	lws_set_log_level(LLL_USER | LLL_ERR | LLL_WARN | LLL_NOTICE
 //		| LLL_DEBUG
 		, NULL);
 	lwsl_user("%s: stub called\n", __func__);

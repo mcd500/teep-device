@@ -91,10 +91,17 @@ module.exports = (tamPrivKey, teePubKey, taImage) => ({
 	async handleMessage(req, body, res) {
 		console.log("teep message detected")
 		let jose;
-		if (req.url == '/tam') {
+		if (req.url == '/') {
+			jose = false
+		} else if (req.url == '/tam') {
 			jose = false
 		} else if (req.url == '/tam_jose') {
 			jose = true
+		} else {
+			console.log("invalid url")
+			res.statusCode = 404
+			res.end()
+			return
 		}
 		if (!body) {
 			// if body is empty, goto OTrP:GetDeviceState or TEEP:QueryRequest
