@@ -1,13 +1,18 @@
 # Setting up the Fake TAM
 
-## Preparing node
+## Preparing node and dependencies
 
 Install node.js, for Fedora the package is called "nodejs".
 
-Then use npm to install the node package for JOSE.
+Then use npm to install dependent libraries.
 
 ```
-sudo npm install --global node-jose
+npm install
+```
+## How to run Fake TAM server
+
+```
+node app.js [hostname] [port]
 ```
 
 ## File structures

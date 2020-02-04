@@ -8,7 +8,8 @@ const config = config_table[env];
 const teep = require('./teep.js')
 const otrp = require('./otrp.js')
 
-config.hostname = process.env.TAM_SERVER_HOSTNAME || config.hostname
+const hostname = process.argv[2] || process.env.TAM_SERVER_HOSTNAME || config.hostname
+const port = process.argv[3] || process.env.TAM_SERVER_PORT || config.port
 
 function loadJwk(jwkfile) {
 	return JWK.asKey(fs.readFileSync(jwkfile, function(err, data) { console.log(data) }))
@@ -64,8 +65,8 @@ async function go() {
 		});
 	});
 	
-	server.listen(config.port, config.hostname, () => {
-		console.log(`Server running at http://${config.hostname}:${config.port}/`);
+	server.listen(port, hostname, () => {
+		console.log(`Server running at http://${hostname}:${port}/`);
 	});
 }
 
