@@ -12,6 +12,7 @@ const signParam = {
 }
 const encParam = {
 	alg: 'RSA1_5',
+	enc: "A128CBC-HS256",
 	format: 'flattened'
 }
 module.exports = (tamPrivKey, teePubKey, taImage) => ({

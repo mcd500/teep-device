@@ -161,6 +161,7 @@ parse_type_token_cb(struct lejp_ctx *ctx, char reason)
 }
 
 int loop(struct libteep_ctx *lao_ctx) {
+	lwsl_notice("send empty body to begin teep protocol\n");
 	struct lao_rpc_io io = {
 		.in = "",
 		.in_len = 0,
@@ -172,11 +173,11 @@ int loop(struct libteep_ctx *lao_ctx) {
 	do {
 		int res = libteep_tam_msg(lao_ctx, &io);
 		if (res != TR_OKAY) {
-			fprintf(stderr, "%s: libteep_tam_msg: %d\n", __func__, res);
+			lwsl_err( "%s: libteep_tam_msg: %d\n", __func__, res);
 			return 1;
 		}
 		if (io.out_len == 0) { // io.in_len == 0 => finish
-			lwsl_notice("teep over http finish packet received\n");
+			lwsl_notice("detect empty response to finish teep ptorocol\n");
 			return 0;
 		}
 		io.in = http_res_buf;

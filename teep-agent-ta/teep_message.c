@@ -82,16 +82,17 @@ teep_message_unwrap(const char *msg, int msg_len, unsigned char *out, unsigned i
 	/* JWS payload is a JWE */
 
 	lwsl_user("Decrypt\n");
-	n = lws_jwk_import(&jwe.jwk, NULL, NULL, tee_id_privkey_jwk, strlen(tee_id_privkey_jwk));
-	if (n < 0) {
-		lwsl_err("%s: unable to import tee jwk\n", __func__);
-		goto bail1;
-	}
+
 	n = lws_jwe_json_parse(&jwe, (void *)msg,
 				msg_len,
 				lws_concat_temp(temp_buf, temp_len), &temp_len);
 	if (n < 0) {
 		lwsl_err("%s: lws_jwe_json_parse failed\n", __func__);
+		goto bail1;
+	}
+	n = lws_jwk_import(&jwe.jwk, NULL, NULL, tee_id_privkey_jwk, strlen(tee_id_privkey_jwk));
+	if (n < 0) {
+		lwsl_err("%s: unable to import tee jwk\n", __func__);
 		goto bail1;
 	}
 	n = lws_jwe_auth_and_decrypt(&jwe, lws_concat_temp(temp_buf, temp_len), &temp_len);
