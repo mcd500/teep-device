@@ -11,8 +11,10 @@ const signParam = {
 	format: 'flattened'
 }
 const encParam = {
-	alg: 'RSA1_5',
-	enc: "A128CBC-HS256",
+	fields: {
+		alg: 'RSA1_5'
+	},
+	contentAlg: "A128CBC-HS256",
 	format: 'flattened'
 }
 module.exports = (tamPrivKey, teePubKey, taImage, taUrl) => ({
@@ -24,8 +26,11 @@ module.exports = (tamPrivKey, teePubKey, taImage, taUrl) => ({
 	decrypt(data) {return JWE.crateDecrypt(tamPrivKey).decrypt(data)},
 
 	async wrap(data) {
+		console.log(data)
 		signed = await this.sign(JSON.stringify(data))
+		console.log(signed)
 		encrypted = await this.encrypt(JSON.stringify(signed))
+		console.log(encrypted)
 		return JSON.stringify(encrypted)
 	},
 

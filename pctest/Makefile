@@ -21,4 +21,4 @@ run: $(TARGET)
 	./$(TARGET)
 
 run-jose: $(TARGET)
-	./$(TARGET) --jose --tamurl http://127.0.0.1:3000/tam_jose
+	./$(TARGET) --jose --tamurl http://127.0.0.1:3000/api/tam_jose

@@ -108,18 +108,18 @@ teep_message_unwrap(const char *msg, int msg_len, unsigned char *out, unsigned i
 		lwsl_err("%s: unable to import tam jwk\n", __func__);
 		goto bail;
 	}
-	n = lws_jws_sig_confirm_json(msg, msg_len, &jws, &jwk_pubkey_tam, context, temp_buf, &temp_len);
+	n = lws_jws_sig_confirm_json(jwe.jws.map.buf[LJWE_CTXT], jwe.jws.map.len[LJWE_CTXT], &jws, &jwk_pubkey_tam, context, temp_buf, &temp_len);
 	if (n < 0) {
 		lwsl_err("%s: confirm rsa sig failed\n", __func__);
 		goto bail;
 	}
-	lwsl_user("Signature OK\n");
+	lwsl_user("Signature OK %d %d\n", n, jws.map.len[LJWS_PYLD]);
 
-	if (jwe.jws.map.len[LJWE_CTXT] > *out_len) {
-		lwsl_err("%s: output buffer is small (in, out) = (%d, %d)\n", __func__, jwe.jws.map.len[LJWE_CTXT], *out_len);
+	if (jws.map.len[LJWS_PYLD] > *out_len) {
+		lwsl_err("%s: output buffer is small (in, out) = (%d, %d)\n", __func__, jws.map.len[LJWS_PYLD], *out_len);
 	}
-	memcpy(out, jwe.jws.map.buf[LJWE_CTXT], jwe.jws.map.len[LJWE_CTXT]);
-	*out_len = jwe.jws.map.len[LJWE_CTXT];
+	memcpy(out, jws.map.buf[LJWS_PYLD], jws.map.len[LJWS_PYLD]);
+	*out_len = jws.map.len[LJWS_PYLD];
 	n = 0;
 bail1:
 	lws_jwe_destroy(&jwe);
