@@ -161,7 +161,7 @@ TA_InvokeCommandEntryPoint(void __maybe_unused *sess_ctx,
 {
 	int res;
 	switch (cmd_id) {
-	case TEEP_AGENET_TA_WRAP_MESSAGE: /* wrap TEEP message */
+	case TEEP_AGENT_TA_WRAP_MESSAGE: /* wrap TEEP message */
 		if ((TEE_PARAM_TYPE_GET(param_types, 0) != TEE_PARAM_TYPE_MEMREF_INPUT) ||
 				(TEE_PARAM_TYPE_GET(param_types, 1) != TEE_PARAM_TYPE_VALUE_INPUT) ||
 				(TEE_PARAM_TYPE_GET(param_types, 2) != TEE_PARAM_TYPE_MEMREF_OUTPUT) ||
