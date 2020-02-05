@@ -73,14 +73,14 @@ TEEC_Result TEEC_InvokeCommand(TEEC_Session *session,
 	uint32_t type = operation->paramTypes;
 	TEEC_Parameter *params = operation->params;
 	switch (commandID) {
-	case 1: /* unwrap TEEP message*/
+	case 1: /* wrap TEEP message*/
 		if ((TEEC_PARAM_TYPE_GET(type, 0) != TEEC_MEMREF_TEMP_INPUT) ||
 				(TEEC_PARAM_TYPE_GET(type, 1) != TEEC_VALUE_INPUT) ||
 				(TEEC_PARAM_TYPE_GET(type, 2) != TEEC_MEMREF_TEMP_OUTPUT) ||
 				(TEEC_PARAM_TYPE_GET(type, 3) != TEEC_VALUE_INOUT))
 			return TEEC_ERROR_BAD_PARAMETERS;
 		return teep_message_wrap(params[0].tmpref.buffer, params[1].value.a, params[2].tmpref.buffer, &params[3].value.a);
-	case 2: /* wrap TEEP message*/
+	case 2: /* unwrap TEEP message*/
 		if ((TEEC_PARAM_TYPE_GET(type, 0) != TEEC_MEMREF_TEMP_INPUT) ||
 				(TEEC_PARAM_TYPE_GET(type, 1) != TEEC_VALUE_INPUT) ||
 				(TEEC_PARAM_TYPE_GET(type, 2) != TEEC_MEMREF_TEMP_OUTPUT) ||

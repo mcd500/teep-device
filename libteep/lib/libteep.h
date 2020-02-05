@@ -159,13 +159,13 @@ typedef enum tam_result {
  * Returns 0 if the communication was started OK, else error.
  */
 int
-libteep_tam_msg(struct libteep_ctx *ctx, struct lao_rpc_io *io);
+libteep_tam_msg(struct libteep_ctx *ctx, void *res, size_t reslen, void *req, size_t reqlen);
 
 int
-libteep_msg_unwrap(struct libteep_ctx *ctx, struct lao_rpc_io *io);
+libteep_msg_unwrap(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, size_t inlen);
 
 int
-libteep_msg_wrap(struct libteep_ctx *ctx, struct lao_rpc_io *io);
+libteep_msg_wrap(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, size_t inlen);
 
 int
 libteep_ta_image_unwrap(struct libteep_ctx *ctx, struct lao_rpc_io *io);

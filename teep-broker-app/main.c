@@ -99,30 +99,29 @@ cmdline_parse(int argc, const char *argv[])
 
 }
 
-static int io_copy(struct lao_rpc_io *io) {
-	if (io->in_len > io->out_len) {
+static int io_copy(void *out, size_t outlen, void *in, size_t inlen) {
+	if (inlen > outlen) {
 		return -1;
 	}
-	memmove(io->out, io->in, io->in_len);
-	io->out_len = io->in_len;
-	return 0;
+	memmove(out, in, inlen);
+	return inlen;
 }
 
-static int unwrap_teep_request(struct libteep_ctx *lao_ctx, struct lao_rpc_io *io) {
+static int unwrap_teep_request(struct libteep_ctx *lao_ctx, void *out, size_t outlen, void *in, size_t inlen) {
 	if (jose) {
 		lwsl_notice("unwrap teep message\n");
-		return libteep_msg_unwrap(lao_ctx, io);
+		return libteep_msg_unwrap(lao_ctx, out, outlen, in, inlen);
 	} else {
-		return io_copy(io);
+		return io_copy(out, outlen, in, inlen);
 	}
 }
 
-static int wrap_teep_request(struct libteep_ctx *lao_ctx, struct lao_rpc_io *io) {
+static int wrap_teep_response(struct libteep_ctx *lao_ctx, void *out, size_t outlen, void *in, size_t inlen) {
 	if (jose) {
 		lwsl_notice("wrap teep message\n");
-		return libteep_msg_wrap(lao_ctx, io);
+		return libteep_msg_wrap(lao_ctx, out, outlen, in, inlen);
 	} else {
-		return io_copy(io);
+		return io_copy(out, outlen, in, inlen);
 	}
 }
 
@@ -162,34 +161,19 @@ parse_type_token_cb(struct lejp_ctx *ctx, char reason)
 
 int loop(struct libteep_ctx *lao_ctx) {
 	lwsl_notice("send empty body to begin teep protocol\n");
-	struct lao_rpc_io io = {
-		.in = "",
-		.in_len = 0,
-		.out = http_res_buf,
-		.out_len = sizeof(http_res_buf)
-	};
-
-	/* pass the encrypted, signed TA into the TEE to deal with */
-	do {
-		int res = libteep_tam_msg(lao_ctx, &io);
-		if (res != TR_OKAY) {
-			lwsl_err( "%s: libteep_tam_msg: %d\n", __func__, res);
-			return 1;
+	int n;
+	n = libteep_tam_msg(lao_ctx, http_res_buf, sizeof(http_res_buf), "", 0);
+	if (n < 0) {
+		lwsl_err( "%s: libteep_tam_msg: %d\n", __func__, n);
+		return n;
+	}
+	while (n > 0) { // if n == 0 then zero packet
+		n = unwrap_teep_request(lao_ctx, teep_req_buf, sizeof(teep_req_buf), http_res_buf, (size_t)n);
+		if (n < 0) {
+			lwsl_err("%s: unwrap_teep_request: fail %d\n", __func__, n);
+			return n;
 		}
-		if (io.out_len == 0) { // io.in_len == 0 => finish
-			lwsl_notice("detect empty response to finish teep protocol\n");
-			return 0;
-		}
-		io.in = http_res_buf;
-		io.in_len = io.out_len;
-		io.out = teep_req_buf;
-		io.out_len = sizeof(teep_req_buf);
-		res = unwrap_teep_request(lao_ctx, &io);
-		if (res < 0) {
-			lwsl_err("%s: unwrap_teep_request: fail %d\n", __func__, res);
-			return res;
-		}
-		lwsl_notice("%s: received message: %*s\n", __func__, (int)io.out_len, (char *)io.out);
+		lwsl_notice("%s: received message: %*s\n", __func__, n, (char *)teep_req_buf);
 		struct lejp_ctx jp_ctx;
 		char token[100] = "";
 		struct teep_mesg m = {
@@ -198,7 +182,7 @@ int loop(struct libteep_ctx *lao_ctx) {
 			.token_max_len = 99
 		};
 		lejp_construct(&jp_ctx, parse_type_token_cb, &m, NULL, 0);
-		lejp_parse(&jp_ctx, io.out, io.out_len);
+		lejp_parse(&jp_ctx, (void *)teep_req_buf, n);
 		char ta_list[1000];
 		switch (m.type) {
 		case QUERY_REQUEST:
@@ -212,45 +196,62 @@ int loop(struct libteep_ctx *lao_ctx) {
 			lws_snprintf(teep_res_buf, sizeof(teep_res_buf), 
 				"{\"TYPE\":%d,\"TOKEN\":\"%s\",\"TA_LIST\":[%s]}", QUERY_RESPONSE, m.token, ta_list);
 			lwsl_notice("json: %s, len: %zd\n", teep_res_buf, strlen(teep_res_buf));
-			io.in = teep_res_buf;
-			io.in_len = strlen(teep_res_buf);
-			io.out = http_req_buf;
-			io.out_len = sizeof(http_req_buf);
-			res = wrap_teep_request(lao_ctx, &io);
-			if (res < 0) {
-				lwsl_err("%s: wrap_teep_request failed", __func__);
-				return 1;
+			n = wrap_teep_response(lao_ctx, http_req_buf, sizeof(http_req_buf), teep_res_buf, strlen(teep_res_buf));
+			if (n < 0) {
+				lwsl_err("%s: wrap_teep_response failed %d", __func__, n);
+				return n;
 			}
-			lwsl_notice("body: %s, len: %zd\n", http_req_buf, io.out_len);
-			io.in = io.out;
-			io.in_len = io.out_len;
-			io.out = http_res_buf;
-			io.out_len = sizeof(http_res_buf);
+			lwsl_notice("body: %s, len: %zd\n", http_req_buf, (size_t)n);
+			n = libteep_tam_msg(lao_ctx, http_res_buf, sizeof(http_res_buf), http_req_buf, (size_t)n);
+			if (n < 0) {
+				lwsl_err( "%s: libteep_tam_msg: %d\n", __func__, n);
+				return n;
+			}
 			break;
 		case TRUSTED_APP_INSTALL:
 			lwsl_notice("detect TRUSTED_APP_INSTALL\n");
 			/* TODO implement GET TA image */
+
 			lwsl_notice("send SUCCESS\n");
 			lws_snprintf(teep_res_buf, sizeof(teep_res_buf), 
 				"{\"TYPE\":%d,\"TOKEN\":\"%s\"}", SUCCESS, m.token);
-			io.in = teep_res_buf;
-			io.in_len = strlen(teep_res_buf);
-			io.out = http_req_buf;
-			io.out_len = sizeof(http_req_buf);
-			res = wrap_teep_request(lao_ctx, &io);
-			if (res < 0) {
-				lwsl_err("%s: wrap_teep_request failed", __func__);
-				return 1;
+			lwsl_notice("json: %s, len: %zd\n", teep_res_buf, strlen(teep_res_buf));
+			n = wrap_teep_response(lao_ctx, http_req_buf, sizeof(http_req_buf), teep_res_buf, strlen(teep_res_buf));
+			if (n < 0) {
+				lwsl_err("%s: wrap_teep_response failed, %d", __func__, n);
+				return n;
+			}
+			n = libteep_tam_msg(lao_ctx, http_res_buf, sizeof(http_res_buf), http_req_buf, (size_t)n);
+			if (n < 0) {
+				lwsl_err( "%s: libteep_tam_msg: %d\n", __func__, n);
+				return n;
 			}
 			break;
 		case TRUSTED_APP_DELETE:
-			lwsl_err("%s: TODO implement TRUSTED_APP_DELETE\n", __func__);
-			return 0;
+			lwsl_notice("detect TRUSTED_APP_DELETE\n");
+			/* TODO implement delete TA image */
+
+			lwsl_notice("send SUCCESS\n");
+			lws_snprintf(teep_res_buf, sizeof(teep_res_buf),
+				"{\"TYPE\":%d,\"TOKEN\":\"%s\"}", SUCCESS, m.token);
+			lwsl_notice("json: %s, len: %zd\n", teep_res_buf, strlen(teep_res_buf));
+			n = wrap_teep_response(lao_ctx, http_req_buf, sizeof(http_req_buf), teep_res_buf, strlen(teep_res_buf));
+			if (n < 0) {
+				lwsl_err("%s: wrap_teep_response failed, %d", __func__, n);
+				return n;
+			}
+			n = libteep_tam_msg(lao_ctx, http_res_buf, sizeof(http_res_buf), http_req_buf, (size_t)n);
+			if (n < 0) {
+				lwsl_err( "%s: libteep_tam_msg: %d\n", __func__, n);
+				return n;
+			}
 		default:
 			lwsl_err("%s: requested message type is invalid %d\n", __func__, m.type);
-			return 1;
+			return -1;
 		}
-	} while (1);
+	}
+	lwsl_notice("receive empty body to finish teep protocol\n");
+	return n;
 }
 
 int

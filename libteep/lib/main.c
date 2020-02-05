@@ -210,7 +210,7 @@ static const struct lws_protocols protocols[] = {
 
 
 int
-libteep_tam_msg(struct libteep_ctx *ctx, struct lao_rpc_io *io)
+libteep_tam_msg(struct libteep_ctx *ctx, void *res, size_t reslen, void *req, size_t reqlen)
 {
 	char tmp_url[200];
 	const char *proto;
@@ -236,10 +236,15 @@ libteep_tam_msg(struct libteep_ctx *ctx, struct lao_rpc_io *io)
 
 	lws_explicit_bzero(laoa, sizeof(*laoa));
 
+	struct lao_rpc_io io = {
+		.in = req,
+		.in_len = reqlen,
+		.out = res,
+		.out_len = 0
+	};
 	laoa->ctx = ctx;
-	laoa->io = io;
-	laoa->max_out_len = io->out_len;
-	io->out_len = 0;
+	laoa->io = &io;
+	laoa->max_out_len = reslen;
 	laoa->wsi = NULL;
 
 	pthread_mutex_lock(&ctx->lock); /* ++++++++++++++++++++++++ ctx->lock */
@@ -285,8 +290,10 @@ libteep_tam_msg(struct libteep_ctx *ctx, struct lao_rpc_io *io)
 
 	while (!lws_service(ctx->lws_ctx, 1000) && laoa->result == TR_ONGOING)
 		;
-
-	return laoa->result;
+	if (laoa->result < 0) {
+		return laoa->result;
+	}
+	return io.out_len;
 }
 
 int
@@ -411,37 +418,33 @@ libteep_destroy(struct libteep_ctx **ctx)
 }
 
 int
-libteep_msg_unwrap(struct libteep_ctx *ctx, struct lao_rpc_io *io)
+libteep_msg_wrap(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, size_t inlen)
 {
-	if (ctx->teep_ver == LIBTEEP_TEEP_VER_OTRP_V3) {
-		return libteep_teep_agent_msg(ctx, 1, io);
+	struct lao_rpc_io io = {
+		.in = in,
+		.in_len = inlen,
+		.out = out,
+		.out_len = outlen
+	};
+	int n = libteep_teep_agent_msg(ctx, 1, &io);
+	if (n < 0) {
+		return n;
 	}
-	if (ctx->teep_ver == LIBTEEP_TEEP_VER_TEEP) {
-		return libteep_teep_agent_msg(ctx, 2, io);
-	}
-	return 1;
+	return io.out_len;
 }
 
 int
-libteep_msg_wrap(struct libteep_ctx *ctx, struct lao_rpc_io *io)
+libteep_msg_unwrap(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, size_t inlen)
 {
-	if (ctx->teep_ver == LIBTEEP_TEEP_VER_OTRP_V3) {
-		return libteep_teep_agent_msg(ctx, 3, io);
+	struct lao_rpc_io io = {
+		.in = in,
+		.in_len = inlen,
+		.out = out,
+		.out_len = outlen
+	};
+	int n = libteep_teep_agent_msg(ctx, 2, &io);
+	if (n < 0) {
+		return n;
 	}
-	if (ctx->teep_ver == LIBTEEP_TEEP_VER_TEEP) {
-		return libteep_teep_agent_msg(ctx, 4, io);
-	}
-	return 1;
-}
-
-int
-libteep_ta_image_unwrap(struct libteep_ctx *ctx, struct lao_rpc_io *io)
-{
-	if (ctx->teep_ver == LIBTEEP_TEEP_VER_OTRP_V3) {
-		return libteep_teep_agent_msg(ctx, 4, io);
-	}
-	if (ctx->teep_ver == LIBTEEP_TEEP_VER_TEEP) {
-		return libteep_teep_agent_msg(ctx, 5, io);
-	}
-	return 1;
+	return io.out_len;
 }
