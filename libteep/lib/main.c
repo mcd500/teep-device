@@ -207,7 +207,11 @@ static const struct lws_protocols protocols[] = {
 	{ NULL, NULL, 0, 0 }
 };
 
-
+int
+libteep_install_ta_image(struct libteep_ctx *ctx, char *url) {
+	lwsl_notice("TODO implement install process for %s\n", url);
+	return 0;
+}
 
 int
 libteep_tam_msg(struct libteep_ctx *ctx, void *res, size_t reslen, void *req, size_t reqlen)

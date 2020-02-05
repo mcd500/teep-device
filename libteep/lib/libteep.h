@@ -170,5 +170,8 @@ libteep_msg_wrap(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, si
 int
 libteep_ta_image_unwrap(struct libteep_ctx *ctx, struct lao_rpc_io *io);
 
+int
+libteep_install_ta_image(struct libteep_ctx *ctx, char *url);
+
 #endif
 

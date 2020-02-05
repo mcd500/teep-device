@@ -15,7 +15,7 @@ const encParam = {
 	enc: "A128CBC-HS256",
 	format: 'flattened'
 }
-module.exports = (tamPrivKey, teePubKey, taImage) => ({
+module.exports = (tamPrivKey, teePubKey, taImage, taUrl) => ({
 	token: 0,
 	session: {},
 	sign(data) {return JWS.createSign(signParam, tamPrivKey).update(data).final()},
@@ -70,7 +70,7 @@ module.exports = (tamPrivKey, teePubKey, taImage) => ({
 		console.log("sendTrustedAppInstall");
 		const mes = {
 			TYPE: TRUSTED_APP_INSTALL,
-			MANIFEST_LIST: ["http://127.0.0.1/TAs/8d82573a-926d-4754-9353-32dc29997f74.ta"] // TA list
+			MANIFEST_LIST: [taUrl] // TA list
 		}
 		this.sendTeepMessage(jose, mes, res, 200)
 	},

@@ -25,8 +25,9 @@ async function go() {
 
 	/* TA image signed by SP */
 	const taImage = await JWS.createSign(spSignKey).update(fs.readFileSync(config.ta, (err) => {console.log(err)})).final()
+	const taUrl = `http://${hostname}:${port}/TAs/${path.basename(config.ta)}`
 
-	teepHandler = teep(tamPrivKey, teePubKey, taImage);
+	teepHandler = teep(tamPrivKey, teePubKey, taImage, taUrl);
 	otrpHandler = otrp(tamPrivKey, teePubKey, taImage);
 	const server = http.createServer((req, res) => {
 		let res_chunks = []
@@ -54,14 +55,21 @@ async function go() {
 			dumpHttpRequest(req, body);
 			const accept = req.headers.accept
 			const method = req.method
-			if (accept == 'application/otrp+json' && method == 'POST') {
+			const url = req.url
+			if (method == 'POST' && accept == 'application/otrp+json') {
 				return otrpHandler.handleMessage(req, body, res).catch(console.log)
 			}
-			if (accept == 'application/teep+json' && method == 'POST') {
+			if (method == 'POST' && accept == 'application/teep+json') {
 				return teepHandler.handleMessage(req, body, res).catch(console.log)
 			}
-			console.error("Unknown protocol");
-			res.stausCode = 204
+			if (method == 'GET' && url.startsWith('/TAs')) {
+				if (path.basename(url) == path.basename(config.ta)) {
+					res.statusCode = 200
+					res.end(taImage)
+					return taImage
+				}
+			}
+			res.statusCode = 404
 			res.end()
 		});
 	});
