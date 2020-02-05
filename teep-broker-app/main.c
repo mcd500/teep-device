@@ -177,7 +177,7 @@ int loop(struct libteep_ctx *lao_ctx) {
 			return 1;
 		}
 		if (io.out_len == 0) { // io.in_len == 0 => finish
-			lwsl_notice("detect empty response to finish teep ptorocol\n");
+			lwsl_notice("detect empty response to finish teep protocol\n");
 			return 0;
 		}
 		io.in = http_res_buf;
