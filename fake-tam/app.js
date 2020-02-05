@@ -1,10 +1,11 @@
-const http = require('http');
-const {JWK, JWS, JWE} = require('node-jose');
-const fs = require('fs');
-const os = require('os');
+const http = require('http')
+const {JWK, JWS, JWE} = require('node-jose')
+const fs = require('fs')
+const path = require('path')
+const os = require('os')
 const config_table = require('./config.json')
-const env = process.env.NODE_ENV || 'development';
-const config = config_table[env];
+const env = process.env.NODE_ENV || 'development'
+const config = config_table[env]
 const teep = require('./teep.js')
 const otrp = require('./otrp.js')
 
