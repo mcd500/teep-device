@@ -68,7 +68,7 @@ struct libteep_async {
 	tam_result		result;
 };
 
-static const char *accept_header(int teep_ver) {
+static const char *teep_media_type(int teep_ver) {
 	switch (teep_ver) {
 	case LIBTEEP_TEEP_VER_TEEP:
 		return "application/teep+json";
@@ -113,23 +113,31 @@ callback_tam(struct lws *wsi, enum lws_callback_reasons reason, void *user,
 		{
 			unsigned char **p = (unsigned char **)in;
 			unsigned char *end = (*p) + len;
-			const char *accept = accept_header(laoa->ctx->teep_ver);
+			const char *media_type = teep_media_type(laoa->ctx->teep_ver);
 			if (lws_add_http_header_by_name(wsi,
-						(const unsigned char *)"Accept:",
-						(const unsigned char *)accept, strlen(accept), p, end)) {
+						(unsigned char *)"Accept:",
+						(unsigned char *)media_type, strlen(media_type), p, end)) {
 				lwsl_err("%s: Append header error\n", __func__);
 				return -1;
 			}
 			// need to add http request body
 			// int to char*
-			char buf_len[12];
-			size_t len = snprintf(buf_len, 12, "%d", (int)laoa->io->in_len);
+			char buf_len[256];
+			size_t len;
+			len = snprintf(buf_len, sizeof(buf_len) - 1, "%d", (int)laoa->io->in_len);
 			if (lws_add_http_header_by_token(wsi,
 						WSI_TOKEN_HTTP_CONTENT_LENGTH,
-						(const unsigned char*)buf_len, len, p, end)) {
+						(unsigned char*)buf_len, len, p, end)) {
 				lwsl_err("%s: Append header error\n", __func__);
 				return -1;
 			}
+			if (lws_add_http_header_by_token(wsi,
+						WSI_TOKEN_HTTP_CONTENT_TYPE,
+						(unsigned char*)media_type, strlen(media_type), p, end)) {
+				lwsl_err("%s: Append header error\n", __func__);
+				return -1;
+			}
+
 			lws_client_http_body_pending(wsi, 1);
 			lws_callback_on_writable(wsi);
 		}

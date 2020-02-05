@@ -31,7 +31,7 @@ make
 ## run
 
 ```bash
-./pctest --tamurl http://{ip_adress_of_tam}:{port}
+./pctest --tamurl http://{ip_adress_of_tam}:{port}/{api_path}
 ```
 
 Show help

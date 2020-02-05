@@ -94,9 +94,9 @@ module.exports = (tamPrivKey, teePubKey, taImage) => ({
 		let jose;
 		if (req.url == '/') {
 			jose = false
-		} else if (req.url == '/tam') {
+		} else if (req.url == '/api/tam') {
 			jose = false
-		} else if (req.url == '/tam_jose') {
+		} else if (req.url == '/api/tam_jose') {
 			jose = true
 		} else {
 			console.log("invalid url")

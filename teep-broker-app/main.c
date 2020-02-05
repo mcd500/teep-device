@@ -35,7 +35,7 @@ static char teep_req_buf[5 * 1024];
 static char teep_res_buf[5 * 1024];
 static uint8_t http_req_buf[5 * 1024];
 
-static const char *uri = "http://127.0.0.1:3000/tam"; // TAM server uri
+static const char *uri = "http://127.0.0.1:3000/api/tam"; // TAM server uri
 static enum libteep_teep_ver teep_ver = LIBTEEP_TEEP_VER_TEEP; // protocol
 static const char *talist = ""; // installed TA list
 static bool jose = false;
@@ -211,7 +211,7 @@ int loop(struct libteep_ctx *lao_ctx) {
 				"ietf-teep-wg", "3cfa03b5-d4b1-453a-9104-4e4bef53b37e", "teep-device");
 			lws_snprintf(teep_res_buf, sizeof(teep_res_buf), 
 				"{\"TYPE\":%d,\"TOKEN\":\"%s\",\"TA_LIST\":[%s]}", QUERY_RESPONSE, m.token, ta_list);
-			lwsl_notice("json: %s, len: %d\n", teep_res_buf, strlen(teep_res_buf));
+			lwsl_notice("json: %s, len: %zd\n", teep_res_buf, strlen(teep_res_buf));
 			io.in = teep_res_buf;
 			io.in_len = strlen(teep_res_buf);
 			io.out = http_req_buf;
@@ -221,7 +221,7 @@ int loop(struct libteep_ctx *lao_ctx) {
 				lwsl_err("%s: wrap_teep_request failed", __func__);
 				return 1;
 			}
-			lwsl_notice("body: %s, len: %d\n", http_req_buf, io.out_len);
+			lwsl_notice("body: %s, len: %zd\n", http_req_buf, io.out_len);
 			io.in = io.out;
 			io.in_len = io.out_len;
 			io.out = http_res_buf;
