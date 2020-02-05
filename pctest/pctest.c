@@ -30,13 +30,14 @@
 #include <tee_client_api.h>
 #include "teep_message.h"
 #include "ta-store.h"
+#include "teep-agent-ta.h"
 
 // TEEC Stub
 
 TEEC_Result TEEC_InitializeContext(const char *name, TEEC_Context *context)
 {
 	lws_set_log_level(LLL_USER | LLL_ERR | LLL_WARN | LLL_NOTICE
-//		| LLL_DEBUG
+//		| LLL_INFO | LLL_DEBUG
 		, NULL);
 	lwsl_user("%s: stub called\n", __func__);
 	return TEEC_SUCCESS;
@@ -73,28 +74,28 @@ TEEC_Result TEEC_InvokeCommand(TEEC_Session *session,
 	uint32_t type = operation->paramTypes;
 	TEEC_Parameter *params = operation->params;
 	switch (commandID) {
-	case 1: /* wrap TEEP message*/
+	case TEEP_AGENT_TA_WRAP_MESSAGE: /* wrap TEEP message*/
 		if ((TEEC_PARAM_TYPE_GET(type, 0) != TEEC_MEMREF_TEMP_INPUT) ||
 				(TEEC_PARAM_TYPE_GET(type, 1) != TEEC_VALUE_INPUT) ||
 				(TEEC_PARAM_TYPE_GET(type, 2) != TEEC_MEMREF_TEMP_OUTPUT) ||
 				(TEEC_PARAM_TYPE_GET(type, 3) != TEEC_VALUE_INOUT))
 			return TEEC_ERROR_BAD_PARAMETERS;
 		return teep_message_wrap(params[0].tmpref.buffer, params[1].value.a, params[2].tmpref.buffer, &params[3].value.a);
-	case 2: /* unwrap TEEP message*/
+	case TEEP_AGENT_TA_UNWRAP_MESSAGE: /* unwrap TEEP message*/
 		if ((TEEC_PARAM_TYPE_GET(type, 0) != TEEC_MEMREF_TEMP_INPUT) ||
 				(TEEC_PARAM_TYPE_GET(type, 1) != TEEC_VALUE_INPUT) ||
 				(TEEC_PARAM_TYPE_GET(type, 2) != TEEC_MEMREF_TEMP_OUTPUT) ||
 				(TEEC_PARAM_TYPE_GET(type, 3) != TEEC_VALUE_INOUT))
 			return TEEC_ERROR_BAD_PARAMETERS;
 		return teep_message_unwrap(params[0].tmpref.buffer, params[1].value.a, params[2].tmpref.buffer, &params[3].value.a);
-	case 101: /* Install TA */
+	case TEEP_AGENT_TA_INSTALL: /* Install TA */
 		if ((TEEC_PARAM_TYPE_GET(type, 0) != TEEC_MEMREF_TEMP_INPUT) ||
 				(TEEC_PARAM_TYPE_GET(type, 1) != TEEC_VALUE_INPUT) ||
 				(TEEC_PARAM_TYPE_GET(type, 2) != TEEC_NONE) ||
 				(TEEC_PARAM_TYPE_GET(type, 3) != TEEC_NONE))
 			return TEEC_ERROR_BAD_PARAMETERS;
 		return ta_store_install(params[0].tmpref.buffer, params[1].value.a);
-	case 102: /* Delete TA */
+	case TEEP_AGENT_TA_DELETE: /* Delete TA */
 		if ((TEEC_PARAM_TYPE_GET(type, 0) != TEEC_MEMREF_TEMP_INPUT) ||
 				(TEEC_PARAM_TYPE_GET(type, 1) != TEEC_VALUE_INPUT) ||
 				(TEEC_PARAM_TYPE_GET(type, 2) != TEEC_NONE) ||
