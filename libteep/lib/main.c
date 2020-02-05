@@ -80,7 +80,7 @@ static const char *teep_media_type(int teep_ver) {
 }
 
 static int
-callback_tam(struct lws *wsi, enum lws_callback_reasons reason, void *user,
+callback_teep(struct lws *wsi, enum lws_callback_reasons reason, void *user,
 	     void *in, size_t len)
 {
 	struct libteep_async *laoa = (struct libteep_async *)user;
@@ -101,13 +101,10 @@ callback_tam(struct lws *wsi, enum lws_callback_reasons reason, void *user,
 		laoa->http_resp = lws_http_client_http_response(wsi);
 		lwsl_info("%s: established, resp %d\n", __func__,
 				laoa->http_resp);
-#if 0
-		if (laoa->http_resp != 200) {
-			laoa->result = TR_FAIL_REFUSED;
-
-			return -1;
+		if (laoa->http_resp == 204) {
+			laoa->result = TR_OKAY;
+			return 0;
 		}
-#endif
 		break;
 	case LWS_CALLBACK_CLIENT_APPEND_HANDSHAKE_HEADER:
 		{
@@ -167,32 +164,64 @@ callback_tam(struct lws *wsi, enum lws_callback_reasons reason, void *user,
 		}
 		lws_client_http_body_pending(wsi, 0);
 		break;
-#if 0
-	case LWS_CALLBACK_RECEIVE_CLIENT_HTTP:
-		px = buffer + LWS_PRE;
-		lenx = sizeof(buffer) - LWS_PRE;
+	default:
+		break;
+	}
+	return lws_callback_http_dummy(wsi, reason, user, in, len);
+}
 
-		if (lws_http_client_read(wsi, &px, &lenx) < 0) {
-			lwsl_notice("lws_http_client_read returned < 0\n");
+static int
+callback_download_ta_image(struct lws *wsi, enum lws_callback_reasons reason, void *user,
+	     void *in, size_t len)
+{
+	struct libteep_async *laoa = (struct libteep_async *)user;
+	char buffer[1024 + LWS_PRE];
+	char *px = buffer + LWS_PRE;
+	int lenx = sizeof(buffer) - LWS_PRE;
+	lwsl_info("callback %d\n", reason);
+	switch (reason) {
+	case LWS_CALLBACK_CLIENT_CONNECTION_ERROR:
+		lwsl_err("%s: CONNECTION_ERROR: %d\n", __func__, TR_FAIL_CONN_ERR);
+		laoa->result = TR_FAIL_CONN_ERR;
+		break;
+	case LWS_CALLBACK_CLOSED_CLIENT_HTTP:
+		if (laoa->result == TR_ONGOING)
+			laoa->result = TR_FAIL_CLOSED;
+		break;
+	case LWS_CALLBACK_ESTABLISHED_CLIENT_HTTP:
+		laoa->http_resp = lws_http_client_http_response(wsi);
+		lwsl_info("%s: established, resp %d\n", __func__,
+				laoa->http_resp);
+		if (laoa->http_resp != 200) {
+			laoa->result = TR_FAIL_REFUSED;
 			return -1;
 		}
 		break;
-	case LWS_CALLBACK_CLIENT_HTTP_WRITEABLE:
-		if (wsi == wsi_report) {
-			lwsl_user("report LWS_CALLBACK_CLIENT_HTTP_WRITEABLE\n");
-			/* we can be sure it was sent */
-			if (!rrlen) {
-				lwsl_user("report LWS_CALLBACK_CLIENT_HTTP_WRITEABLE\n");
-                                return -1;
-			}
-			lws_write(wsi, rr, rrlen, LWS_WRITE_HTTP_FINAL);
-			rrlen = 0;
-			lws_client_http_body_pending(wsi, 0);
-			lws_callback_on_writable(wsi);
+	case LWS_CALLBACK_COMPLETED_CLIENT_HTTP:
+		lwsl_info("%s: completed; read %d\n", __func__,
+			    (int)laoa->io->out_len);
+		laoa->result = TR_OKAY;
+		break;
+	case LWS_CALLBACK_RECEIVE_CLIENT_HTTP_READ:
+		if (laoa->io->out_len + len > laoa->max_out_len) {
+			lwsl_err("%s: too large\n", __func__);
+			laoa->result = TR_FAIL_OVERSIZE;
+			return -1;
 		}
-		break
-#endif
-
+		memcpy(laoa->io->out + laoa->io->out_len, in, len);
+		laoa->io->out_len += len;
+		break;
+	case LWS_CALLBACK_RECEIVE_CLIENT_HTTP:
+		if (lws_http_client_read(wsi, &px, &lenx) < 0)
+			return -1;
+		return 0;
+	case LWS_CALLBACK_CLIENT_HTTP_WRITEABLE:
+		if (lws_write(wsi, laoa->io->in, laoa->io->in_len, LWS_WRITE_HTTP) < 0) {
+			lwsl_err("%s: Write body error\n", __func__);
+			return -1;
+		}
+		lws_client_http_body_pending(wsi, 0);
+		break;
 	default:
 		break;
 	}
@@ -201,17 +230,14 @@ callback_tam(struct lws *wsi, enum lws_callback_reasons reason, void *user,
 
 
 static const struct lws_protocols protocols[] = {
-	{ "tam", callback_tam, 0, 4096, },
-	{ "application/teep+json", callback_tam, 0, 4096, },
-	{ "application/otrp+json", callback_tam, 0, 4096, },
+	{ "teep", callback_teep, 0, 4096, },
+	{ "download_ta_image", callback_download_ta_image, 0, 4096, },
 	{ NULL, NULL, 0, 0 }
 };
 
-int
-libteep_install_ta_image(struct libteep_ctx *ctx, char *url) {
-	lwsl_notice("TODO implement install process for %s\n", url);
-	return 0;
-}
+static char ta_image_buf[4 * 1024 * 1024];
+
+
 
 int
 libteep_tam_msg(struct libteep_ctx *ctx, void *res, size_t reslen, void *req, size_t reqlen)
@@ -235,7 +261,7 @@ libteep_tam_msg(struct libteep_ctx *ctx, void *res, size_t reslen, void *req, si
 
 	if (!laoa) {
 		fprintf(stderr, "%s: Failed to alloc memory\n", __func__);
-		return 1; /* OOM */
+		return -1; /* OOM */
 	}
 
 	lws_explicit_bzero(laoa, sizeof(*laoa));
@@ -267,7 +293,7 @@ libteep_tam_msg(struct libteep_ctx *ctx, void *res, size_t reslen, void *req, si
 		.origin = "192.168.11.3",
 		.method = "POST",
 		.userdata = laoa,
-		.protocol = protocols[1].name,
+		.protocol = protocols[0].name,
 		.pwsi = &laoa->wsi,
 	};
 
@@ -277,7 +303,7 @@ libteep_tam_msg(struct libteep_ctx *ctx, void *res, size_t reslen, void *req, si
 		;
 	} else {
 		fprintf(stderr, "%s: Unsupported protocol %s\n", __func__, proto);
-		return 1;
+		return -1;
 	}
 
 //	lws_client_http_multipart(i.pwsi, NULL, NULL, c_type, i.userdata, i.userdata + 200);
@@ -285,7 +311,7 @@ libteep_tam_msg(struct libteep_ctx *ctx, void *res, size_t reslen, void *req, si
 	lwsl_notice("%s://%s:%d%s\n" , proto, conn_info.address, conn_info.port, conn_info.path);
 	if (!lws_client_connect_via_info(&conn_info)) {
 		lwsl_err("%s: connect failed\n", __func__);
-		return 1;
+		return -1;
 	}
 
 	laoa->result = TR_ONGOING;
@@ -298,6 +324,31 @@ libteep_tam_msg(struct libteep_ctx *ctx, void *res, size_t reslen, void *req, si
 		return laoa->result;
 	}
 	return io.out_len;
+}
+
+int
+libteep_ta_store_install(struct libteep_ctx *ctx, char *ta_image, size_t ta_image_len)
+{
+	TEEC_Result n;
+	TEEC_Operation op;
+
+	memset(&op, 0, sizeof(TEEC_Operation));
+	op.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_TEMP_INPUT,
+					 TEEC_VALUE_INPUT,
+					 TEEC_NONE,
+					 TEEC_NONE);
+
+	op.params[0].tmpref.buffer 	= ta_image;
+	op.params[0].tmpref.size	= ta_image_len;
+	op.params[1].value.a		= ta_image_len;
+
+	n = TEEC_InvokeCommand(&ctx->tee_session, 101, &op, NULL);
+	if (n != TEEC_SUCCESS) {
+		fprintf(stderr, "%s: TEEC_InvokeCommand "
+		        "failed (0x%08x)\n", __func__, n);
+		return (int)n;
+	}
+	return n;
 }
 
 int
@@ -451,4 +502,90 @@ libteep_msg_unwrap(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, 
 		return n;
 	}
 	return io.out_len;
+}
+
+int
+libteep_download_and_install_ta_image(struct libteep_ctx *ctx, char *url) {
+	char tmp_url[200];
+	const char *proto;
+	const char *address;
+	int port;
+	const char *path_slash_dropped;
+
+	strncpy(tmp_url, url, sizeof(tmp_url));
+	if (lws_parse_uri(tmp_url, &proto, &address, &port, &path_slash_dropped)) {
+		fprintf(stderr, "%s: Failed to parse tam URL base %s\n", __func__, ctx->tam_url);
+		return -1;
+	}
+
+	char path[200] = "/";
+	strncpy(&path[1], path_slash_dropped, sizeof(path) - 1);
+
+	struct libteep_async *laoa = malloc(sizeof(*laoa));
+
+	if (!laoa) {
+		fprintf(stderr, "%s: Failed to alloc memory\n", __func__);
+		return -1; /* OOM */
+	}
+
+	lws_explicit_bzero(laoa, sizeof(*laoa));
+
+	struct lao_rpc_io io = {
+		.in = "",
+		.in_len = 0,
+		.out = ta_image_buf,
+		.out_len = 0
+	};
+	laoa->ctx = ctx;
+	laoa->io = &io;
+	laoa->max_out_len = sizeof(ta_image_buf);
+	laoa->wsi = NULL;
+
+	pthread_mutex_lock(&ctx->lock); /* ++++++++++++++++++++++++ ctx->lock */
+	laoa->laoa_list_next = ctx->laoa_list_head;
+	ctx->laoa_list_head = laoa;
+	pthread_mutex_unlock(&ctx->lock); /* ctx->lock ---------------------- */
+
+
+	struct lws_client_connect_info conn_info = {
+		.context = ctx->lws_ctx,
+		.address = address,
+		.port = port,
+		.alpn = "http/1.1",
+		.path = path,
+		.host = "example.com",
+		.origin = "192.168.11.3",
+		.method = "GET",
+		.userdata = laoa,
+		.protocol = protocols[1].name,
+		.pwsi = &laoa->wsi,
+	};
+
+	if (!strcmp(proto, "https")) {
+		conn_info.ssl_connection = LCCSCF_USE_SSL | LCCSCF_ALLOW_SELFSIGNED | LCCSCF_SKIP_SERVER_CERT_HOSTNAME_CHECK ;
+	} else if (!strcmp(proto, "http")) {
+		;
+	} else {
+		fprintf(stderr, "%s: Unsupported protocol %s\n", __func__, proto);
+		return -1;
+	}
+
+//	lws_client_http_multipart(i.pwsi, NULL, NULL, c_type, i.userdata, i.userdata + 200);
+
+	lwsl_notice("%s://%s:%d%s\n" , proto, conn_info.address, conn_info.port, conn_info.path);
+	if (!lws_client_connect_via_info(&conn_info)) {
+		lwsl_err("%s: connect failed\n", __func__);
+		return -1;
+	}
+
+	laoa->result = TR_ONGOING;
+
+	/* spin the event loop until we're done */
+
+	while (!lws_service(ctx->lws_ctx, 1000) && laoa->result == TR_ONGOING)
+		;
+	if (laoa->result < 0) {
+		return laoa->result;
+	}
+	return libteep_ta_store_install(ctx, io.out, io.out_len);
 }

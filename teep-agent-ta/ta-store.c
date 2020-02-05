@@ -43,7 +43,7 @@ int
 ta_store_install(const char *ta_image, size_t ta_image_len)
 {
 #ifdef PCTEST
-	lwsl_user("%s: stub called\n", __func__);
+	lwsl_user("%s: stub called ta_image_len = %zd\n", __func__, ta_image_len);
 	return 0;
 #else
 	TEE_TASessionHandle sess = TEE_HANDLE_NULL;

@@ -142,6 +142,7 @@ struct manifest_list {
 	char url[10][256];
 };
 
+#if 0
 static signed char
 parse_ta_list(struct lejp_ctx *ctx, char reason)
 {
@@ -169,7 +170,7 @@ parse_ta_list(struct lejp_ctx *ctx, char reason)
 	}
 	return 0;
 }
-
+#endif
 static signed char
 parse_manifest_list(struct lejp_ctx *ctx, char reason)
 {
@@ -231,7 +232,7 @@ int loop(struct libteep_ctx *lao_ctx) {
 		return n;
 	}
 	struct manifest_list ml = {.len = 0};
-	struct ta_list tl = {.len = 0};
+	// struct ta_list tl = {.len = 0};
 	while (n > 0) { // if n == 0 then zero packet
 		n = unwrap_teep_request(lao_ctx, teep_req_buf, sizeof(teep_req_buf), http_res_buf, (size_t)n);
 		if (n < 0) {
@@ -282,7 +283,7 @@ int loop(struct libteep_ctx *lao_ctx) {
 			lejp_parse(&jp_ctx, (void *)teep_req_buf, n);
 
 			for (int i = 0; i < ml.len; i++) {
-				libteep_install_ta_image(lao_ctx, ml.url[i]);
+				libteep_download_and_install_ta_image(lao_ctx, ml.url[i]);
 			}
 
 			lwsl_notice("send SUCCESS\n");

@@ -171,7 +171,7 @@ int
 libteep_ta_image_unwrap(struct libteep_ctx *ctx, struct lao_rpc_io *io);
 
 int
-libteep_install_ta_image(struct libteep_ctx *ctx, char *url);
+libteep_download_and_install_ta_image(struct libteep_ctx *ctx, char *url);
 
 #endif
 

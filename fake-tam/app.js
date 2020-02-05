@@ -24,7 +24,7 @@ async function go() {
 	const teePubKey = await loadJwk(config.tee_pub_key)
 
 	/* TA image signed by SP */
-	const taImage = await JWS.createSign(spSignKey).update(fs.readFileSync(config.ta, (err) => {console.log(err)})).final()
+	const taImage = fs.readFileSync(config.ta, (err) => {console.log(err)})
 	const taUrl = `http://${hostname}:${port}/TAs/${path.basename(config.ta)}`
 
 	teepHandler = teep(tamPrivKey, teePubKey, taImage, taUrl);
@@ -38,6 +38,7 @@ async function go() {
 			oldWrite.apply(res, arguments)
 		}
 		res.end = function (chunk) {
+			console.log(typeof(chunk))
 			if (chunk)
 				res_chunks.push(Buffer.from(chunk))
 			oldEnd.apply(res, arguments)
