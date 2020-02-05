@@ -101,7 +101,7 @@ cmdline_parse(int argc, const char *argv[])
 
 static int io_copy(struct lao_rpc_io *io) {
 	if (io->in_len > io->out_len) {
-		return 1;
+		return -1;
 	}
 	memmove(io->out, io->in, io->in_len);
 	io->out_len = io->in_len;
@@ -211,6 +211,7 @@ int loop(struct libteep_ctx *lao_ctx) {
 				"ietf-teep-wg", "3cfa03b5-d4b1-453a-9104-4e4bef53b37e", "teep-device");
 			lws_snprintf(teep_res_buf, sizeof(teep_res_buf), 
 				"{\"TYPE\":%d,\"TOKEN\":\"%s\",\"TA_LIST\":[%s]}", QUERY_RESPONSE, m.token, ta_list);
+			lwsl_notice("json: %s, len: %d\n", teep_res_buf, strlen(teep_res_buf));
 			io.in = teep_res_buf;
 			io.in_len = strlen(teep_res_buf);
 			io.out = http_req_buf;
@@ -220,6 +221,7 @@ int loop(struct libteep_ctx *lao_ctx) {
 				lwsl_err("%s: wrap_teep_request failed", __func__);
 				return 1;
 			}
+			lwsl_notice("body: %s, len: %d\n", http_req_buf, io.out_len);
 			io.in = io.out;
 			io.in_len = io.out_len;
 			io.out = http_res_buf;
