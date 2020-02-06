@@ -199,8 +199,8 @@ teep_message_wrap(const char *msg, int msg_len, unsigned char *out, unsigned int
 		goto bail1;
 	}
 	n = lws_jwe_render_flattened(&jwe, (void *)out, *out_len);
-	if (n) {
-		lwsl_err("%s: lws_jwe_render_flattened failed\n", __func__);
+	if (n < 0) {
+		lwsl_err("%s: lws_jwe_render_flattened failed %d\n", __func__, n);
 		goto bail1;
 	}
 	lwsl_user("Encrypt OK\n");
