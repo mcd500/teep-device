@@ -11,7 +11,7 @@ brew intall libwebsockets
 ### libs on ubuntu 18.04
 
 ```bash
-sudo apt-get purge libmbedtls10 libmbedtls-dev
+sudo apt-get purge libmbedtls* libmbedcrypto* libmbedx509*
 ```
 
 ## build
