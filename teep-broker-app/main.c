@@ -142,7 +142,6 @@ struct manifest_list {
 	char url[10][256];
 };
 
-#if 0
 static signed char
 parse_ta_list(struct lejp_ctx *ctx, char reason)
 {
@@ -170,7 +169,7 @@ parse_ta_list(struct lejp_ctx *ctx, char reason)
 	}
 	return 0;
 }
-#endif
+
 static signed char
 parse_manifest_list(struct lejp_ctx *ctx, char reason)
 {
@@ -231,8 +230,8 @@ int loop(struct libteep_ctx *lao_ctx) {
 		lwsl_err( "%s: libteep_tam_msg: %d\n", __func__, n);
 		return n;
 	}
-	struct manifest_list ml = {.len = 0};
-	// struct ta_list tl = {.len = 0};
+	struct manifest_list manifests = {.len = 0};
+	struct ta_list tas = {.len = 0};
 	while (n > 0) { // if n == 0 then zero packet
 		n = unwrap_teep_request(lao_ctx, teep_req_buf, sizeof(teep_req_buf), http_res_buf, (size_t)n);
 		if (n < 0) {
@@ -250,6 +249,7 @@ int loop(struct libteep_ctx *lao_ctx) {
 
 		lejp_construct(&jp_ctx, parse_type_token_cb, &m, NULL, 0);
 		lejp_parse(&jp_ctx, (void *)teep_req_buf, n);
+		lejp_destruct(&jp_ctx);
 		char tmp[1000];
 		switch (m.type) {
 		case QUERY_REQUEST:
@@ -277,13 +277,11 @@ int loop(struct libteep_ctx *lao_ctx) {
 			break;
 		case TRUSTED_APP_INSTALL:
 			lwsl_notice("detect TRUSTED_APP_INSTALL\n");
-			/* TODO implement GET TA image */
-
-			lejp_construct(&jp_ctx, parse_manifest_list, &ml, NULL, 0);
+			lejp_construct(&jp_ctx, parse_manifest_list, &manifests, NULL, 0);
 			lejp_parse(&jp_ctx, (void *)teep_req_buf, n);
-
-			for (int i = 0; i < ml.len; i++) {
-				libteep_download_and_install_ta_image(lao_ctx, ml.url[i]);
+			lejp_destruct(&jp_ctx);
+			for (int i = 0; i < manifests.len; i++) {
+				libteep_download_and_install_ta_image(lao_ctx, manifests.url[i]);
 			}
 
 			lwsl_notice("send SUCCESS\n");
@@ -303,7 +301,9 @@ int loop(struct libteep_ctx *lao_ctx) {
 			break;
 		case TRUSTED_APP_DELETE:
 			lwsl_notice("detect TRUSTED_APP_DELETE\n");
-			/* TODO implement delete TA image */
+			lejp_construct(&jp_ctx, parse_ta_list, &tas, NULL, 0);
+			lejp_parse(&jp_ctx, (void *)teep_req_buf, n);
+			lejp_destruct(&jp_ctx);
 
 			lwsl_notice("send SUCCESS\n");
 			lws_snprintf(teep_res_buf, sizeof(teep_res_buf),
