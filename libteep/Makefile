@@ -26,7 +26,7 @@ all:
 	cmake ../mbedtls -DCMAKE_TOOLCHAIN_FILE=../cross-aarch64.cmake \
 		 -DCMAKE_INSTALL_PREFIX:PATH=staging -DENABLE_TESTING=0  \
 		 -DCMAKE_BUILD_TYPE=RELEASE -DUSE_SHARED_MBEDTLS_LIBRARY=1 && \
-	make -j8
+	make -j `nproc`
 	#
 	# libwebsockets (REE library)
 	#
@@ -49,7 +49,7 @@ all:
 	 -DLWS_WITHOUT_EXTENSIONS=1 \
 	 -DLWS_WITH_ZLIB=0 \
 	.. && \
-	make
+	make -j `nproc`
 	$(CROSS_COMPILE)strip libwebsockets/build/lib/libwebsockets.so*
 	#
 	# libwebsockets (host library)
@@ -73,7 +73,7 @@ all:
 	 -DLWS_WITHOUT_EXTENSIONS=1 \
 	 -DLWS_WITH_ZLIB=0 \
 	../.. && \
-	make
+	make -j `nproc`
 
 	#
 	# libteep (REE library)
