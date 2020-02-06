@@ -250,26 +250,30 @@ int loop(struct libteep_ctx *lao_ctx) {
 		lejp_construct(&jp_ctx, parse_type_token_cb, &m, NULL, 0);
 		lejp_parse(&jp_ctx, (void *)teep_req_buf, n);
 		lejp_destruct(&jp_ctx);
-		char ta_id_list[1000] = "";
-		char *talist_dup = strdup(talist);
 		switch (m.type) {
 		case QUERY_REQUEST:
 			lwsl_notice("detect QUERY_REQUEST\n");
 			/* TODO: check entries in REQUEST */
 
 			lwsl_notice("send QUERY_RESPONSE\n");
-			char *ta_uuid = strtok(talist_dup, ",");
-			while (ta_uuid) {
-				char tmp[100];
-				lws_snprintf(tmp, sizeof(tmp),
-					"{\"Vendor_ID\":\"%s\",\"Class_ID\":\"%s\",\"Device_ID\":\"%s\"},",
-					"ietf-teep-wg", ta_uuid, "teep-device");
-				strncat(ta_id_list, tmp, sizeof(ta_id_list) - strlen(ta_id_list));
-				ta_uuid = strtok(NULL, ",");
+			{
+				char ta_id_list[1000] = "";
+				char *talist_dup = strdup(talist);
+				char *ta_uuid = strtok(talist_dup, ",");
+				while (ta_uuid) {
+					char tmp[300];
+					lws_snprintf(tmp, sizeof(tmp),
+						"{\"Vendor_ID\":\"%s\",\"Class_ID\":\"%s\",\"Device_ID\":\"%s\"},",
+						"ietf-teep-wg", ta_uuid, "teep-device");
+					strncat(ta_id_list, tmp, sizeof(ta_id_list) - strlen(ta_id_list));
+					ta_uuid = strtok(NULL, ",");
+				}
+				ta_id_list[strlen(ta_id_list) - 1] = '\0';
+				lws_snprintf(teep_res_buf, sizeof(teep_res_buf), 
+					"{\"TYPE\":%d,\"TOKEN\":\"%s\",\"TA_LIST\":[%s]}", QUERY_RESPONSE, m.token, ta_id_list);
+				free(talist_dup);
+				talist_dup = NULL;
 			}
-			ta_id_list[strlen(ta_id_list) - 1] = '\0';
-			lws_snprintf(teep_res_buf, sizeof(teep_res_buf), 
-				"{\"TYPE\":%d,\"TOKEN\":\"%s\",\"TA_LIST\":[%s]}", QUERY_RESPONSE, m.token, ta_id_list);
 			lwsl_notice("json: %s, len: %zd\n", teep_res_buf, strlen(teep_res_buf));
 			n = wrap_teep_response(lao_ctx, http_req_buf, sizeof(http_req_buf), teep_res_buf, strlen(teep_res_buf));
 			if (n < 0) {
