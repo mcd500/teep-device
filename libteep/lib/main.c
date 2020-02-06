@@ -352,6 +352,30 @@ libteep_ta_store_install(struct libteep_ctx *ctx, char *ta_image, size_t ta_imag
 }
 
 int
+libteep_ta_store_delete(struct libteep_ctx *ctx, char *uuid, size_t uuid_len) {
+	TEEC_Result n;
+	TEEC_Operation op;
+
+	memset(&op, 0, sizeof(TEEC_Operation));
+	op.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_TEMP_INPUT,
+					 TEEC_VALUE_INPUT,
+					 TEEC_NONE,
+					 TEEC_NONE);
+
+	op.params[0].tmpref.buffer 	= uuid;
+	op.params[0].tmpref.size	= uuid_len;
+	op.params[1].value.a		= uuid_len;
+
+	n = TEEC_InvokeCommand(&ctx->tee_session, 102, &op, NULL);
+	if (n != TEEC_SUCCESS) {
+		lwsl_err("%s: TEEC_InvokeCommand "
+		        "failed (0x%08x)\n", __func__, n);
+		return (int)n;
+	}
+	return n;
+}
+
+int
 libteep_teep_agent_msg(struct libteep_ctx *ctx, uint32_t cmd,
 		    struct lao_rpc_io *io)
 {
