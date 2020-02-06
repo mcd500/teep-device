@@ -140,7 +140,7 @@ teep_message_wrap(const char *msg, int msg_len, unsigned char *out, unsigned int
 	/* set the actual b64 signature size */
 	jws.map_b64.len[LJWS_SIG] = n;
 
-	char sigbuf[200000];
+	static char sigbuf[200000];
 	/* create the flattened representation */
 	n = lws_jws_write_flattened_json(&jws, (void *)sigbuf, sizeof(sigbuf));
 	if (n < 0) {
