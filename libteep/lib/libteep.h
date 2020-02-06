@@ -173,5 +173,11 @@ libteep_ta_image_unwrap(struct libteep_ctx *ctx, struct lao_rpc_io *io);
 int
 libteep_download_and_install_ta_image(struct libteep_ctx *ctx, char *url);
 
+int
+libteep_ta_store_install(struct libteep_ctx *ctx, char *ta_image, size_t ta_image_len);
+
+int
+libteep_ta_store_delete(struct libteep_ctx *ctx, char *uuid, size_t uuid_len);
+
 #endif
 

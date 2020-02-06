@@ -316,7 +316,9 @@ int loop(struct libteep_ctx *lao_ctx) {
 			lejp_construct(&jp_ctx, parse_ta_list, &tas, NULL, 0);
 			lejp_parse(&jp_ctx, (void *)teep_req_buf, n);
 			lejp_destruct(&jp_ctx);
-
+			for (int i = 0; i < tas.len; i++) {
+				libteep_ta_store_delete(lao_ctx, tas.uuid[i], strlen(tas.uuid[i]));
+			}
 			lwsl_notice("send SUCCESS\n");
 			lws_snprintf(teep_res_buf, sizeof(teep_res_buf),
 				"{\"TYPE\":%d,\"TOKEN\":\"%s\"}", SUCCESS, m.token);
