@@ -1,7 +1,7 @@
 {
-  "name": "fake-tam",
+  "name": "tiny-tam",
   "version": "1.0.0",
-  "description": "fake tam implementation",
+  "description": "tiny tam implementation",
   "main": "app.js",
   "scripts": {
     "start": "npx nodemon app.js"

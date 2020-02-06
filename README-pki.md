@@ -131,7 +131,7 @@ $ LWS_BUILD_DIR=/path/to/libwebsockets/build ./scripts/otrp-kickstart-pki.sh
 ```
 
 This recreates all the PKI, root certs and keys etc... running this again
-will mean you will have to rebuild everything and update fake-tam copies of
+will mean you will have to rebuild everything and update tiny-tam copies of
 the crypto etc using the new pki.
 
 ### Step 3: run the test script
