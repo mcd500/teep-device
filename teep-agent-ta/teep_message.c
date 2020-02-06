@@ -142,7 +142,7 @@ teep_message_wrap(const char *msg, int msg_len, unsigned char *out, unsigned int
 
 	static char sigbuf[200000];
 	/* create the flattened representation */
-	n = lws_jws_write_flattened_json(&jws, (void *)sigbuf, sizeof(sigbuf));
+	n = lws_jws_write_flattened_json(&jws, (void *)sigbuf, sizeof(sigbuf) - 16);
 	if (n < 0) {
 		lwsl_err("%s: failed write flattened json\n", __func__);
 		goto bail1;
@@ -175,6 +175,12 @@ teep_message_wrap(const char *msg, int msg_len, unsigned char *out, unsigned int
 	jwe.jws.map.len[LJWS_JOSE] = lws_snprintf(
 			(char *)jwe.jws.map.buf[LJWS_JOSE], temp_len,
 			"{\"alg\":\"%s\",\"enc\":\"%s\"}", alg, enc);
+
+	// need manual padding
+	// https://github.com/warmcat/libwebsockets/commit/63ad616941e080cbdb94f706e388b0cf8c5beb70#diff-69a3998d35803592c0e1c24b9c1b1757
+	int pad = ((sign_len + 16) & ~15) - sign_len;
+	memset(sigbuf + sign_len, pad, pad);
+	sign_len += pad;
 
 	jwe.jws.map.buf[LJWE_CTXT] = (void *)sigbuf;
 	jwe.jws.map.len[LJWE_CTXT] = sign_len;
