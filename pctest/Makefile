@@ -37,6 +37,36 @@ run: $(TARGET)
 run-jose: $(TARGET)
 	./$(TARGET) --jose --tamurl http://127.0.0.1:3000/api/tam_jose
 
+MBED_JWE = ./libwebsockets/build/bin/lws-crypto-jwe
+OSSL_JWE = ./libwebsockets/build-ossl/bin/lws-crypto-jwe
+KEY_PRV = ../test-jw/tsm/identity/private/tam-mytam-private.jwk
+KEY_PUB = ../test-jw/tsm/identity/tam-mytam-public.jwk
+
+.PHONY: lws-sample-ok lws-sample-fail
+lws-sample-ok:
+	echo -n 0123456789ABCDEF | \
+		$(MBED_JWE) -f -k $(KEY_PUB) -e "RSA1_5 A128CBC-HS256"
+	echo -n 0123456789ABCDEF | \
+		$(OSSL_JWE) -f -k $(KEY_PUB) -e "RSA1_5 A128CBC-HS256"
+	echo -n 0123456789ABCDEF | \
+		$(OSSL_JWE) -f -k $(KEY_PUB) -e "RSA-OAEP A128CBC-HS256"
+	echo -n 0123456789ABCDEF | \
+		$(OSSL_JWE) -f -k $(KEY_PUB) -e "RSA-OAEP A128CBC-HS256" | \
+		$(OSSL_JWE) -f -k $(KEY_PRV); echo
+
+lws-sample-fail:
+	# no padding bug
+	echo -n 0123456789ABCDE  | \
+		$(MBED_JWE) -f -k $(KEY_PUB) -e "RSA1_5 A128CBC-HS256"
+	echo -n 0123456789ABCDE  | \
+		$(OSSL_JWE) -f -k $(KEY_PUB) -e "RSA1_5 A128CBC-HS256"
+	# RSA-OAEP not supported
+	echo -n 0123456789ABCDEF | \
+		$(MBED_JWE) -f -k $(KEY_PUB) -e "RSA-OAEP A128CBC-HS256"
+	echo -n 0123456789ABCDEF | \
+		$(OSSL_JWE) -f -k $(KEY_PUB) -e "RSA-OAEP A128CBC-HS256" | \
+		$(MBED_JWE) -f -k $(KEY_PRV)
+
 .PHONY: mbedtls
 mbedtls mbedtls/build/library/libmbedtls.so:
 	rm -fr mbedtls
@@ -65,6 +95,13 @@ libwebsockets libwebsockets/build/lib/libwebsockets.so: mbedtls/build/library/li
 		-DMBEDTLS_LIBRARY=../../mbedtls/build/library/libmbedtls.so \
 		-DMBEDX509_LIBRARY=../../mbedtls/build/library/libmbedx509.so \
 		-DMBEDCRYPTO_LIBRARY=../../mbedtls/build/library/libmbedcrypto.so \
+		-DLWS_WITH_MINIMAL_EXAMPLES=1 \
 		..; \
 	make -j `nproc`; \
+	mkdir ../build-ossl; cd ../build-ossl; \
+	cmake 	-DLWS_WITH_SSL=1 \
+		-DLWS_WITH_JOSE=1 \
+		-DLWS_WITH_MINIMAL_EXAMPLES=1 \
+		..; \
+	make -j `nproc`
 	sudo ldconfig $(CURDIR)/libwebsockets/build/lib
