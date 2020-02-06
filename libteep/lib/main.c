@@ -344,7 +344,7 @@ libteep_ta_store_install(struct libteep_ctx *ctx, char *ta_image, size_t ta_imag
 
 	n = TEEC_InvokeCommand(&ctx->tee_session, 101, &op, NULL);
 	if (n != TEEC_SUCCESS) {
-		fprintf(stderr, "%s: TEEC_InvokeCommand "
+		lwsl_err("%s: TEEC_InvokeCommand "
 		        "failed (0x%08x)\n", __func__, n);
 		return (int)n;
 	}
@@ -357,7 +357,6 @@ libteep_teep_agent_msg(struct libteep_ctx *ctx, uint32_t cmd,
 {
 	TEEC_Result n;
 	TEEC_Operation op;
-	int m;
 
 	memset(&op, 0, sizeof(TEEC_Operation));
 	op.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_TEMP_INPUT,
@@ -374,17 +373,13 @@ libteep_teep_agent_msg(struct libteep_ctx *ctx, uint32_t cmd,
 
 	n = TEEC_InvokeCommand(&ctx->tee_session, cmd, &op, NULL);
 	if (n != TEEC_SUCCESS) {
-		fprintf(stderr, "%s: TEEC_InvokeCommand "
+		lwsl_err("%s: TEEC_InvokeCommand "
 		        "failed (0x%08x)\n", __func__, n);
 		return (int)n;
 	}
 
 	io->out_len = op.params[3].value.a;
-	for (m = 0; m < op.params[3].value.a; m++)
-		fprintf(stderr, "%02X", ((uint8_t *)io->out)[m]);
-
-	fprintf(stderr, "\n");
-
+	lwsl_hexdump_notice(io->out, io->out_len);
 	return n;
 }
 

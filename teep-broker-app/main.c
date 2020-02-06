@@ -265,7 +265,7 @@ int loop(struct libteep_ctx *lao_ctx) {
 			lwsl_notice("json: %s, len: %zd\n", teep_res_buf, strlen(teep_res_buf));
 			n = wrap_teep_response(lao_ctx, http_req_buf, sizeof(http_req_buf), teep_res_buf, strlen(teep_res_buf));
 			if (n < 0) {
-				lwsl_err("%s: wrap_teep_response failed %d", __func__, n);
+				lwsl_err("%s: wrap_teep_response failed %d\n", __func__, n);
 				return n;
 			}
 			lwsl_notice("body: %s, len: %zd\n", http_req_buf, (size_t)n);

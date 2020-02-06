@@ -23,7 +23,7 @@ module.exports = (tamPrivKey, teePubKey, taImage, taUrl) => ({
 	sign(data) {return JWS.createSign(signParam, tamPrivKey).update(data).final()},
 	verify(data) {return JWS.createVerify(teePubKey).verify(data)},
 	encrypt(data) {return JWE.createEncrypt(encParam, teePubKey).update(data).final()},
-	decrypt(data) {return JWE.crateDecrypt(tamPrivKey).decrypt(data)},
+	decrypt(data) {return JWE.createDecrypt(tamPrivKey).decrypt(data)},
 
 	async wrap(data) {
 		console.log(data)
@@ -35,7 +35,9 @@ module.exports = (tamPrivKey, teePubKey, taImage, taUrl) => ({
 	},
 
 	async unwrap(data) {
+		console.log(data)
 		decrypted = await this.decrypt(JSON.parse(data))
+		console.log(decrypted)
 		verified = await this.verify(JSON.parse(decrypted.payload))
 		if (verified) {
 			return JSON.parse(verified.payload)
@@ -117,7 +119,7 @@ module.exports = (tamPrivKey, teePubKey, taImage, taUrl) => ({
 		// parse json for switch TEEP Response	
 		let teepRes
 		if (jose) {
-			teepRes = await this.unwrap(req, body)
+			teepRes = await this.unwrap(body)
 		} else {
 			teepRes = JSON.parse(body)
 		}
