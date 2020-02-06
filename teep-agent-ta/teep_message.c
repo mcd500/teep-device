@@ -198,7 +198,7 @@ teep_message_wrap(const char *msg, int msg_len, unsigned char *out, unsigned int
 		goto bail1;
 	}
 	lwsl_user("Encrypt OK\n");
-	*out_len = strlen(out);
+	*out_len = strlen((void *)out);
 	return 0;
 	
 bail1:
