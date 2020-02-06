@@ -1,5 +1,7 @@
-GIT_URL  ?= http://192.168.100.100
-MBED_URL ?= https://github.com/ARMmbed/mbedtls.git
+LWS_GIT_URL  ?= https://github.com/warmcat/libwebsockets.git
+LWS_BRANCH   ?= v3.2-stable
+MBED_GIT_URL ?= https://github.com/ARMmbed/mbedtls.git
+MBED_BRANCH  ?= mbedtls-2.16
 
 SHELL = /bin/bash -x
 
@@ -38,9 +40,9 @@ run-jose: $(TARGET)
 .PHONY: mbedtls
 mbedtls mbedtls/build/library/libmbedtls.so:
 	rm -fr mbedtls
-	git clone $(MBED_URL)
+	git clone $(MBED_GIT_URL)
 	set -e; cd mbedtls; \
-	git checkout mbedtls-2.16; \
+	git checkout $(MBED_BRANCH); \
 	mkdir build; cd build; \
 	cmake 	\
 		-DCMAKE_BUILD_TYPE=RELEASE \
@@ -52,8 +54,10 @@ mbedtls mbedtls/build/library/libmbedtls.so:
 .PHONY: libwebsockets
 libwebsockets libwebsockets/build/lib/libwebsockets.so: mbedtls/build/library/libmbedtls.so
 	rm -fr libwebsockets
-	git clone $(GIT_URL)/vc707/libwebsockets.git
-	set -e; cd libwebsockets; mkdir build; cd build; \
+	git clone $(LWS_GIT_URL)
+	set -e; cd libwebsockets; \
+	git checkout $(LWS_BRANCH); \
+	mkdir build; cd build; \
 	cmake 	-DLWS_WITH_SSL=1 \
 		-DLWS_WITH_MBEDTLS=1 \
 		-DLWS_WITH_JOSE=1 \
@@ -63,4 +67,4 @@ libwebsockets libwebsockets/build/lib/libwebsockets.so: mbedtls/build/library/li
 		-DMBEDCRYPTO_LIBRARY=../../mbedtls/build/library/libmbedcrypto.so \
 		..; \
 	make -j `nproc`; \
-	sudo ldconfig $(CURDIR)/lib; \
+	sudo ldconfig $(CURDIR)/libwebsockets/build/lib
