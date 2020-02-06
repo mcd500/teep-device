@@ -83,7 +83,6 @@ clean:
 	make -C sp-hello-app TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) clean
 	make -C sp-hello-ta TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) clean
 	rm -f $(TEEP_KEY_SRCS)
-	rm -fr test-jw
 
 .PHONY: clean-ta
 clean-ta:
@@ -94,3 +93,4 @@ clean-ta:
 distclean:
 	rm -fr pctest/libwebsockets
 	rm -fr sample-senario/node_modules/ sample-senario/package-lock.json
+	rm -fr test-jw
