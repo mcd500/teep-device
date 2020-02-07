@@ -71,7 +71,7 @@ lws-sample-fail:
 mbedtls mbedtls/build/library/libmbedtls.so:
 #	rm -fr mbedtls
 #	git clone $(MBED_GIT_URL)
-	set -e; cd mbedtls; \
+	set -e; cd $(CURDIR)/mbedtls; \
 	git checkout $(MBED_BRANCH); \
 	mkdir build; cd build; \
 	cmake 	\
@@ -85,7 +85,7 @@ mbedtls mbedtls/build/library/libmbedtls.so:
 libwebsockets libwebsockets/build/lib/libwebsockets.so: mbedtls/build/library/libmbedtls.so
 #	rm -fr libwebsockets
 #	git clone $(LWS_GIT_URL)
-	set -e; cd libwebsockets; \
+	set -e; cd $(CURDIR)/libwebsockets; \
 	git checkout $(LWS_BRANCH); \
 	mkdir build; cd build; \
 	cmake 	-DLWS_WITH_SSL=1 \
