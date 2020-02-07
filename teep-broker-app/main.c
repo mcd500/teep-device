@@ -333,6 +333,7 @@ int loop(struct libteep_ctx *lao_ctx) {
 				lwsl_err( "%s: libteep_tam_msg: %d\n", __func__, n);
 				return n;
 			}
+			break;
 		default:
 			lwsl_err("%s: requested message type is invalid %d\n", __func__, m.type);
 			return -1;
