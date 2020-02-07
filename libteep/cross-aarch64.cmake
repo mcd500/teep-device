@@ -19,7 +19,7 @@ SET(CMAKE_C_FLAGS "-DGCC_VER=\"\\\"$(GCC_VER)\\\"\" -DARM64=1 -D__LP64__=1 -Os -
 
 
 # Where to look for the target environment. (More paths can be added here)
-set(CMAKE_FIND_ROOT_PATH "/projects/aist-tb/arm64-tc/")
+set(CMAKE_FIND_ROOT_PATH "/projects/aist-tb/arm64-tc/" "~/arm64-tc-8/")
 
 # Adjust the default behavior of the FIND_XXX() commands:
 # search programs in the host environment only.
