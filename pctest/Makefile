@@ -69,8 +69,8 @@ lws-sample-fail:
 
 .PHONY: mbedtls
 mbedtls mbedtls/build/library/libmbedtls.so:
-	rm -fr mbedtls
-	git clone $(MBED_GIT_URL)
+#	rm -fr mbedtls
+#	git clone $(MBED_GIT_URL)
 	set -e; cd mbedtls; \
 	git checkout $(MBED_BRANCH); \
 	mkdir build; cd build; \
@@ -83,8 +83,8 @@ mbedtls mbedtls/build/library/libmbedtls.so:
 
 .PHONY: libwebsockets
 libwebsockets libwebsockets/build/lib/libwebsockets.so: mbedtls/build/library/libmbedtls.so
-	rm -fr libwebsockets
-	git clone $(LWS_GIT_URL)
+#	rm -fr libwebsockets
+#	git clone $(LWS_GIT_URL)
 	set -e; cd libwebsockets; \
 	git checkout $(LWS_BRANCH); \
 	mkdir build; cd build; \
