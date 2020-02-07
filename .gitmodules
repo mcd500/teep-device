@@ -4,3 +4,9 @@
 [submodule "libaistotrp/mbedtls"]
 	path = libteep/mbedtls
 	url = http://192.168.100.100/vc707/mbedtls
+[submodule "pctest/libwebsockets"]
+	path = pctest/libwebsockets
+	url = http://192.168.100.100/vc707/libwebsockets
+[submodule "pctest/mbedtls"]
+	path = pctest/mbedtls
+	url = http://192.168.100.100/vc707/mbedtls
