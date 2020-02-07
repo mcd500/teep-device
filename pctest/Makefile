@@ -15,14 +15,20 @@ ifeq ($(UNAME_S),Darwin)
 endif
 LDFLAGS+=-Llibwebsockets/build/lib
 
+TA_SRC := ../teep-broker-app/main.c ../libteep/lib/main.c ../teep-agent-ta/ta-store.c ../teep-agent-ta/teep_message.c
+
 TARGET = pctest
 
 # Makefile for TEEP Agent of UT
 
 .PHONY: all
-all: mbedtls/build/library/libmbedtls.so libwebsockets/build/lib/libwebsockets.so $(TARGET)
+all:
+	make -C .. generate-jwk-headers
+	make libwebsockets
+	make mbedtls
+	make $(TARGET)
 
-$(TARGET): $(TARGET).c ../teep-broker-app/main.c ../libteep/lib/main.c ../teep-agent-ta/teep_message.c ../teep-agent-ta/ta-store.c
+$(TARGET): $(TARGET).c ../teep-broker-app/main.c ../libteep/lib/main.c $(TA_SRC)
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
 .PHONY: clean
@@ -68,12 +74,10 @@ lws-sample-fail:
 		$(MBED_JWE) -f -k $(KEY_PRV)
 
 .PHONY: mbedtls
-mbedtls mbedtls/build/library/libmbedtls.so:
-#	rm -fr mbedtls
-#	git clone $(MBED_GIT_URL)
-	set -e; cd $(CURDIR)/mbedtls; \
+mbedtls: $(wildcard mbedtls/*.c) $(wildcard mbedtls/*.h) $(wildcard mbedtls/CMakeLists.txt)
+	cd $(CURDIR)/mbedtls; \
 	git checkout $(MBED_BRANCH); \
-	mkdir build; cd build; \
+	mkdir -p build; cd build; \
 	cmake 	\
 		-DCMAKE_BUILD_TYPE=RELEASE \
 		-DUSE_SHARED_MBEDTLS_LIBRARY=1 \
@@ -82,12 +86,10 @@ mbedtls mbedtls/build/library/libmbedtls.so:
 	sudo ldconfig $(CURDIR)/mbedtls/build/library/
 
 .PHONY: libwebsockets
-libwebsockets libwebsockets/build/lib/libwebsockets.so: mbedtls/build/library/libmbedtls.so
-#	rm -fr libwebsockets
-#	git clone $(LWS_GIT_URL)
-	set -e; cd $(CURDIR)/libwebsockets; \
+libwebsockets: $(wildcard libwebsockets/*.c) $(wildcard libwebsockets/*.h) $(wildcard mbedtls/CMakeLists.txt)
+	cd $(CURDIR)/libwebsockets; \
 	git checkout $(LWS_BRANCH); \
-	mkdir build; cd build; \
+	mkdir -p build; cd build; \
 	cmake 	-DLWS_WITH_SSL=1 \
 		-DLWS_WITH_MBEDTLS=1 \
 		-DLWS_WITH_JOSE=1 \
@@ -98,7 +100,7 @@ libwebsockets libwebsockets/build/lib/libwebsockets.so: mbedtls/build/library/li
 		-DLWS_WITH_MINIMAL_EXAMPLES=1 \
 		..; \
 	make -j `nproc`; \
-	mkdir ../build-ossl; cd ../build-ossl; \
+	mkdir -p ../build-ossl; cd ../build-ossl; \
 	cmake 	-DLWS_WITH_SSL=1 \
 		-DLWS_WITH_JOSE=1 \
 		-DLWS_WITH_MINIMAL_EXAMPLES=1 \
