@@ -31,7 +31,7 @@ clean:
 
 .PHONY: run
 run: $(TARGET)
-	./$(TARGET)
+	./$(TARGET) --tamurl http://127.0.0.1:3000/api/tam
 
 .PHONY: run-jose
 run-jose: $(TARGET)
