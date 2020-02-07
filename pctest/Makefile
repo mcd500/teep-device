@@ -24,8 +24,8 @@ TARGET = pctest
 .PHONY: all
 all:
 	make -C .. generate-jwk-headers
-	make libwebsockets
 	make mbedtls
+	make libwebsockets
 	make $(TARGET)
 
 $(TARGET): $(TARGET).c ../teep-broker-app/main.c ../libteep/lib/main.c $(TA_SRC)
@@ -33,6 +33,9 @@ $(TARGET): $(TARGET).c ../teep-broker-app/main.c ../libteep/lib/main.c $(TA_SRC)
 
 .PHONY: clean
 clean:
+	rm -fr libwebsockets/build clean
+	rm -fr libwebsockets/build-ossl
+	rm -fr mbedtls/build
 	$(RM) $(TARGET)
 
 .PHONY: run
