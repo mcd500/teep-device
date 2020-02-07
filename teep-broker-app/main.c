@@ -238,6 +238,10 @@ int loop(struct libteep_ctx *lao_ctx) {
 			lwsl_err("%s: unwrap_teep_request: fail %d\n", __func__, n);
 			return n;
 		}
+		if (n == 0) {
+			lwsl_notice("%s: received encrypted empty body\n", __func__);
+			break;
+		}
 		lwsl_notice("%s: received message: %*s\n", __func__, n, (char *)teep_req_buf);
 		struct lejp_ctx jp_ctx;
 		char token[100] = "";
