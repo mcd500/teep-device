@@ -25,7 +25,7 @@ endif
 
 .PHONY: generate-jwks
 generate-jwks $(TEEP_KEYS):
-	(cd sample-senario && sudo npm install)
+	(cd sample-senario && npm install)
 	mkdir -p test-jw/tsm/identity/private
 	mkdir -p test-jw/tee/identity/private
 	mkdir -p test-jw/tee/sds/xbank
