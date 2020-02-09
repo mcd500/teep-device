@@ -3,7 +3,7 @@ LWS_BRANCH   ?= v3.2-stable
 MBED_GIT_URL ?= https://github.com/ARMmbed/mbedtls.git
 MBED_BRANCH  ?= mbedtls-2.16
 
-SHELL = /bin/bash -x
+#SHELL = /bin/bash -xu
 
 CFLAGS := -g -O0 -Wall
 LDLIBS := -lwebsockets
