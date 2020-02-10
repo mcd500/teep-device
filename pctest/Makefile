@@ -8,9 +8,6 @@ MBED_BRANCH  ?= mbedtls-2.16
 CFLAGS := -g -O0 -Wall
 LDLIBS := -lwebsockets
 UNAME_S := $(shell uname -s)
-ifeq ($(UNAME_S),Darwin)
-	LDFLAGS := -L/usr/local/opt/libwebsockets/lib
-endif
 
 TAM_PUB_JWK  := ../test-jw/tsm/identity/tam-mytam-public.jwk
 TAM_PRIV_JWK := ../test-jw/tsm/identity/private/tam-mytam-private.jwk

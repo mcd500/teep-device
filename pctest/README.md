@@ -2,16 +2,11 @@
 
 ## prepare libs
 
-### libs on macos
+Uninstall libraries from local machine to prevent conflicts
+which we are going to use from the latest sources.
 
 ```bash
-brew intall libwebsockets
-```
-
-### libs on ubuntu 18.04
-
-```bash
-sudo apt-get purge libmbedtls* libmbedcrypto* libmbedx509*
+sudo apt-get purge libwebsockets* libmbedtls* libmbedcrypto* libmbedx509*
 ```
 
 ## build
