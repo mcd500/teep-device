@@ -51,7 +51,7 @@ libwebsockets-ree libwebsockets/build/lib/libwebsockets.so: $(MBEDTLS_REE_OBJS)
 	#
 #	rm -fr libwebsockets
 #	git clone $(LWS_GIT_URL)
-	cd libwebsockets; git checkout $(LWS_BRANCH)
+#	cd libwebsockets; git checkout $(LWS_BRANCH)
 	mkdir -p libwebsockets/build
 	cd libwebsockets/build && \
 	cmake -DCMAKE_TOOLCHAIN_FILE=../../cross-aarch64.cmake \
