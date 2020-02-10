@@ -24,7 +24,7 @@ TEEP_KEY_H := ../teep-agent-ta/tam_id_pubkey_jwk.h \
 	      ../teep-agent-ta/tee_id_pubkey_jwk.h \
 	      ../teep-agent-ta/sp_pubkey_jwk.h
 
-TARGET_SRC := ../teep-broker-app/main.c ../libteep/lib/main.c \
+TARGET_SRC := teec_stub.c ../teep-broker-app/main.c ../libteep/lib/main.c \
 	      ../teep-agent-ta/ta-store.c ../teep-agent-ta/teep_message.c
 
 MBEDTLS_BDIR := build-mbedtls
@@ -44,7 +44,7 @@ INCLUDES := -I../libteep/lib -I./$(LWS_M_BDIR)/include -I./mbedtls/include \
 CFLAGS  += $(INCLUDES) -DPCTEST=1
 LDFLAGS += -L$(LWS_M_BDIR)/lib
 
-TARGET = pctest
+TARGET = teep-broker-app
 
 # Makefile for TEEP Agent of UT
 
@@ -57,7 +57,7 @@ $(TEEP_KEYS):
 $(TEEP_KEY_H): $(TEEP_KEYS)
 	make -C .. generate-jwk-headers
 
-$(TARGET): $(TARGET).c $(TARGET_SRC)
+$(TARGET): $(TARGET_SRC)
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
 .PHONY: mbedtls

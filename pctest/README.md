@@ -19,7 +19,7 @@ make
 
 Usage:
 ```sh
-./pctest --tamurl http://{ip_adress_of_tam}:{port}{path} [--jose]  
+./teep-broker-app --tamurl http://{ip_adress_of_tam}:{port}{path} [--jose]  
          [--talist uuid_of_deleting_ta]
 ```
 
@@ -27,25 +27,25 @@ Usage:
 
 * Install TA without encrypted json message
 ```bash
-./pctest --tamurl http://192.168.11.3:3000/api/tam
+./teep-broker-app --tamurl http://192.168.11.3:3000/api/tam
 ```
 
 * Deleting TA without encrypted json message
 ```bash
-./pctest --tamurl http://192.168.11.3:3000/api/tam --talist 8d82573a-926d-4754-9353-32dc29997f74
+./teep-broker-app --tamurl http://192.168.11.3:3000/api/tam --talist 8d82573a-926d-4754-9353-32dc29997f74
 ```
 
 * Install TA with encrypted json message
 ```bash
-./pctest --tamurl http://192.168.11.3:3000/api/tam_jose --jose
+./teep-broker-app --tamurl http://192.168.11.3:3000/api/tam_jose --jose
 ```
 
 * Deleting TA with encrypted jsone message
 ```bash
-./pctest --tamurl http://192.168.11.3:3000/api/tam_jose --jose --talist 8d82573a-926d-4754-9353-32dc29997f74
+./teep-broker-app --tamurl http://192.168.11.3:3000/api/tam_jose --jose --talist 8d82573a-926d-4754-9353-32dc29997f74
 ```
 
 Show help
 ```bash
-./pctest --help
+./teep-broker-app --help
 ```
