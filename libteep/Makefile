@@ -36,7 +36,8 @@ mbedtls-ree $(MBEDTLS_REE_OBJS):
 	# mbedtls (REE library)
 	#
 #	rm -fr mbedtls
-#	git clone $(MBED_GIT_URL); cd mbedtls; git checkout $(MBED_BRANCH)
+#	git clone $(MBED_GIT_URL);
+#	cd mbedtls; git checkout $(MBED_BRANCH)
 	mkdir -p $(M_REE_BDIR)/staging
 	cd $(M_REE_BDIR) && \
 	cmake -DCMAKE_TOOLCHAIN_FILE=../cross-aarch64.cmake \
