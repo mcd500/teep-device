@@ -14,6 +14,9 @@ TEEP_KEY_SRC := teep-agent-ta/tam_id_pubkey_jwk.h \
                 teep-agent-ta/tee_id_pubkey_jwk.h \
                 teep-agent-ta/sp_pubkey_jwk.h
 
+export LWS_M_BDIR = build-lws-mbed
+export MBEDTLS_BDIR = build-mbedtls
+
 .PHONY: all
 ifneq ($(wildcard $(TA_DEV_KIT_DIR)/mk/ta_dev_kit.mk),)
 all: aist-teep
