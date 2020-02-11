@@ -114,9 +114,8 @@ libteep-ree: libwebsockets/build/lib/libwebsockets.so
 	$(CROSS_COMPILE)gcc $(REE_CFLAGS) -Ilib -c lib/main.c -o lib/main.o
 	$(CROSS_COMPILE)gcc $(LDFLAGS) \
 		-shared -Wl,-soname,libteep.so.1 \
-		-L../../optee_client/out/libteec -L mbedtls-build/library \
-		-Llibwebsockets/build/lib \
-		lib/main.o -lteec -lwebsockets -lmbedx509 -lmbedtls -l mbedcrypto \
+		-L../../optee_client/out/libteec \
+		lib/main.o -lteec -lwebsockets -lmbedx509 -lmbedtls -lmbedcrypto \
 		-o lib/libteep.so.1
 	ln -sf libteep.so.1 lib/libteep.so
 
