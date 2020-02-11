@@ -3,7 +3,7 @@ LWS_BRANCH   ?= v3.2-stable
 MBED_GIT_URL ?= https://github.com/ARMmbed/mbedtls.git
 MBED_BRANCH  ?= mbedtls-2.16
 
-SHELL = /bin/bash -xe
+#SHELL = /bin/bash -xeu
 
 #
 # We're building several different pieces in one step, related to OTRP above TEE level
