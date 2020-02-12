@@ -23,7 +23,11 @@ ta.lds
 mbedtls-build
 sp-hello-app/sp-hello-app
 teep-broker-app/teep-broker-app
-#pctest/libwebsockets
+pctest/libwebsockets
+pctest/mbedtls
+pctest/build-lws-mbed
+pctest/build-lws-ossl
+pctest/build-mbedtls
 sample-senario/node_modules/
 sample-senario/package-lock.json
 tiny-tam/node_modules/
