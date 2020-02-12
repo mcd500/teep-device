@@ -33,7 +33,7 @@ MBEDTLS_SRC :=  $(shell find mbedtls -name "*.c") \
 MBEDTLS_OBJ = $(MBEDTLS_BDIR)/library
 
 LWS_M_BDIR := build-lws-mbed
-LWS_O_BDIR := build-lws-osll
+LWS_O_BDIR := build-lws-ossl
 LWS_SRC := $(shell find libwebsockets -name "*.c") \
 	   $(shell find libwebsockets -name "*.h") \
 	   $(shell find libwebsockets -name "*.cmake")
