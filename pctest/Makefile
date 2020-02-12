@@ -8,6 +8,8 @@ MBED_BRANCH  ?= mbedtls-2.16
 CFLAGS := -g -O0 -Wall
 LDLIBS := -lwebsockets
 UNAME_S := $(shell uname -s)
+ETHER := $(shell ip link | awk -F: '$$0 !~ "lo|vir|wl|pp|docker|br|^[^0-9]"{print $$2;getline}')
+IP_ADDR := $(shell ifconfig $(ETHER) | awk '/inet / {gsub("addr:","",$$2); print $$2}')
 
 TAM_PUB_JWK  := ../test-jw/tsm/identity/tam-mytam-public.jwk
 TAM_PRIV_JWK := ../test-jw/tsm/identity/private/tam-mytam-private.jwk
@@ -106,11 +108,11 @@ clean:
 
 .PHONY: run
 run: $(TARGET)
-	./$(TARGET) --tamurl http://127.0.0.1:3000/api/tam
+	./$(TARGET) --tamurl http://${IP_ADDR}:3000/api/tam
 
 .PHONY: run-jose
 run-jose: $(TARGET)
-	./$(TARGET) --jose --tamurl http://127.0.0.1:3000/api/tam_jose
+	./$(TARGET) --tamurl http://${IP_ADDR}:3000/api/tam_jose --jose
 
 MBED_JWE = ./$(LWS_M_BDIR)/bin/lws-crypto-jwe
 OSSL_JWE = ./$(LWS_O_BDIR)/bin/lws-crypto-jwe
