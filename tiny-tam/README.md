@@ -12,7 +12,7 @@ npm install
 ## How to run Tiny TAM server
 
 ```
-node app.js [hostname] [port]
+node app.js [hostname] [port] [ta]
 ```
 
 ## File structures
@@ -69,21 +69,31 @@ which contains some JWK extracted from certs and keys in the `./aist-teep/pki` d
 
 ## Generating the test TA
 
-`make optee_os` should be enough to generate the test TA.
+```
+source set-otrp-env.sh
+cd aist-otrp
+make aist-teep
+```
 
-Copy all the listed pieces to a `/var/www/node` directory on your server.
+## Running the Tiny TAM server
 
+```
+node app.js
+```
 
-## Edit app,js hostname
+will run the test server.  You may need to open its firewall fop port 3000/tcp.
 
-Edit `/var/www/node/app,js` so the hostname matches the external IP of your server.
+## Specify hostname, port number and ta by env variables
+
+```
+TAM_SERVER_HOSTNAME="192.168.11.3" node app.js
+```
+
+Other env variables.
+
+`TAM_SERVER_PORT`, `TAM_SERVER_TA`.
+
 
 ## Open your server filewall for port 3000 if necessary
 
 Eg for Fedora, `firewall-cmd --add-port 3000/tcp`
-
-
-`node /var/www/node/app.js`
-
-will run the test server.  You may need to open its firewall fop port 3000/tcp.
-
