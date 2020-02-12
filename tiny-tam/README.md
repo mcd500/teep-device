@@ -43,7 +43,7 @@ To do that, following assets should be configured on `config.json`
 | URL | Method | Function |
 |-----|--------|----------|
 | `/tam` | `PUSH` |TEEP/OTrP over HTTP without encryption and sign |
-| `/tam_jose` | `PUSH` |TEEP/OTrP over HTTP without encryption and sign |
+| `/tam_jose` | `PUSH` |TEEP/OTrP over HTTP with encryption and sign |
 
 ### Force Padding Scheme in spaik pubkey (work in progress)
 
