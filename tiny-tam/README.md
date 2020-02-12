@@ -1,4 +1,4 @@
-# Setting up the Fake TAM
+# Setting up the Tiny TAM
 
 ## Preparing node and dependencies
 
@@ -9,7 +9,7 @@ Then use npm to install dependent libraries.
 ```
 npm install
 ```
-## How to run Fake TAM server
+## How to run Tiny TAM server
 
 ```
 node app.js [hostname] [port]
@@ -17,7 +17,7 @@ node app.js [hostname] [port]
 
 ## File structures
 
-The "Fake TAM" is a node.js application that listens on port 3000
+The "Tiny TAM" is a node.js application that listens on port 3000
 
 | File name | Function |
 |-----------|----------|
@@ -28,7 +28,7 @@ The "Fake TAM" is a node.js application that listens on port 3000
 
 ## Setting up pki pieces and test ta
 
-The "Fake TAM" serves an encrypted + signed test TA to anyone making requests.
+The "Tiny TAM" serves an encrypted + signed test TA to anyone making requests.
 To do that, following assets should be configured on `config.json`
 
 | Setting | Function | Default |
@@ -71,8 +71,6 @@ which contains some JWK extracted from certs and keys in the `./aist-teep/pki` d
 
 `make optee_os` should be enough to generate the test TA.
 
-## Copying everything to the "Fake TAM" server
-
 Copy all the listed pieces to a `/var/www/node` directory on your server.
 
 
@@ -84,7 +82,6 @@ Edit `/var/www/node/app,js` so the hostname matches the external IP of your serv
 
 Eg for Fedora, `firewall-cmd --add-port 3000/tcp`
 
-## Running the fake TAM server
 
 `node /var/www/node/app.js`
 
