@@ -88,7 +88,7 @@ module.exports = (tamPrivKey, teePubKey, taImage, taUrl) => ({
 			TA_LIST: [
 				{
 					Vecndor_ID: "ietf-teep-wg",
-					Class_ID: "8d82573a-926d-4754-9353-32dc29997f74",
+					Class_ID: "${taname}",
 					Device_ID: "teep-device"
 				}
 			]
@@ -130,7 +130,7 @@ module.exports = (tamPrivKey, teePubKey, taImage, taUrl) => ({
 		console.log("parsed JSON:", teepRes)
 		if (teepRes.TYPE == QUERY_RESPONSE) {
 			console.log("detect QUERY_RESPONSE")
-			if (teepRes.TA_LIST.find((triple) => triple.Class_ID == '8d82573a-926d-4754-9353-32dc29997f74')) {
+			if (teepRes.TA_LIST.find((triple) => triple.Class_ID == "${taname}")) {
 				return this.sendTrustedAppDelete(jose, res)
 			} else {
 				return this.sendTrustedAppInstall(jose, res);

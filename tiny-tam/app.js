@@ -11,6 +11,8 @@ const otrp = require('./otrp.js')
 
 const hostname = process.argv[2] || process.env.TAM_SERVER_HOSTNAME || config.hostname
 const port = process.argv[3] || process.env.TAM_SERVER_PORT || config.port
+const taname = process.argv[4] || process.env.TAM_SERVER_TA || path.basename(config.ta)
+const tapath = config.ta
 
 function loadJwk(jwkfile) {
 	return JWK.asKey(fs.readFileSync(jwkfile, function(err, data) { console.log(data) }))
@@ -25,7 +27,7 @@ async function go() {
 
 	/* TA image signed by SP */
 	const taImage = fs.readFileSync(config.ta, (err) => {console.log(err)})
-	const taUrl = `http://${hostname}:${port}/TAs/${path.basename(config.ta)}`
+	const taUrl = `http://${hostname}:${port}/TAs/${taname}`
 
 	teepHandler = teep(tamPrivKey, teePubKey, taImage, taUrl);
 	otrpHandler = otrp(tamPrivKey, teePubKey, taImage);
@@ -64,7 +66,7 @@ async function go() {
 				return teepHandler.handleMessage(req, body, res).catch(console.log)
 			}
 			if (method == 'GET' && url.startsWith('/TAs')) {
-				if (path.basename(url) == path.basename(config.ta)) {
+				if (path.basename(url) == taname ) {
 					res.statusCode = 200
 					res.end(taImage)
 					return taImage
