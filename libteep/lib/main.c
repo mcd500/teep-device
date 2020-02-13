@@ -333,14 +333,41 @@ libteep_ta_store_install(struct libteep_ctx *ctx, char *ta_image, size_t ta_imag
 	TEEC_Operation op;
 
 	memset(&op, 0, sizeof(TEEC_Operation));
+
+	static char ta_image_dec[200*1024];
+	int ta_image_dec_len = sizeof(ta_image_dec);
+
+	op.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_TEMP_INPUT,
+					 TEEC_VALUE_INPUT,
+					 TEEC_MEMREF_TEMP_OUTPUT,
+					 TEEC_VALUE_INOUT);
+
+
+	op.params[0].tmpref.buffer 	= ta_image;
+	op.params[0].tmpref.size	= ta_image_len;
+	op.params[1].value.a		= ta_image_len;
+	op.params[2].tmpref.buffer	= ta_image_dec;
+	op.params[2].tmpref.size	= ta_image_dec_len;
+	op.params[3].value.a		= ta_image_dec_len;
+	n = TEEC_InvokeCommand(&ctx->tee_session, 301, &op, NULL);
+	if (n != TEEC_SUCCESS) {
+		lwsl_err("%s: TEEC_InvokeCommand "
+		        "failed (0x%08x)\n", __func__, n);
+		return (int)n;
+	}
+
+	ta_image = op.params[2].tmpref.buffer;
+	ta_image_dec_len = op.params[3].value.a;
+
+	memset(&op, 0, sizeof(TEEC_Operation));
 	op.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_TEMP_INPUT,
 					 TEEC_VALUE_INPUT,
 					 TEEC_NONE,
 					 TEEC_NONE);
 
-	op.params[0].tmpref.buffer 	= ta_image;
-	op.params[0].tmpref.size	= ta_image_len;
-	op.params[1].value.a		= ta_image_len;
+	op.params[0].tmpref.buffer 	= ta_image_dec;
+	op.params[0].tmpref.size	= ta_image_dec_len;
+	op.params[1].value.a		= ta_image_dec_len;
 
 	n = TEEC_InvokeCommand(&ctx->tee_session, 101, &op, NULL);
 	if (n != TEEC_SUCCESS) {
