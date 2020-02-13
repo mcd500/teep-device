@@ -1,5 +1,18 @@
+ETHER := $(shell ip link | awk -F: '$$0 !~ "lo|vir|wl|pp|docker|br|^[^0-9]"{print $$2;getline}')
+IP_ADDR := $(shell ifconfig $(ETHER) | awk '/inet / {gsub("addr:","",$$2); print $$2}')
+
+MBEDTLS_BDIR := build-mbedtls
+LWS_M_BDIR := build-lws-mbed
+
+SCRIPT := ita dta
+
 .PHONY: all
-all: teep-broker-app
+all: teep-broker-app $(SCRIPT)
+
+$(SCRIPT): ita.sh dta.sh
+	sed -e s/127\.0\.\0\.1/$(IP_ADDR)/g < ita.sh > ita
+	sed -e s/127\.0\.\0\.1/$(IP_ADDR)/g < dta.sh > dta
+	chmod u+x ita dta
 
 teep-broker-app: main.o
 	#
@@ -22,4 +35,4 @@ main.o: main.c
 
 .PHONY: clean
 clean:
-	rm -f *.o teep-broker-app
+	rm -f *.o teep-broker-app $(SCRIPT)
