@@ -23,7 +23,7 @@ tee_id_pubkey_jwk.h
 ta.lds
 8d8257*
 sp-hello-app/sp-hello-app
-teep-broker-app
+teep-broker-app/teep-broker-app
 pctest/libwebsockets
 pctest/mbedtls
 pctest/build-lws-mbed
