@@ -32,3 +32,6 @@ pctest/build-mbedtls
 sample-senario/node_modules/
 sample-senario/package-lock.json
 tiny-tam/node_modules/
+libteep/build-lws-mbed/
+libteep/build-mbedtls/
+libteep/mbedtls-build/
