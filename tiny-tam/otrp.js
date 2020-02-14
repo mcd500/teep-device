@@ -23,13 +23,6 @@ module.exports = (tamPrivKey, teePubKey, taImage, taUrl) => ({
 	encrypt(data) {return JWE.createEncrypt(encParam, teePubKey).update(data).final()},
 	decrypt(data) {return JWE.createDecrypt(tamPrivKey).decrypt(data)},
 
-	async wrap(data) {
-		console.log(data)
-		signed = await this.sign(JSON.stringify(data))
-		console.log(signed)
-		return JSON.stringify(signed)
-	},
-
 	async unwrap(data) {
 		console.log(data)
 		verified = await this.verify(JSON.parse(data))
@@ -45,23 +38,9 @@ module.exports = (tamPrivKey, teePubKey, taImage, taUrl) => ({
 		res.end()
 	},
 
-	async sendOTrPMessage(jose, mesg, res, statusCode) {
-		this.rid += 1;
-		mesg.rid = this.rid.toString()
-		this.session[mesg.rid] = mesg
-		let wrapped
-		if (jose) {
-			wrapped = await this.wrap(mesg);
-		} else {
-			wrapped = JSON.stringify(mesg)
-		}
-		res.statusCode = statusCode
-		res.setHeader('Content-Type', 'application/teep+json')
-		res.setHeader('Content-Length', wrapped.length)
-		res.end(wrapped)
-	},
-	sendGetDeviceStateRequest(jose, res) {
+	async sendGetDeviceStateRequest(jose, res) {
 		console.log("sendGetDeviceStateRequest");
+		this.rid += 1;
 		const mes = {
 			GetDeviceStateTBSRequest: {
 				ver: VER,
@@ -69,13 +48,27 @@ module.exports = (tamPrivKey, teePubKey, taImage, taUrl) => ({
 				ocspdat: [Buffer.from(OCSPDAT).toString('base64')]
 			}
 		}
-		this.sendOTrPMessage(jose, mes, res, 200)
+		let outer
+		if (jose) {
+			outer = JSON.stringify({
+				GetDeviceStateRequest: await this.sign(JSON.stringify(mes))
+			})
+		} else {
+			outer = JSON.stringify({
+				GetDeviceStateRequest: mes
+			})
+		}
+		res.setHeader('Content-Type', 'application/otrp+json')
+		res.setHeader('Content-Length', outer.length)
+		res.end(outer)
 	},
-	sendInstallTARequest(jose, res) {
+	async sendInstallTARequest(jose, res) {
 		console.log("sendInstallTARequest");
+		this.rid += 1;
 		const mes = {
 			InstallTATBSRequest: {
 				ver: VER,
+				rid: this.rid,
 				tid: "1",
 				tee: "aist-otrp",
 				nextdsi: false,
@@ -87,14 +80,27 @@ module.exports = (tamPrivKey, teePubKey, taImage, taUrl) => ({
 				encrypted_ta: taImage
 			}
 		}
-		this.sendOTrPMessage(jose, mes, res, 200)
+		let outer
+		if (jose) {
+			outer = JSON.stringify({
+				InstallTARequest: await this.sign(JSON.stringify(mes))
+			})
+		} else {
+			outer = JSON.stringify({
+				InstallTARequest: mes
+			})
+		}
+		res.setHeader('Content-Type', 'application/otrp+json')
+		res.setHeader('Content-Length', outer.length)
+		res.end(outer)
 	},
-	sendDeleteTARequest(jose, res) {
+	async sendDeleteTARequest(jose, res) {
 		console.log("sendDeleteTARequest");
+		this.rid += 1;
 		const mes = {
 			DeleteTATBSRequest: {
 				ver: VER,
-				rid: "1",
+				rid: this.rid,
 				tid: "1",
 				tee: "aist-otrp",
 				nextdsi: false,
@@ -105,7 +111,19 @@ module.exports = (tamPrivKey, teePubKey, taImage, taUrl) => ({
 				}
 			}
 		}
-		this.sendOTrPMessage(jose, mes, res, 200)
+		let outer
+		if (jose) {
+			outer = JSON.stringify({
+				DeleteTARequest: await this.sign(JSON.stringify(mes))
+			})
+		} else {
+			outer = JSON.stringify({
+				DeleteTARequest: mes
+			})
+		}
+		res.setHeader('Content-Type', 'application/otrp+json')
+		res.setHeader('Content-Length', outer.length)
+		res.end(outer)
 	},
 
 	async handleMessage(req, body, res) {
