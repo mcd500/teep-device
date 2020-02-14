@@ -49,6 +49,12 @@ enum teep_message_type {
 	ERROR = 6
 };
 
+enum otrp_message_type {
+	OTRP_GET_DEVICE_STATE_REQUEST = 1,
+	OTRP_INSTALL_TA_REQUEST = 2,
+	OTRP_DELETE_TA_REQUEST = 3
+};
+
 static void
 usage(void)
 {
@@ -77,7 +83,7 @@ cmdline_parse(int argc, const char *argv[])
 	tmp = lws_cmdline_option(argc, argv, "-p");
 	if (tmp) {
 		if (!strcmp(tmp, "otrp")) {
-			teep_ver = LIBTEEP_TEEP_VER_OTRP_V3;
+			teep_ver = LIBTEEP_TEEP_VER_OTRP;
 		} else if (!strcmp(tmp, "teep")) {
 			teep_ver = LIBTEEP_TEEP_VER_TEEP;
 		} else {
@@ -131,6 +137,10 @@ struct teep_mesg {
 	size_t token_max_len;
 };
 
+struct otrp_mesg {
+	int type;
+	char *mes;
+};
 
 struct ta_list {
 	size_t len;
@@ -195,6 +205,30 @@ parse_manifest_list(struct lejp_ctx *ctx, char reason)
 }
 
 static signed char
+parse_otrp_type_cb(struct lejp_ctx *ctx, char reason)
+{
+	struct otrp_mesg *m = (void *)ctx->user;
+	if (!strcmp(ctx->path, "GetDeviceStateRequest")) {
+		m->type = OTRP_GET_DEVICE_STATE_REQUEST;
+		lwsl_user("TYPE: %d, message: %s, %d\n", m->type, m->mes, reason);
+		return 0;
+	}
+	if (!strcmp(ctx->path, "InstallTARequest")) {
+		m->type = OTRP_INSTALL_TA_REQUEST;
+		lwsl_user("TYPE: %d\n", m->type);
+		return 0;
+	}
+	if (!strcmp(ctx->path, "DeleteTARequest")) {
+		m->type = OTRP_DELETE_TA_REQUEST;
+		lwsl_user("TYPE: %d\n", m->type);
+		return 0;
+	}
+	lwsl_user("DEBUG: reason=%d buf=%s path=%s uni=%d npos=%d f=%d sp=%d ipos=%d pst_sp=%d\n",
+			reason, ctx->buf, ctx->path, ctx->uni, ctx->npos, ctx->f, ctx->sp, ctx->ipos, ctx->pst_sp);
+	return 0;
+}
+
+static signed char
 parse_type_token_cb(struct lejp_ctx *ctx, char reason)
 {
 	struct teep_mesg *m = (void *)ctx->user;
@@ -222,7 +256,7 @@ parse_type_token_cb(struct lejp_ctx *ctx, char reason)
 	return 0;
 }
 
-int loop(struct libteep_ctx *lao_ctx) {
+int loop_teep(struct libteep_ctx *lao_ctx) {
 	lwsl_notice("send empty body to begin teep protocol\n");
 	int n;
 	n = libteep_tam_msg(lao_ctx, http_res_buf, sizeof(http_res_buf), "", 0);
@@ -347,6 +381,57 @@ int loop(struct libteep_ctx *lao_ctx) {
 	return n;
 }
 
+int loop_otrp(struct libteep_ctx *lao_ctx) {
+	lwsl_notice("send empty body to begin otrp protocol\n");
+	int n;
+	n = libteep_tam_msg(lao_ctx, http_res_buf, sizeof(http_res_buf), "", 0);
+	if (n < 0) {
+		lwsl_err( "%s: libteep_tam_msg: %d\n", __func__, n);
+		return n;
+	}
+	while (n > 0) { // n == 0 means zero packet
+		memcpy(teep_req_buf, http_res_buf, (size_t)n);
+		if (n < 0) {
+			lwsl_err("%s: unwrap_teep_request: fail %d\n", __func__, n);
+			return n;
+		}
+		if (n == 0) {
+			lwsl_notice("%s: received encrypted empty body\n", __func__);
+			break;
+		}
+		lwsl_notice("%s: received message: %*s\n", __func__, n, (char *)teep_req_buf);
+		struct lejp_ctx jp_ctx;
+		struct otrp_mesg m = {
+			.type = -1,
+			.mes = NULL
+		};
+
+		lejp_construct(&jp_ctx, parse_otrp_type_cb, &m, NULL, 0);
+		lejp_parse(&jp_ctx, (void *)teep_req_buf, n);
+		lejp_destruct(&jp_ctx);
+		switch (m.type) {
+		case OTRP_GET_DEVICE_STATE_REQUEST:
+			lwsl_notice("detect OTRP_GET_DEVICE_STATE_REQUEST\n");
+			/* TODO: check entries in REQUEST */
+			exit(1);
+			break;
+		case OTRP_INSTALL_TA_REQUEST:
+			lwsl_notice("detect OTRP_INSTALL_TA_REQUEST\n");
+			exit(1);
+			break;
+		case OTRP_DELETE_TA_REQUEST:
+			lwsl_notice("detect OTRP_DELETE_TA_REQUEST\n");
+			exit(1);
+			break;
+		default:
+			lwsl_err("%s: requested message type is invalid %d\n", __func__, m.type);
+			return -1;
+		}
+	}
+	lwsl_notice("receive empty body to finish teep protocol\n");
+	return n;
+}
+
 int
 main(int argc, const char *argv[])
 {
@@ -363,7 +448,10 @@ main(int argc, const char *argv[])
 		return 1;
 	}
 
-	loop(lao_ctx);
+	if (teep_ver == LIBTEEP_TEEP_VER_TEEP)
+		loop_teep(lao_ctx);
+	else if (teep_ver == LIBTEEP_TEEP_VER_OTRP)
+		loop_otrp(lao_ctx);
 
 	/* ask the TAM to give us an encrypted, signed TA... we can't
 	 * decrypt it because it's encrypted using the TEE's pubkey */

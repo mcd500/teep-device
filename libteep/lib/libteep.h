@@ -48,7 +48,7 @@ struct libteep_ctx;
 
 /*! teep protocol version */
 enum libteep_teep_ver {
-	LIBTEEP_TEEP_VER_OTRP_V3,	/*!< otrp v3 */
+	LIBTEEP_TEEP_VER_OTRP,		/*!< otrp */
 	LIBTEEP_TEEP_VER_TEEP,		/*!< teep */
 };
 

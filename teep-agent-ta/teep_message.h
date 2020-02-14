@@ -35,4 +35,6 @@ teep_message_wrap(const char *msg, int msg_len, uint8_t *resp, unsigned int *res
 int
 teep_message_unwrap(const char *msg, int msg_len, uint8_t *resp, unsigned int *resp_len);
 
+int
+teep_message_unwrap_ta_image(const char *msg, int msg_len, char *out, int *out_len);
 #endif /* TEEP_MESSAGE_H */

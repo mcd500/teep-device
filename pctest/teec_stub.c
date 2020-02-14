@@ -108,7 +108,7 @@ TEEC_Result TEEC_InvokeCommand(TEEC_Session *session,
 				(TEEC_PARAM_TYPE_GET(type, 2) != TEEC_MEMREF_TEMP_OUTPUT) ||
 				(TEEC_PARAM_TYPE_GET(type, 3) != TEEC_VALUE_INOUT))
 			return TEEC_ERROR_BAD_PARAMETERS;
-		return teep_message_unwrap_ta_image(params[0].tmpref.buffer, params[1].value.a, params[2].tmpref.buffer, &params[3].value.a);
+		return teep_message_unwrap_ta_image(params[0].tmpref.buffer, params[1].value.a, params[2].tmpref.buffer, (void*)&params[3].value.a);
 
 	default:
 		return TEEC_ERROR_NOT_IMPLEMENTED;

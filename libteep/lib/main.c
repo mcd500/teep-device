@@ -72,7 +72,7 @@ static const char *teep_media_type(int teep_ver) {
 	switch (teep_ver) {
 	case LIBTEEP_TEEP_VER_TEEP:
 		return "application/teep+json";
-	case LIBTEEP_TEEP_VER_OTRP_V3:
+	case LIBTEEP_TEEP_VER_OTRP:
 		return "application/otrp+json";	
 	default:
 		return NULL;
@@ -440,7 +440,7 @@ libteep_init(struct libteep_ctx **ctx, enum libteep_teep_ver ver, const char *ta
 	struct lws_context_creation_info info;
 	TEEC_Operation op;
 	TEEC_Result r;
-	if (ver != LIBTEEP_TEEP_VER_TEEP && ver != LIBTEEP_TEEP_VER_OTRP_V3) {
+	if (ver != LIBTEEP_TEEP_VER_TEEP && ver != LIBTEEP_TEEP_VER_OTRP) {
 		lwsl_err("unsupported teep protocol version\n");
 		return 1;
 	}
