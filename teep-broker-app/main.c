@@ -58,7 +58,7 @@ enum otrp_message_type {
 static void
 usage(void)
 {
-	fprintf(stderr, "aist-otrp-testapp [--tamurl http://tamserver:port] [-d]\n");
+	fprintf(stderr, "aist-otrp-testapp [--tamurl http://tamserver:port] [-d] [-p otrp]\n");
 	fprintf(stderr, "     --tamurl: TAM server url \n"
 			"     --jose: enable encryption and sign \n"
 			"     --talist: installed ta list \n"
@@ -87,7 +87,9 @@ cmdline_parse(int argc, const char *argv[])
 		} else if (!strcmp(tmp, "teep")) {
 			teep_ver = LIBTEEP_TEEP_VER_TEEP;
 		} else {
-			usage();
+			// usage();
+			// use default protocol is TEEP
+			teep_ver = LIBTEEP_TEEP_VER_TEEP;
 		}
 	}
 
