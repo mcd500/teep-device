@@ -165,6 +165,9 @@ int
 libteep_msg_unwrap(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, size_t inlen);
 
 int
+libteep_msg_verify(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, size_t inlen);
+
+int
 libteep_msg_wrap(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, size_t inlen);
 
 int

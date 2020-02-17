@@ -88,6 +88,13 @@ TEEC_Result TEEC_InvokeCommand(TEEC_Session *session,
 				(TEEC_PARAM_TYPE_GET(type, 3) != TEEC_VALUE_INOUT))
 			return TEEC_ERROR_BAD_PARAMETERS;
 		return teep_message_unwrap(params[0].tmpref.buffer, params[1].value.a, params[2].tmpref.buffer, &params[3].value.a);
+	case TEEP_AGENT_TA_VERIFY_MESSAGE: /* verify(unwrap) OTrP message*/
+		if ((TEEC_PARAM_TYPE_GET(type, 0) != TEEC_MEMREF_TEMP_INPUT) ||
+				(TEEC_PARAM_TYPE_GET(type, 1) != TEEC_VALUE_INPUT) ||
+				(TEEC_PARAM_TYPE_GET(type, 2) != TEEC_MEMREF_TEMP_OUTPUT) ||
+				(TEEC_PARAM_TYPE_GET(type, 3) != TEEC_VALUE_INOUT))
+			return TEEC_ERROR_BAD_PARAMETERS;
+		return otrp_message_verify(params[0].tmpref.buffer, params[1].value.a, params[2].tmpref.buffer, &params[3].value.a);
 	case TEEP_AGENT_TA_INSTALL: /* Install TA */
 		if ((TEEC_PARAM_TYPE_GET(type, 0) != TEEC_MEMREF_TEMP_INPUT) ||
 				(TEEC_PARAM_TYPE_GET(type, 1) != TEEC_VALUE_INPUT) ||
