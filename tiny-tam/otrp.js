@@ -73,19 +73,24 @@ module.exports = (tamPrivKey, teePubKey, taImage, taUrl) => ({
 				tee: "aist-otrp",
 				nextdsi: false,
 				dsihash: undefined,
-				content: {
-					tamid: TAMID,
-					taid: TA_UUID
-				},
+				content: undefined,
 				encrypted_ta: taImage
 			}
 		}
+		let conetent = {
+			tamid: TAMID,
+			taid: TA_UUID
+		};
 		let outer
 		if (jose) {
+			// The "content" is a JSON encrypted message that includes actual input for the SD update. 
+			// The standard JSON content encryption key (CEK) is used, and the CEK is encrypted by the target TEE's public key.
+			mes.InstallTATBSRequest.content = this.encrypt(content);
 			outer = JSON.stringify({
 				InstallTARequest: await this.sign(JSON.stringify(mes))
 			})
 		} else {
+			mes.InstallTATBSRequest.content = content;
 			outer = JSON.stringify({
 				InstallTARequest: mes
 			})
@@ -105,18 +110,23 @@ module.exports = (tamPrivKey, teePubKey, taImage, taUrl) => ({
 				tee: "aist-otrp",
 				nextdsi: false,
 				dsihash: undefined,
-				content: {
-					tamid: TAMID,
-					taid: TA_UUID
-				}
+				content: undefined,
 			}
 		}
+		let content = {
+			tamid: TAMID,
+			taid: TA_UUID
+		};
 		let outer
 		if (jose) {
+			// The "content" is a JSON encrypted message that includes actual input for the SD update. 
+			// The standard JSON content encryption key (CEK) is used, and the CEK is encrypted by the target TEE's public key.
+			mes.DeleteTATBSRequest.content = this.encrypt(content);
 			outer = JSON.stringify({
 				DeleteTARequest: await this.sign(JSON.stringify(mes))
 			})
 		} else {
+			mes.DeleteTATBSRequest.content = content;
 			outer = JSON.stringify({
 				DeleteTARequest: mes
 			})
@@ -127,7 +137,7 @@ module.exports = (tamPrivKey, teePubKey, taImage, taUrl) => ({
 	},
 
 	async handleMessage(req, body, res) {
-		console.log("teep message detected")
+		console.log("otrp message detected")
 		let jose = false
 		let del = false
 		if (req.url == '/') {
