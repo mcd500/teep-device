@@ -114,6 +114,14 @@ run: $(TARGET)
 run-jose: $(TARGET)
 	./$(TARGET) --tamurl http://${IP_ADDR}:3000/api/tam_jose --jose
 
+.PHONY: run-otrp
+run-otrp: $(TARGET)
+	./$(TARGET) --tamurl http://${IP_ADDR}:3000/api/tam_jose -p otrp
+
+.PHONY: run-otrp-jose
+run-otrp-jose: $(TARGET)
+	./$(TARGET) --tamurl http://${IP_ADDR}:3000/api/tam_jose --jose -p otrp
+
 MBED_JWE = ./$(LWS_M_BDIR)/bin/lws-crypto-jwe
 OSSL_JWE = ./$(LWS_O_BDIR)/bin/lws-crypto-jwe
 
