@@ -358,3 +358,54 @@ bail:
 	lws_jwe_destroy(&jwe);
 	return n;
 }
+
+int
+otrp_message_verify(const char *msg, int msg_len, unsigned char *out, unsigned int *out_len) {
+	struct lws_context_creation_info info;
+	static struct lws_context *context = NULL;
+	struct lws_jwk jwk_pubkey_tam;
+	int temp_len = sizeof(temp_buf);
+	struct lws_jws jws;
+	int n = 0;
+	lwsl_user("%s: msg len %d\n", __func__, msg_len);
+	memset(&info, 0, sizeof(info));
+	info.port = CONTEXT_PORT_NO_LISTEN;
+	info.options = 0;
+#ifdef PCTEST
+	// calling lws_create_context on tee environment causes a lot of link error
+	// lws_create_context must be called in pc environment to avoid SEGV on decrypt
+	context = lws_create_context(&info);
+	if (!context) {
+		lwsl_err("lws init failed\n");
+		return -1;
+	}
+#endif
+
+	lws_jws_init(&jws, &jwk_pubkey_tam, context);
+
+	lwsl_user("Verify\n");
+	n = lws_jwk_import(&jwk_pubkey_tam, NULL, NULL, tam_id_pubkey_jwk, strlen(tam_id_pubkey_jwk));
+	if (n < 0) {
+		lwsl_err("%s: unable to import tam jwk\n", __func__);
+		goto bail;
+	}
+	n = lws_jws_sig_confirm_json((void *)msg,	msg_len, &jws, &jwk_pubkey_tam, context, temp_buf, &temp_len);
+	if (n < 0) {
+		lwsl_err("%s: confirm rsa sig failed\n", __func__);
+		goto bail1;
+	}
+	lwsl_user("Signature OK %d %d\n", n, jws.map.len[LJWS_PYLD]);
+
+	if (jws.map.len[LJWS_PYLD] > *out_len) {
+		lwsl_err("%s: output buffer is small (in, out) = (%d, %d)\n", __func__, jws.map.len[LJWS_PYLD], *out_len);
+	}
+	memcpy(out, jws.map.buf[LJWS_PYLD], jws.map.len[LJWS_PYLD]);
+	*out_len = jws.map.len[LJWS_PYLD];
+	out[*out_len] = '\0';
+	n = 0;
+bail1:
+	lws_jwk_destroy(&jwk_pubkey_tam);
+bail:
+	lws_jws_destroy(&jws);
+	return n;
+}
