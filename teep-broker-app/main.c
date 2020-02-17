@@ -33,6 +33,7 @@
 static uint8_t http_res_buf[6 * 1024 * 1024];
 static char teep_req_buf[5 * 1024];
 static char teep_res_buf[5 * 1024];
+static char teep_tmp_buf[5 * 1024];
 static uint8_t http_req_buf[5 * 1024];
 
 static const char *uri = "http://127.0.0.1:3000/api/tam"; // TAM server uri
@@ -133,6 +134,15 @@ static int wrap_teep_response(struct libteep_ctx *lao_ctx, void *out, size_t out
 	}
 }
 
+static int verify_otrp_request(struct libteep_ctx *lao_ctx, void *out, size_t outlen, void *in, size_t inlen) {
+	if (jose) {
+		lwsl_notice("verify(unwrap) otrp message\n");
+		return libteep_msg_verify(lao_ctx, out, outlen, in, inlen);
+	} else {
+		return io_copy(out, outlen, in, inlen);
+	}
+}
+
 struct teep_mesg {
 	int type;
 	char *token;
@@ -206,28 +216,44 @@ parse_manifest_list(struct lejp_ctx *ctx, char reason)
 	return 0;
 }
 
-static signed char
-parse_otrp_type_cb(struct lejp_ctx *ctx, char reason)
+static int parse_otrp_request(char *out, size_t outlen, char *in, size_t inlen)
 {
-	struct otrp_mesg *m = (void *)ctx->user;
-	if (!strcmp(ctx->path, "GetDeviceStateRequest")) {
-		m->type = OTRP_GET_DEVICE_STATE_REQUEST;
-		lwsl_user("TYPE: %d, message: %s, %d\n", m->type, m->mes, reason);
-		return 0;
+	char keyname[32];
+	int type = -1;
+
+	// parse first key and value(map) from JSON
+	// detect keyname
+	char *keyStart = strchr(in, (int)'"');
+	if (keyStart == NULL) return -1;
+  char *keyEnd = strchr(keyStart+1, (int)'"');
+	if (keyEnd == NULL) return -1;
+
+	strncpy(keyname, keyStart+1, keyEnd-keyStart-1);
+	keyname[keyEnd-keyStart] = '\0';
+
+	if (!strcmp(keyname, "GetDeviceStateRequest")) {
+		type = OTRP_GET_DEVICE_STATE_REQUEST;
+	} else if (!strcmp(keyname, "InstallTARequest")) {
+		type = OTRP_INSTALL_TA_REQUEST;
+	} else if (!strcmp(keyname, "DeleteTARequest")) {
+		type = OTRP_DELETE_TA_REQUEST;
+	} else {
+		// Unknown message
+		return -1;
 	}
-	if (!strcmp(ctx->path, "InstallTARequest")) {
-		m->type = OTRP_INSTALL_TA_REQUEST;
-		lwsl_user("TYPE: %d\n", m->type);
-		return 0;
-	}
-	if (!strcmp(ctx->path, "DeleteTARequest")) {
-		m->type = OTRP_DELETE_TA_REQUEST;
-		lwsl_user("TYPE: %d\n", m->type);
-		return 0;
-	}
-	lwsl_user("DEBUG: reason=%d buf=%s path=%s uni=%d npos=%d f=%d sp=%d ipos=%d pst_sp=%d\n",
-			reason, ctx->buf, ctx->path, ctx->uni, ctx->npos, ctx->f, ctx->sp, ctx->ipos, ctx->pst_sp);
-	return 0;
+	lwsl_notice("keyname=%s, type=%d\n", keyname, type);
+
+	// detect value(map)
+	char *mapStart = strchr(keyEnd+1, (int)'{');
+	if (mapStart == NULL) return -1;
+	char *mapEnd = strrchr(in, '}');
+	if (mapStart == NULL) return -1;
+
+	strncpy(out, mapStart, mapEnd-mapStart);
+	out[mapEnd-mapStart] = '\0';
+	lwsl_notice("map=%s\n", out);
+
+	return type;
 }
 
 static signed char
@@ -402,19 +428,42 @@ int loop_otrp(struct libteep_ctx *lao_ctx) {
 			break;
 		}
 		lwsl_notice("%s: received message: %*s\n", __func__, n, (char *)teep_req_buf);
-		struct lejp_ctx jp_ctx;
 		struct otrp_mesg m = {
 			.type = -1,
 			.mes = NULL
 		};
 
-		lejp_construct(&jp_ctx, parse_otrp_type_cb, &m, NULL, 0);
-		lejp_parse(&jp_ctx, (void *)teep_req_buf, n);
-		lejp_destruct(&jp_ctx);
+		m.type = parse_otrp_request(teep_tmp_buf, sizeof(teep_tmp_buf), teep_req_buf, n);
+		n = verify_otrp_request(lao_ctx, teep_req_buf, sizeof(teep_req_buf), teep_tmp_buf, sizeof(teep_tmp_buf));
+
 		switch (m.type) {
 		case OTRP_GET_DEVICE_STATE_REQUEST:
 			lwsl_notice("detect OTRP_GET_DEVICE_STATE_REQUEST\n");
 			/* TODO: check entries in REQUEST */
+			lwsl_notice("send OTRP_GET_DEVICE_STATE_RESPONSE\n");
+			{
+				char ta_id_list[1000] = "";
+				char *talist_dup = strdup(talist);
+				char *ta_uuid = strtok(talist_dup, ",");
+				int ta_num = 1; // for ta dummy name
+				while (ta_uuid) {
+					char tmp[300];
+					lws_snprintf(tmp, sizeof(tmp),
+						"{\"taid\":\"%s\",\"taname\":\"sp-hello-ta-%d\"},",
+						ta_uuid, ta_num);
+					strncat(ta_id_list, tmp, sizeof(ta_id_list) - strlen(ta_id_list));
+					ta_uuid = strtok(NULL, ",");
+					ta_num++;
+				}
+				ta_id_list[strlen(ta_id_list) - 1] = '\0';
+				// generate dsi before encrypted, only minimal parameters
+				lws_snprintf(teep_tmp_buf, sizeof(teep_tmp_buf), 
+					"{\"dsi\":{\"tee\":{\"name\":\"aist-otrp\",\"ver\":\"1.0\",\"sdlist\":{\"cnt\":1,\"sd\":[{\"ta_list\":[%s]}]}}}}",
+					ta_id_list);
+				free(talist_dup);
+				talist_dup = NULL;
+			}
+			lwsl_notice("dsi(before encrypted) json: %s, len: %zd\n", teep_tmp_buf, strlen(teep_tmp_buf));
 			exit(1);
 			break;
 		case OTRP_INSTALL_TA_REQUEST:
