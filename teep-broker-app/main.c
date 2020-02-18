@@ -33,7 +33,7 @@
 static uint8_t http_res_buf[6 * 1024 * 1024];
 static char teep_req_buf[5 * 1024];
 static char teep_res_buf[5 * 1024];
-static char teep_tmp_buf[5 * 1024];
+static char teep_tmp_buf[6 * 1024 * 1024];
 static uint8_t http_req_buf[5 * 1024];
 
 static const char *uri = "http://127.0.0.1:3000/api/tam"; // TAM server uri
@@ -264,12 +264,11 @@ static int parse_otrp_request(char *out, size_t outlen, char *in, size_t inlen)
 	// detect value(map)
 	char *mapStart = strchr(keyEnd+1, (int)'{');
 	if (mapStart == NULL) return -1;
-	char *mapEnd = strrchr(in, '}');
-	if (mapStart == NULL) return -1;
+	char *mapEnd = strchr(in, (int)'}');
+	if (mapEnd == NULL) return -1;
 
-	strncpy(out, mapStart, mapEnd-mapStart);
-	out[mapEnd-mapStart] = '\0';
-	lwsl_notice("map=%s\n", out);
+	strncpy(out, mapStart, mapEnd-mapStart+1);
+	out[mapEnd-mapStart+1] = '\0';
 
 	return type;
 }
@@ -436,7 +435,6 @@ int loop_otrp(struct libteep_ctx *lao_ctx) {
 		return n;
 	}
 	while (n > 0) { // n == 0 means zero packet
-		memcpy(teep_req_buf, http_res_buf, (size_t)n);
 		if (n < 0) {
 			lwsl_err("%s: unwrap_teep_request: fail %d\n", __func__, n);
 			return n;
@@ -445,14 +443,14 @@ int loop_otrp(struct libteep_ctx *lao_ctx) {
 			lwsl_notice("%s: received encrypted empty body\n", __func__);
 			break;
 		}
-		lwsl_notice("%s: received message: %*s\n", __func__, n, (char *)teep_req_buf);
+		lwsl_notice("%s: received message: %*s\n", __func__, n, (char *)http_res_buf);
 		struct otrp_mesg m = {
 			.type = -1,
 			.mes = NULL
 		};
 
-		m.type = parse_otrp_request(teep_tmp_buf, sizeof(teep_tmp_buf), teep_req_buf, n);
-		n = verify_otrp_request(lao_ctx, teep_req_buf, sizeof(teep_req_buf), teep_tmp_buf, sizeof(teep_tmp_buf));
+		m.type = parse_otrp_request(teep_tmp_buf, sizeof(teep_tmp_buf), (char*)http_res_buf, n);
+		n = verify_otrp_request(lao_ctx, teep_req_buf, sizeof(teep_req_buf), teep_tmp_buf, strlen(teep_tmp_buf));
 
 		switch (m.type) {
 		case OTRP_GET_DEVICE_STATE_REQUEST:
@@ -511,7 +509,7 @@ int loop_otrp(struct libteep_ctx *lao_ctx) {
 				lwsl_err( "%s: libteep_tam_msg: %d\n", __func__, n);
 				return n;
 			}
-			break;			break;
+			break;
 		case OTRP_INSTALL_TA_REQUEST:
 			lwsl_notice("detect OTRP_INSTALL_TA_REQUEST\n");
 			exit(1);
