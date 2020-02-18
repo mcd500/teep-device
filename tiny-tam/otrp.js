@@ -165,13 +165,13 @@ module.exports = (tamPrivKey, teePubKey, taImage, taUrl) => ({
 		teepRes = JSON.parse(body)
 		if (!teepRes) {
 			console.log("failed to parse json body" , teepRes)
-			return this.finishTeep()
+			return this.finishTeep(res)
 		}
 		// GetDeviceStateResponse
 		if (teepRes.GetDeviceStateResponse) {
 			if (!Array.isArray(teepRes.GetDeviceStateResponse)) {
 				console.log("failed to parse GetDeviceStateResponse array:" , teepRes.GetDeviceStateResponse)
-				return this.finishTeep();
+				return this.finishTeep(res);
 			}
 			// if value is exists, verify GetDeviceTEEStateResponse for debug
 			if (teepRes.GetDeviceStateResponse.length > 0) {
@@ -182,7 +182,7 @@ module.exports = (tamPrivKey, teePubKey, taImage, taUrl) => ({
 					let verifyedData = await this.verify(teeState);
 					if (!verifyedData) {
 						console.log("failed to verify GetDeviceTEEStateResponse");
-						return this.finishTeep();
+						return this.finishTeep(res);
 					}
 					tbsRes = JSON.parse(verifyedData.payload.toString());
 					console.log("verifyedData=", tbsRes);
@@ -196,7 +196,7 @@ module.exports = (tamPrivKey, teePubKey, taImage, taUrl) => ({
 						let decEdsi = await this.decrypt(tbsRes.GetDeviceTEEStateTBSResponse.edsi);
 						if (!decEdsi) {
 							console.log("failed to decrypt GetDeviceTEEStateTBSResponse.edsi");
-							return this.finishTeep();
+							return this.finishTeep(res);
 						}
 						console.log("decEdsi=", decEdsi.plaintext.toString());
 					}
@@ -209,11 +209,11 @@ module.exports = (tamPrivKey, teePubKey, taImage, taUrl) => ({
 				return this.sendInstallTARequest(jose, res);
 			}
 		}
-		if (teepRes.InstallTATBSResponse) {
+		if (teepRes.InstallTAResponse) {
 			console.log("trusted app install succeed")
 			return this.finishTeep(res)
 		}
-		if (teepReq.DeleteTATBSResponse) {
+		if (teepRes.DeleteTAResponse) {
 			console.log("trusted app delete succeed")
 			return this.finishTeep(res)
 		}

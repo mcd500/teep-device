@@ -551,7 +551,39 @@ int loop_otrp(struct libteep_ctx *lao_ctx) {
 				lwsl_err( "%s: libteep_ta_store_install failed: %d\n", __func__, n);
 				return n;
 			}
-			exit(1);
+
+			lwsl_notice("send OTRP_INSTALL_TA_RESPONSE\n");
+			otrp_gen_dsi(teep_tmp_buf, sizeof(teep_tmp_buf));
+			// encrypt dsi
+			lwsl_notice("dsi(before encrypted) json: %s, len: %zd\n", teep_tmp_buf, strlen(teep_tmp_buf));
+			n = encrypt_otrp_response(lao_ctx, http_req_buf, sizeof(http_req_buf), teep_tmp_buf, strlen(teep_tmp_buf));
+			if (n < 0) {
+				lwsl_err("%s: encrypt_otrp_response failed %d\n", __func__, n);
+				return n;
+			}
+			lwsl_notice("dsi(encrypted) json: %s, len: %zd\n", http_req_buf, (size_t)n);
+			// InstallTATBSResponse
+			// TODO: get rid from request
+			lws_snprintf(teep_tmp_buf, sizeof(teep_tmp_buf), 
+				"{\"InstallTATBSResponse\":{\"ver\":\"1.0\",\"status\":\"pass\",\"rid\":\"1\",\"tid\":\"1\",\"content\":%s}}",
+				http_req_buf);
+			lwsl_notice("InstallTATBSResponse(before sign) json: %s, len: %zd\n", teep_tmp_buf, strlen(teep_tmp_buf));
+			// gen InstallTAResponse from siging InstallTATBSResponse
+			n = sign_otrp_response(lao_ctx, http_req_buf, sizeof(http_req_buf), teep_tmp_buf, strlen(teep_tmp_buf));
+			if (n < 0) {
+				lwsl_err("%s: sign_otrp_response failed %d\n", __func__, n);
+				return n;
+			}
+			lwsl_notice("InstallTAResponse(signed) json: %s, len: %zd\n", http_req_buf, (size_t)n);
+			lws_snprintf(teep_tmp_buf, sizeof(teep_tmp_buf), 
+				"{\"InstallTAResponse\":%s}",
+				http_req_buf);
+			lwsl_notice("InstallTAResponse json: %s, len: %zd\n", teep_tmp_buf, strlen(teep_tmp_buf));
+			n = libteep_tam_msg(lao_ctx, http_res_buf, sizeof(http_res_buf), teep_tmp_buf, strlen(teep_tmp_buf));
+			if (n < 0) {
+				lwsl_err( "%s: libteep_tam_msg: %d\n", __func__, n);
+				return n;
+			}
 			break;
 		case OTRP_DELETE_TA_REQUEST:
 			lwsl_notice("detect OTRP_DELETE_TA_REQUEST\n");
