@@ -536,7 +536,16 @@ int loop_otrp(struct libteep_ctx *lao_ctx) {
 			lwsl_notice("detect OTRP_INSTALL_TA_REQUEST\n");
 			// parse encrypted_ta
 			n = parse_otrp_encrypted_ta(teep_tmp_buf, sizeof(teep_tmp_buf), (char*)http_res_buf, n);
-
+			if (n < 0) {
+				lwsl_err( "%s: parse_otrp_encrypted_ta failed: %d\n", __func__, n);
+				return n;
+			}
+			// install encrypted ta
+			n = libteep_ta_store_install(lao_ctx, teep_tmp_buf, strlen(teep_tmp_buf));
+			if (n < 0) {
+				lwsl_err( "%s: libteep_ta_store_install failed: %d\n", __func__, n);
+				return n;
+			}
 			exit(1);
 			break;
 		case OTRP_DELETE_TA_REQUEST:
