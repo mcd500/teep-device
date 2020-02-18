@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
 	TEEC_Result nResult;
 	TEEC_Operation op;
 
-	printf("START: sp-hello-app\n");
+//	printf("START: sp-hello-app\n");
 
 	context = (TEEC_Context *)malloc(sizeof(*context));
 	if (!context) {
