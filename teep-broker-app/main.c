@@ -448,6 +448,31 @@ int loop_teep(struct libteep_ctx *lao_ctx) {
 	return n;
 }
 
+int otrp_gen_dsi(char *out, int out_len) {
+		char ta_id_list[1000] = "";
+		char *talist_dup = strdup(talist);
+		char *ta_uuid = strtok(talist_dup, ",");
+		int ta_num = 1; // for ta dummy name
+		while (ta_uuid) {
+			char tmp[300];
+			lws_snprintf(tmp, sizeof(tmp),
+				"{\"taid\":\"%s\",\"taname\":\"sp-hello-ta-%d\"},",
+				ta_uuid, ta_num);
+			strncat(ta_id_list, tmp, sizeof(ta_id_list) - strlen(ta_id_list));
+			ta_uuid = strtok(NULL, ",");
+			ta_num++;
+		}
+		ta_id_list[strlen(ta_id_list) - 1] = '\0';
+		// generate dsi before encrypted, only minimal parameters
+		lws_snprintf(out, out_len, 
+			"{\"dsi\":{\"tee\":{\"name\":\"aist-otrp\",\"ver\":\"1.0\",\"sdlist\":{\"cnt\":1,\"sd\":[{\"ta_list\":[%s]}]}}}}",
+			ta_id_list);
+		free(talist_dup);
+		talist_dup = NULL;
+
+		return 0;
+}
+
 int loop_otrp(struct libteep_ctx *lao_ctx) {
 	lwsl_notice("send empty body to begin otrp protocol\n");
 	int n;
@@ -479,28 +504,7 @@ int loop_otrp(struct libteep_ctx *lao_ctx) {
 			lwsl_notice("detect OTRP_GET_DEVICE_STATE_REQUEST\n");
 			/* TODO: check entries in REQUEST */
 			lwsl_notice("send OTRP_GET_DEVICE_STATE_RESPONSE\n");
-			{
-				char ta_id_list[1000] = "";
-				char *talist_dup = strdup(talist);
-				char *ta_uuid = strtok(talist_dup, ",");
-				int ta_num = 1; // for ta dummy name
-				while (ta_uuid) {
-					char tmp[300];
-					lws_snprintf(tmp, sizeof(tmp),
-						"{\"taid\":\"%s\",\"taname\":\"sp-hello-ta-%d\"},",
-						ta_uuid, ta_num);
-					strncat(ta_id_list, tmp, sizeof(ta_id_list) - strlen(ta_id_list));
-					ta_uuid = strtok(NULL, ",");
-					ta_num++;
-				}
-				ta_id_list[strlen(ta_id_list) - 1] = '\0';
-				// generate dsi before encrypted, only minimal parameters
-				lws_snprintf(teep_tmp_buf, sizeof(teep_tmp_buf), 
-					"{\"dsi\":{\"tee\":{\"name\":\"aist-otrp\",\"ver\":\"1.0\",\"sdlist\":{\"cnt\":1,\"sd\":[{\"ta_list\":[%s]}]}}}}",
-					ta_id_list);
-				free(talist_dup);
-				talist_dup = NULL;
-			}
+			otrp_gen_dsi(teep_tmp_buf, sizeof(teep_tmp_buf));
 			// encrypt dsi
 			lwsl_notice("dsi(before encrypted) json: %s, len: %zd\n", teep_tmp_buf, strlen(teep_tmp_buf));
 			n = encrypt_otrp_response(lao_ctx, http_req_buf, sizeof(http_req_buf), teep_tmp_buf, strlen(teep_tmp_buf));
@@ -538,6 +542,7 @@ int loop_otrp(struct libteep_ctx *lao_ctx) {
 			n = parse_otrp_encrypted_ta(teep_tmp_buf, sizeof(teep_tmp_buf), (char*)http_res_buf, n);
 			if (n < 0) {
 				lwsl_err( "%s: parse_otrp_encrypted_ta failed: %d\n", __func__, n);
+				// TODO: error handling(return InstallTAResponse with status fail)
 				return n;
 			}
 			// install encrypted ta
