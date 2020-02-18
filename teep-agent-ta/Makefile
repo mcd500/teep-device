@@ -16,7 +16,7 @@ export AIST_TB_KERNEL_BUILD_DIR
 
 GCC_VER=$(shell $(CROSS_COMPILE)gcc --version | head -n1 )
 
-BINARY:=68373894-5bb3-403c-9eec-3114a1f5d3fc
+BINARY:=$(TEE_AGENT_UUID)
 export BINARY
 LDFLAGS+=-L$(TA_DEV_KIT_DIR)/lib  --whole-archive -lwebsockets --no-whole-archive
 

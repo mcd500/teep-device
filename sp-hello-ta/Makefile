@@ -15,7 +15,7 @@ export AIST_TB_KERNEL_BUILD_DIR
 
 GCC_VER=$(shell $(CROSS_COMPILE)gcc --version | head -n1 )
 
-BINARY:=8d82573a-926d-4754-9353-32dc29997f74
+BINARY:=$(HELLO_TA_UUID)
 export BINARY
 
 -include $(TA_DEV_KIT_DIR)/mk/ta_dev_kit.mk

@@ -1,7 +1,7 @@
-global-incdirs-y += libwebsockets/build libwebsockets/lib boringssl/include .
+#global-incdirs-y += libwebsockets/build libwebsockets/lib boringssl/include .
 srcs-y += ta-aist-test.c
 
-BINARY:="8d82573a-926d-4754-9353-32dc29997f74"
+#BINARY:="8d82573a-926d-4754-9353-32dc29997f74"
 
 CFLAGS+=-nostdinc
 LDFLAGS+=-L$(TA_DEV_KIT_DIR)/lib  --whole-archive -lwebsockets-ta --no-whole-archive

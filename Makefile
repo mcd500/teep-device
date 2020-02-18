@@ -14,6 +14,11 @@ TEEP_KEY_SRC := teep-agent-ta/tam_id_pubkey_jwk.h \
                 teep-agent-ta/tee_id_pubkey_jwk.h \
                 teep-agent-ta/sp_pubkey_jwk.h
 
+HELLO_TA_UUID  ?= 8d82573a-926d-4754-9353-32dc29997f74
+TEE_AGENT_UUID ?= 68373894-5bb3-403c-9eec-3114a1f5d3fc
+export HELLO_TA_UUID
+export TEE_AGENT_UUID
+
 export LWS_M_BDIR = build-lws-mbed
 export MBEDTLS_BDIR = build-mbedtls
 
@@ -56,6 +61,7 @@ generate-jwk-headers $(TEEP_KEY_SRCS): $(TAM_PUB_JWK) $(SP_PUB_JWK) $(TEE_PUB_JW
 .PHONY: teep-agent-ta
 teep-agent-ta: $(TEEP_KEY_SRCS)
 	make -C teep-agent-ta CROSS_COMPILE_HOST=$(CROSS_COMPILE) \
+		TEE_AGENT_UUID=$(TEE_AGENT_UUID) \
 		CROSS_COMPILE_TA=aarch64-linux-gnu- \
 		TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) \
 		CFG_MSG_LONG_PREFIX_THRESHOLD=3 \
