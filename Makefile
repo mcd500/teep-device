@@ -70,6 +70,7 @@ sp-hello-ta:
 		TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) \
 		CFG_MSG_LONG_PREFIX_THRESHOLD=3 \
 		V=0 VERBOSE=0 all
+	cp sp-hello-ta/$(HELLO_TA_UUID).ta* tiny-tam/TAs/
 
 .PHONY: aist-teep
 aist-teep: $(TA_DEV_KIT_DIR)/mk/ta_dev_kit.mk ../optee_client/out/export/bin/tee-supplicant teep-agent-ta sp-hello-ta
