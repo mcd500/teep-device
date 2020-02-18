@@ -506,8 +506,12 @@ int loop_otrp(struct libteep_ctx *lao_ctx) {
 				"{\"GetDeviceStateResponse\":[{\"GetDeviceTEEStateResponse\": %s}]}",
 				http_req_buf);
 			lwsl_notice("GetDeviceStateResponse json: %s, len: %zd\n", teep_tmp_buf, strlen(teep_tmp_buf));
-			exit(1);
-			break;
+			n = libteep_tam_msg(lao_ctx, http_res_buf, sizeof(http_res_buf), teep_tmp_buf, strlen(teep_tmp_buf));
+			if (n < 0) {
+				lwsl_err( "%s: libteep_tam_msg: %d\n", __func__, n);
+				return n;
+			}
+			break;			break;
 		case OTRP_INSTALL_TA_REQUEST:
 			lwsl_notice("detect OTRP_INSTALL_TA_REQUEST\n");
 			exit(1);
