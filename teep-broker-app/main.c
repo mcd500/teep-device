@@ -450,7 +450,7 @@ int loop_otrp(struct libteep_ctx *lao_ctx) {
 		};
 
 		m.type = parse_otrp_request(teep_tmp_buf, sizeof(teep_tmp_buf), (char*)http_res_buf, n);
-		n = verify_otrp_request(lao_ctx, teep_req_buf, sizeof(teep_req_buf), teep_tmp_buf, strlen(teep_tmp_buf));
+		n = verify_otrp_request(lao_ctx, http_res_buf, sizeof(http_res_buf), teep_tmp_buf, strlen(teep_tmp_buf));
 
 		switch (m.type) {
 		case OTRP_GET_DEVICE_STATE_REQUEST:
