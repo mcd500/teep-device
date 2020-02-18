@@ -162,17 +162,39 @@ module.exports = (tamPrivKey, teePubKey, taImage, taUrl) => ({
 		}
 		// parse json for switch TEEP Response	
 		let teepRes
-		if (jose) {
-			teepRes = await this.unwrap(body)
-		} else {
-			teepRes = JSON.parse(body)
-		}
+		teepRes = JSON.parse(body)
 		if (!teepRes) {
 			console.log("failed to parse json body" , teepRes)
 			return this.finishTeep()
 		}
-		console.log("parsed JSON:", teepRes)
-		if (teepRes.GetDeviceTEEStateTBSResponse) {
+		// GetDeviceStateResponse
+		if (teepRes.GetDeviceStateResponse) {
+			if (!Array.isArray(teepRes.GetDeviceStateResponse)) {
+				console.log("failed to parse GetDeviceStateResponse array:" , teepRes.GetDeviceStateResponse)
+				return this.finishTeep();
+			}
+			// if value is exists, verify GetDeviceTEEStateResponse for debug
+			if (teepRes.GetDeviceStateResponse.length > 0) {
+				let teeState = teepRes.GetDeviceStateResponse[0].GetDeviceTEEStateResponse;
+				console.log("GetDeviceTEEStateResponse=", teeState);
+				let verifyedData = await this.verify(teeState);
+				if (!verifyedData) {
+					console.log("failed to verify GetDeviceTEEStateResponse");
+					return this.finishTeep();
+				}
+				let tbsRes = JSON.parse(verifyedData.payload.toString());
+				console.log("verifyedData=", tbsRes);
+				// try decrypt edsi
+				if (tbsRes.GetDeviceTEEStateTBSResponse.edsi) {
+					console.log("trying decrypt edsi=", tbsRes.GetDeviceTEEStateTBSResponse.edsi);
+					let decEdsi = await this.decrypt(tbsRes.GetDeviceTEEStateTBSResponse.edsi);
+					if (!decEdsi) {
+						console.log("failed to decrypt GetDeviceTEEStateTBSResponse.edsi");
+						return this.finishTeep();
+					}
+					console.log("decEdsi=", decEdsi.plaintext.toString());
+				}
+			}
 			console.log("detect getDeviceTEEStateTBResonse")
 			if (del) {
 				return this.sendDeleteTARequest(jose, res)
