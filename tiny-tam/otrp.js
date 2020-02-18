@@ -77,7 +77,7 @@ module.exports = (tamPrivKey, teePubKey, taImage, taUrl) => ({
 				encrypted_ta: taImage
 			}
 		}
-		let conetent = {
+		let content = {
 			tamid: TAMID,
 			taid: TA_UUID
 		};
@@ -85,7 +85,7 @@ module.exports = (tamPrivKey, teePubKey, taImage, taUrl) => ({
 		if (jose) {
 			// The "content" is a JSON encrypted message that includes actual input for the SD update. 
 			// The standard JSON content encryption key (CEK) is used, and the CEK is encrypted by the target TEE's public key.
-			mes.InstallTATBSRequest.content = this.encrypt(content);
+			mes.InstallTATBSRequest.content = this.encrypt(JSON.stringify(content));
 			outer = JSON.stringify({
 				InstallTARequest: await this.sign(JSON.stringify(mes))
 			})
