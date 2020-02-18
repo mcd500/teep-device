@@ -273,6 +273,28 @@ static int parse_otrp_request(char *out, size_t outlen, char *in, size_t inlen)
 	return type;
 }
 
+static int parse_otrp_encrypted_ta(char *out, size_t outlen, char *in, size_t inlen)
+{
+	// parse encrypted_ta and value(map) from JSON
+	// detect encrypted_ta
+	char *encTaStart = strstr(in, "encrypted_ta");
+	if (encTaStart == NULL) return -1;
+
+	// detect value(map)
+	char *mapStart = strchr(encTaStart, (int)'{');
+	if (mapStart == NULL) return -1;
+	char *mapEnd = strchr(encTaStart, (int)'}');
+	if (mapEnd == NULL) return -1;
+
+	strncpy(out, mapStart, mapEnd-mapStart+1);
+	out[mapEnd-mapStart+1] = '\0';
+
+//	printf("debug encrypted_ta start=%.256s\n", out);
+//	printf("debug encrypted_ta end=%s\n", out + strlen(out) - 256);
+
+	return 0;
+}
+
 static signed char
 parse_type_token_cb(struct lejp_ctx *ctx, char reason)
 {
@@ -512,6 +534,9 @@ int loop_otrp(struct libteep_ctx *lao_ctx) {
 			break;
 		case OTRP_INSTALL_TA_REQUEST:
 			lwsl_notice("detect OTRP_INSTALL_TA_REQUEST\n");
+			// parse encrypted_ta
+			n = parse_otrp_encrypted_ta(teep_tmp_buf, sizeof(teep_tmp_buf), (char*)http_res_buf, n);
+
 			exit(1);
 			break;
 		case OTRP_DELETE_TA_REQUEST:

@@ -74,7 +74,7 @@ module.exports = (tamPrivKey, teePubKey, taImage, taUrl) => ({
 				nextdsi: false,
 				dsihash: undefined,
 				content: undefined,
-				encrypted_ta: taImage
+				encrypted_ta: JSON.parse(taImage.toString()) // ta_image already wrapped by JWS & JWE
 			}
 		}
 		let content = {
