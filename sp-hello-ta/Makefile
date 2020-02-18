@@ -20,9 +20,7 @@ export BINARY
 
 -include $(TA_DEV_KIT_DIR)/mk/ta_dev_kit.mk
 
-$(BINARY).elf: $(TA_DEV_KIT_DIR)/lib/libwebsockets.a \
-		$(TA_DEV_KIT_DIR)/lib/libmbedtls.a \
-			*.c *.h
+$(BINARY).elf: *.c *.h
 
 $(BINARY).ta:	$(BINARY).elf
 
