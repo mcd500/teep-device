@@ -143,6 +143,15 @@ static int verify_otrp_request(struct libteep_ctx *lao_ctx, void *out, size_t ou
 	}
 }
 
+static int encrypt_otrp_response(struct libteep_ctx *lao_ctx, void *out, size_t outlen, void *in, size_t inlen) {
+	if (jose) {
+		lwsl_notice("encrypt(wrap) otrp message\n");
+		return libteep_msg_encrypt(lao_ctx, out, outlen, in, inlen);
+	} else {
+		return io_copy(out, outlen, in, inlen);
+	}
+}
+
 struct teep_mesg {
 	int type;
 	char *token;
@@ -463,7 +472,15 @@ int loop_otrp(struct libteep_ctx *lao_ctx) {
 				free(talist_dup);
 				talist_dup = NULL;
 			}
+			// encrypt dsi
 			lwsl_notice("dsi(before encrypted) json: %s, len: %zd\n", teep_tmp_buf, strlen(teep_tmp_buf));
+			n = encrypt_otrp_response(lao_ctx, http_req_buf, sizeof(http_req_buf), teep_tmp_buf, strlen(teep_tmp_buf));
+			if (n < 0) {
+				lwsl_err("%s: encrypt_otrp_response failed %d\n", __func__, n);
+				return n;
+			}
+			lwsl_notice("dsi(encrypted) json: %s, len: %zd\n", http_req_buf, strlen(http_req_buf));
+			
 			exit(1);
 			break;
 		case OTRP_INSTALL_TA_REQUEST:

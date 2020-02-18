@@ -211,6 +211,96 @@ bail1:
 	return -1;
 }
 
+int
+otrp_message_encrypt(const char *msg, int msg_len, unsigned char *out, unsigned int *out_len) {
+	struct lws_context_creation_info info;
+	static struct lws_context *context = NULL;
+	int temp_len = sizeof(temp_buf);
+	struct lws_jwe jwe;
+	struct lws_jose jose;
+	int n = 0;
+
+	lwsl_user("%s: msg len %d\n", __func__, msg_len);
+	memset(&info, 0, sizeof(info));
+	info.port = CONTEXT_PORT_NO_LISTEN;
+	info.options = 0;
+#ifdef PCTEST
+	// calling lws_create_context on tee environment causes a lot of link error
+	// lws_create_context must be called in pc environment to avoid SEGV on decrypt
+	context = lws_create_context(&info);
+	if (!context) {
+		lwsl_err("lws init failed\n");
+		return -1;
+	}
+#endif
+
+	lws_jose_init(&jose);
+	lws_jwe_init(&jwe, context);
+	n = lws_jwk_import(&jwe.jwk, NULL, NULL, tam_id_pubkey_jwk, strlen(tam_id_pubkey_jwk));
+	if (n) {
+		lwsl_err("lws init failed\n");
+		return -1;
+	}
+	lwsl_user("Encrypt\n");
+	static const char *alg = "RSA1_5";
+	static const char *enc = "A128CBC-HS256";
+	n = lws_gencrypto_jwe_alg_to_definition(alg, &jwe.jose.alg);
+	if (n) {
+		lwsl_err("%s: alg_to_definition failed %s\n", __func__, alg);
+		goto bail1;
+	}
+	n = lws_gencrypto_jwe_enc_to_definition(enc, &jwe.jose.enc_alg);
+	if (n) {
+		lwsl_err("%s: enc_to_definition failed %s\n", __func__, enc);
+		goto bail1;
+	}
+	n = lws_jws_alloc_element(&jwe.jws.map, LJWS_JOSE,
+			lws_concat_temp(temp_buf, temp_len),
+			&temp_len, strlen(alg) +
+			strlen(enc) + 32, 0);
+	if (n) {
+		lwsl_err("%s: temp space too small\n", __func__);
+		goto bail1;
+	}
+	jwe.jws.map.len[LJWS_JOSE] = lws_snprintf(
+			(char *)jwe.jws.map.buf[LJWS_JOSE], temp_len,
+			"{\"alg\":\"%s\",\"enc\":\"%s\"}", alg, enc);
+
+	// need manual padding
+	// https://github.com/warmcat/libwebsockets/commit/63ad616941e080cbdb94f706e388b0cf8c5beb70#diff-69a3998d35803592c0e1c24b9c1b1757
+	int pad = ((msg_len + 16) & ~15) - msg_len;
+	memset((char*)msg + msg_len, pad, pad);
+	msg_len += pad;
+
+	jwe.jws.map.buf[LJWE_CTXT] = (void *)msg;
+	jwe.jws.map.len[LJWE_CTXT] = msg_len;
+	n = lws_gencrypto_bits_to_bytes(jwe.jose.enc_alg->keybits_fixed);
+	if (lws_jws_randomize_element(context, &jwe.jws.map, LJWE_EKEY,
+			lws_concat_temp(temp_buf, temp_len),
+			&temp_len, n,
+			LWS_JWE_LIMIT_KEY_ELEMENT_BYTES)) {
+		lwsl_err("Problem getting random\n");
+		goto bail1;
+	}
+	n = lws_jwe_encrypt(&jwe, lws_concat_temp(temp_buf, temp_len),
+			&temp_len);
+	if (n) {
+		lwsl_err("%s: lws_jwe_encrypt failed %d\n", __func__, n);
+		goto bail1;
+	}
+	n = lws_jwe_render_flattened(&jwe, (void *)out, *out_len);
+	if (n < 0) {
+		lwsl_err("%s: lws_jwe_render_flattened failed %d\n", __func__, n);
+		goto bail1;
+	}
+	lwsl_user("Encrypt OK\n");
+	*out_len = strlen((void *)out);
+	return 0;
+	
+bail1:
+	return -1;
+}
+
 int teep_message_unwrap_ta_image(const char *msg, int msg_len, char *out, int *out_len) {
 	struct lws_context_creation_info info;
 	static struct lws_context *context = NULL;
