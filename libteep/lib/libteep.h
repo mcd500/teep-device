@@ -171,6 +171,9 @@ int
 libteep_msg_wrap(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, size_t inlen);
 
 int
+libteep_msg_sign(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, size_t inlen);
+
+int
 libteep_msg_encrypt(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, size_t inlen);
 
 int

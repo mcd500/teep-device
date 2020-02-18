@@ -212,6 +212,107 @@ bail1:
 }
 
 int
+otrp_message_sign(const char *msg, int msg_len, unsigned char *out, unsigned int *out_len) {
+	struct lws_context_creation_info info;
+	static struct lws_context *context = NULL;
+	struct lws_jwk jwk_privkey_tee;
+	int temp_len = sizeof(temp_buf);
+	struct lws_jws jws;
+	struct lws_jose jose;
+	int n = 0;
+
+	lwsl_user("%s: msg len %d\n", __func__, msg_len);
+	memset(&info, 0, sizeof(info));
+	info.port = CONTEXT_PORT_NO_LISTEN;
+	info.options = 0;
+#ifdef PCTEST
+	// calling lws_create_context on tee environment causes a lot of link error
+	// lws_create_context must be called in pc environment to avoid SEGV on decrypt
+	context = lws_create_context(&info);
+	if (!context) {
+		lwsl_err("lws init failed\n");
+		return -1;
+	}
+#endif
+
+	lws_jose_init(&jose);
+	lws_jws_init(&jws, &jwk_privkey_tee, context);
+
+	lwsl_user("Sign\n");
+	static const char *sign_alg = "RS256";
+
+	if (lws_gencrypto_jws_alg_to_definition(sign_alg, &jose.alg)) {
+		lwsl_err("alg_to_definition failed %s\n", sign_alg);
+		return 1;
+	}
+	if (lws_jws_alloc_element(&jws.map, LJWS_JOSE,
+			lws_concat_temp(temp_buf, temp_len),
+			&temp_len, strlen(sign_alg) + 10, 0)) {
+		lwsl_err("%s: temp space too small\n", __func__);
+		return 1;
+	}
+
+	jws.map.len[LJWS_JOSE] = lws_snprintf((char *)jws.map.buf[LJWS_JOSE],
+				temp_len, "{\"alg\":\"%s\"}", sign_alg);
+
+	n = lws_jwk_import(&jwk_privkey_tee, NULL, NULL, tee_id_privkey_jwk, strlen(tee_id_privkey_jwk));
+	if (n) {
+		lwsl_err("lws jwk import failed\n");
+		return -1;
+	}
+
+	jws.map.buf[LJWS_PYLD] = msg;
+	jws.map.len[LJWS_PYLD] = msg_len;
+
+
+	if (lws_jws_encode_b64_element(&jws.map_b64, LJWS_PYLD,
+			lws_concat_temp(temp_buf, temp_len),
+			&temp_len, jws.map.buf[LJWS_PYLD],
+			jws.map.len[LJWS_PYLD]))
+		goto bail1;
+	if (lws_jws_encode_b64_element(&jws.map_b64, LJWS_JOSE,
+			lws_concat_temp(temp_buf, temp_len),
+			&temp_len, jws.map.buf[LJWS_JOSE],
+			jws.map.len[LJWS_JOSE]))
+		goto bail1;
+
+	/* prepare the space for the b64 signature in the map */
+
+	if (lws_jws_alloc_element(&jws.map_b64, LJWS_SIG,
+			lws_concat_temp(temp_buf, temp_len),
+		    &temp_len, lws_base64_size(LWS_JWE_LIMIT_KEY_ELEMENT_BYTES), 0)) {
+		lwsl_err("%s: temp space too small\n", __func__);
+		goto bail1;
+	}
+
+	/* sign the plaintext */
+
+	n = lws_jws_sign_from_b64(&jose, &jws,
+			(char *)jws.map_b64.buf[LJWS_SIG],
+			jws.map_b64.len[LJWS_SIG]);
+	if (n < 0) {
+		lwsl_err("%s: failed signing test packet\n", __func__);
+		goto bail1;
+	}
+	/* set the actual b64 signature size */
+	jws.map_b64.len[LJWS_SIG] = n;
+
+	/* create the flattened representation */
+	n = lws_jws_write_flattened_json(&jws, (void *)out, *out_len - 16);
+	if (n < 0) {
+		lwsl_err("%s: failed write flattened json\n", __func__);
+		goto bail1;
+	}
+	*out_len = strlen((void *)out);
+	lwsl_user("Sign Ok %d\n", *out_len);
+
+	return 0;
+	
+bail1:
+	return -1;
+}
+
+int
 otrp_message_encrypt(const char *msg, int msg_len, unsigned char *out, unsigned int *out_len) {
 	struct lws_context_creation_info info;
 	static struct lws_context *context = NULL;

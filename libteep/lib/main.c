@@ -535,6 +535,22 @@ libteep_msg_wrap(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, si
 }
 
 int
+libteep_msg_sign(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, size_t inlen)
+{
+	struct lao_rpc_io io = {
+		.in = in,
+		.in_len = inlen,
+		.out = out,
+		.out_len = outlen
+	};
+	int n = libteep_teep_agent_msg(ctx, 11, &io);
+	if (n < 0) {
+		return n;
+	}
+	return io.out_len;
+}
+
+int
 libteep_msg_encrypt(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, size_t inlen)
 {
 	struct lao_rpc_io io = {

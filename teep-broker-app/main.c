@@ -152,6 +152,15 @@ static int encrypt_otrp_response(struct libteep_ctx *lao_ctx, void *out, size_t 
 	}
 }
 
+static int sign_otrp_response(struct libteep_ctx *lao_ctx, void *out, size_t outlen, void *in, size_t inlen) {
+	if (jose) {
+		lwsl_notice("sign(wrap) otrp message\n");
+		return libteep_msg_sign(lao_ctx, out, outlen, in, inlen);
+	} else {
+		return io_copy(out, outlen, in, inlen);
+	}
+}
+
 struct teep_mesg {
 	int type;
 	char *token;
@@ -479,8 +488,24 @@ int loop_otrp(struct libteep_ctx *lao_ctx) {
 				lwsl_err("%s: encrypt_otrp_response failed %d\n", __func__, n);
 				return n;
 			}
-			lwsl_notice("dsi(encrypted) json: %s, len: %zd\n", http_req_buf, strlen(http_req_buf));
-			
+			lwsl_notice("dsi(encrypted) json: %s, len: %zd\n", http_req_buf, (size_t)n);
+			// GetDeviceTEEStateTBSResponse
+			// TODO: get rid from request
+			lws_snprintf(teep_tmp_buf, sizeof(teep_tmp_buf), 
+				"{\"GetDeviceTEEStateTBSResponse\":{\"ver\":\"1.0\",\"status\":\"pass\",\"rid\":\"1\",\"tid\":\"1\",\"signerreq\":false,\"edsi\":%s}}",
+				http_req_buf);
+			lwsl_notice("GetDeviceTEEStateTBSResponse(before sign) json: %s, len: %zd\n", teep_tmp_buf, strlen(teep_tmp_buf));
+			// gen GetDeviceTEEStateResponse from siging GetDeviceTEEStateTBSResponse
+			n = sign_otrp_response(lao_ctx, http_req_buf, sizeof(http_req_buf), teep_tmp_buf, strlen(teep_tmp_buf));
+			if (n < 0) {
+				lwsl_err("%s: sign_otrp_response failed %d\n", __func__, n);
+				return n;
+			}
+			lwsl_notice("GetDeviceTEEStateResponse(signed) json: %s, len: %zd\n", http_req_buf, (size_t)n);
+			lws_snprintf(teep_tmp_buf, sizeof(teep_tmp_buf), 
+				"{\"GetDeviceStateResponse\":[{\"GetDeviceTEEStateResponse\": %s}]}",
+				http_req_buf);
+			lwsl_notice("GetDeviceStateResponse json: %s, len: %zd\n", teep_tmp_buf, strlen(teep_tmp_buf));
 			exit(1);
 			break;
 		case OTRP_INSTALL_TA_REQUEST:
