@@ -40,8 +40,6 @@
 
 /* in a real system this'd come from the encrypted packet */
 
-static const char *const ta_name =
-		"8d82573a-926d-4754-9353-32dc29997f74.ta";
 
 time_t time(time_t *tloc)
 {
