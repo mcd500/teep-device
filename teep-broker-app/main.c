@@ -146,7 +146,7 @@ static signed char
 parse_ta_list(struct lejp_ctx *ctx, char reason)
 {
 	struct ta_list *l = (void *)ctx->user;
-	if (!strcmp(ctx->path, "TA_LIST[].Class_ID")) {
+	if (!strcmp(ctx->path, "TA_LIST[]")) {
 		size_t i = *ctx->i;
 		if (i >= 10) {
 			lwsl_err("TA_LIST is too long\n");
