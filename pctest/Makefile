@@ -117,7 +117,7 @@ drun: $(TARGET)
 
 .PHONY: run-jose
 run-jose: $(TARGET)
-	./$(TARGET) --tamurl http://$(IP_ADDR):$(PORT)/api/tam_jose --jose
+	./$(TARGET) --tamurl http://$(IP_ADDR):$(PORT)/api/tam_jose2 --jose
 
 .PHONY: drun-jose
 drun-jose: $(TARGET)
