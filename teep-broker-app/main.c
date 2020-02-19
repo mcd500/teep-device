@@ -37,7 +37,7 @@ static uint8_t http_req_buf[5 * 1024];
 
 static const char *uri = "http://127.0.0.1:3000/api/tam"; // TAM server uri
 static enum libteep_teep_ver teep_ver = LIBTEEP_TEEP_VER_TEEP; // protocol
-static const char *talist = "3cfa03b5-d4b1-453a-9104-4e4bef53b37e"; // installed TA list
+static const char *talist = ""; // installed TA list
 static bool jose = false;
 
 enum teep_message_type {
