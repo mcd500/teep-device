@@ -638,8 +638,45 @@ int loop_otrp(struct libteep_ctx *lao_ctx) {
 				return n;
 			}
 			lwsl_notice("delete ta_id=%s\n", teep_tmp_buf);
-			// TODO:
-			exit(1);
+			n = libteep_ta_store_delete(lao_ctx, teep_tmp_buf, strlen(teep_tmp_buf));
+			if (n < 0) {
+				lwsl_err( "%s: libteep_ta_store_delete failed: %d\n", __func__, n);
+				// TODO: error handling(return DeleteTAResponse with status fail)
+				return n;
+			}
+
+			lwsl_notice("send OTRP_DELETE_TA_RESPONSE\n");
+			otrp_gen_dsi(teep_tmp_buf, sizeof(teep_tmp_buf));
+			// encrypt dsi
+			lwsl_notice("dsi(before encrypted) json: %s, len: %zd\n", teep_tmp_buf, strlen(teep_tmp_buf));
+			n = encrypt_otrp_response(lao_ctx, http_req_buf, sizeof(http_req_buf), teep_tmp_buf, strlen(teep_tmp_buf));
+			if (n < 0) {
+				lwsl_err("%s: encrypt_otrp_response failed %d\n", __func__, n);
+				return n;
+			}
+			lwsl_notice("dsi(encrypted) json: %s, len: %zd\n", http_req_buf, (size_t)n);
+			// DeleteTATBSResponse
+			// TODO: get rid from request
+			lws_snprintf(teep_tmp_buf, sizeof(teep_tmp_buf), 
+				"{\"DeleteTATBSResponse\":{\"ver\":\"1.0\",\"status\":\"pass\",\"rid\":\"1\",\"tid\":\"1\",\"content\":%s}}",
+				http_req_buf);
+			lwsl_notice("DeleteTATBSResponse(before sign) json: %s, len: %zd\n", teep_tmp_buf, strlen(teep_tmp_buf));
+			// gen DeleteTAResponse from siging DeleteTATBSResponse
+			n = sign_otrp_response(lao_ctx, http_req_buf, sizeof(http_req_buf), teep_tmp_buf, strlen(teep_tmp_buf));
+			if (n < 0) {
+				lwsl_err("%s: sign_otrp_response failed %d\n", __func__, n);
+				return n;
+			}
+			lwsl_notice("DeleteTAResponse(signed) json: %s, len: %zd\n", http_req_buf, (size_t)n);
+			lws_snprintf(teep_tmp_buf, sizeof(teep_tmp_buf), 
+				"{\"DeleteTAResponse\":%s}",
+				http_req_buf);
+			lwsl_notice("DeleteTAResponse json: %s, len: %zd\n", teep_tmp_buf, strlen(teep_tmp_buf));
+			n = libteep_tam_msg(lao_ctx, http_res_buf, sizeof(http_res_buf), teep_tmp_buf, strlen(teep_tmp_buf));
+			if (n < 0) {
+				lwsl_err( "%s: libteep_tam_msg: %d\n", __func__, n);
+				return n;
+			}
 			break;
 		default:
 			lwsl_err("%s: requested message type is invalid %d\n", __func__, m.type);
