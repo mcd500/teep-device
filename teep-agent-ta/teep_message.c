@@ -219,6 +219,7 @@ teep_message_wrap(const char *msg, int msg_len, unsigned char *out, unsigned int
 		lwsl_err("%s: failed signing test packet\n", __func__);
 		goto bail1;
 	}
+
 	/* set the actual b64 signature size */
 	jws.map_b64.len[LJWS_SIG] = n;
 
