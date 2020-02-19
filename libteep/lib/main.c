@@ -599,6 +599,22 @@ libteep_msg_verify(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, 
 }
 
 int
+libteep_msg_decrypt(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, size_t inlen)
+{
+	struct lao_rpc_io io = {
+		.in = in,
+		.in_len = inlen,
+		.out = out,
+		.out_len = outlen
+	};
+	int n = libteep_teep_agent_msg(ctx, 22, &io);
+	if (n < 0) {
+		return n;
+	}
+	return io.out_len;
+}
+
+int
 libteep_download_and_install_ta_image(struct libteep_ctx *ctx, char *url) {
 	char tmp_url[200];
 	const char *proto;

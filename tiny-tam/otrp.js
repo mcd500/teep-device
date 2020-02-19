@@ -121,7 +121,7 @@ module.exports = (tamPrivKey, teePubKey, taImage, taUrl) => ({
 		if (jose) {
 			// The "content" is a JSON encrypted message that includes actual input for the SD update. 
 			// The standard JSON content encryption key (CEK) is used, and the CEK is encrypted by the target TEE's public key.
-			mes.DeleteTATBSRequest.content = this.encrypt(JSON.stringify(content));
+			mes.DeleteTATBSRequest.content = await this.encrypt(JSON.stringify(content));
 			outer = JSON.stringify({
 				DeleteTARequest: await this.sign(JSON.stringify(mes))
 			})

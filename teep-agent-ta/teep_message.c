@@ -601,3 +601,54 @@ bail:
 	lws_jws_destroy(&jws);
 	return n;
 }
+
+int
+otrp_message_decrypt(const char *msg, int msg_len, unsigned char *out, unsigned int *out_len) {
+	struct lws_context_creation_info info;
+	static struct lws_context *context = NULL;
+	int temp_len = sizeof(temp_buf);
+	struct lws_jwe jwe;
+	int n = 0;
+	lwsl_user("%s: msg len %d\n", __func__, msg_len);
+	memset(&info, 0, sizeof(info));
+	info.port = CONTEXT_PORT_NO_LISTEN;
+	info.options = 0;
+#ifdef PCTEST
+	// calling lws_create_context on tee environment causes a lot of link error
+	// lws_create_context must be called in pc environment to avoid SEGV on decrypt
+	context = lws_create_context(&info);
+	if (!context) {
+		lwsl_err("lws init failed\n");
+		return -1;
+	}
+#endif
+
+	lws_jwe_init(&jwe, context);
+
+	lwsl_user("Decrypt\n");
+
+	n = lws_jwe_json_parse(&jwe, (void *)msg,
+				msg_len,
+				lws_concat_temp(temp_buf, temp_len), &temp_len);
+	if (n < 0) {
+		lwsl_err("%s: lws_jwe_json_parse failed\n", __func__);
+		goto bail;
+	}
+	n = lws_jwk_import(&jwe.jwk, NULL, NULL, tee_id_privkey_jwk, strlen(tee_id_privkey_jwk));
+	if (n < 0) {
+		lwsl_err("%s: unable to import tee jwk\n", __func__);
+		goto bail;
+	}
+	n = lws_jwe_auth_and_decrypt(&jwe, lws_concat_temp(temp_buf, temp_len), &temp_len);
+	if (n < 0) {
+		lwsl_err("%s: lws_jwe_auth_and_decrypt failed\n", __func__);
+		goto bail;
+	}
+	lwsl_user("Decrypt OK: length %d\n", n);
+	memcpy(out, jwe.jws.map.buf[LJWE_CTXT], jwe.jws.map.len[LJWE_CTXT]);
+	*out_len = jwe.jws.map.len[LJWE_CTXT];
+	n = 0;
+bail:
+	lws_jwe_destroy(&jwe);
+	return n;
+}

@@ -143,6 +143,15 @@ static int verify_otrp_request(struct libteep_ctx *lao_ctx, void *out, size_t ou
 	}
 }
 
+static int decrypt_otrp_request(struct libteep_ctx *lao_ctx, void *out, size_t outlen, void *in, size_t inlen) {
+	if (jose) {
+		lwsl_notice("decrypt(unwrap) otrp message\n");
+		return libteep_msg_decrypt(lao_ctx, out, outlen, in, inlen);
+	} else {
+		return io_copy(out, outlen, in, inlen);
+	}
+}
+
 static int encrypt_otrp_response(struct libteep_ctx *lao_ctx, void *out, size_t outlen, void *in, size_t inlen) {
 	if (jose) {
 		lwsl_notice("encrypt(wrap) otrp message\n");
@@ -273,11 +282,11 @@ static int parse_otrp_request(char *out, size_t outlen, char *in, size_t inlen)
 	return type;
 }
 
-static int parse_otrp_encrypted_ta(char *out, size_t outlen, char *in, size_t inlen)
+static int parse_otrp_jwe_map(const char* key, char *out, size_t outlen, char *in, size_t inlen)
 {
-	// parse encrypted_ta and value(map) from JSON
-	// detect encrypted_ta
-	char *encTaStart = strstr(in, "encrypted_ta");
+	// parse jwe(ex: encrypted_ta) and value(map) from JSON
+	// detect jwe json key(ex: encrypted_ta)
+	char *encTaStart = strstr(in, key);
 	if (encTaStart == NULL) return -1;
 
 	// detect value(map)
@@ -291,6 +300,26 @@ static int parse_otrp_encrypted_ta(char *out, size_t outlen, char *in, size_t in
 
 //	printf("debug encrypted_ta start=%.256s\n", out);
 //	printf("debug encrypted_ta end=%s\n", out + strlen(out) - 256);
+
+	return 0;
+}
+
+static int parse_otrp_json_value(const char* key, char *out, size_t outlen, char *in, size_t inlen)
+{
+	// parse jwe(ex: ta_id) and value(map) from JSON
+	// detect jwe json key(ex: ta_id)
+	char *encTaStart = strstr(in, key);
+	if (encTaStart == NULL) return -1;
+
+	// detect value
+	char *mapStart = strchr(encTaStart+strlen(key)+1, (int)'"');
+	if (mapStart == NULL) return -1;
+	mapStart++;
+	char *mapEnd = strchr(mapStart, (int)'"');
+	if (mapEnd == NULL) return -1;
+
+	strncpy(out, mapStart, mapEnd-mapStart);
+	out[mapEnd-mapStart] = '\0';
 
 	return 0;
 }
@@ -539,9 +568,9 @@ int loop_otrp(struct libteep_ctx *lao_ctx) {
 		case OTRP_INSTALL_TA_REQUEST:
 			lwsl_notice("detect OTRP_INSTALL_TA_REQUEST\n");
 			// parse encrypted_ta
-			n = parse_otrp_encrypted_ta(teep_tmp_buf, sizeof(teep_tmp_buf), (char*)http_res_buf, n);
+			n = parse_otrp_jwe_map("encrypted_ta", teep_tmp_buf, sizeof(teep_tmp_buf), (char*)http_res_buf, n);
 			if (n < 0) {
-				lwsl_err( "%s: parse_otrp_encrypted_ta failed: %d\n", __func__, n);
+				lwsl_err( "%s: parse_otrp_jwe_map failed: %d\n", __func__, n);
 				// TODO: error handling(return InstallTAResponse with status fail)
 				return n;
 			}
@@ -587,6 +616,29 @@ int loop_otrp(struct libteep_ctx *lao_ctx) {
 			break;
 		case OTRP_DELETE_TA_REQUEST:
 			lwsl_notice("detect OTRP_DELETE_TA_REQUEST\n");
+			// parse encrypted_ta
+			n = parse_otrp_jwe_map("content", teep_tmp_buf, sizeof(teep_tmp_buf), (char*)http_res_buf, n);
+			if (n < 0) {
+				lwsl_err( "%s: parse_otrp_jwe_map failed: %d\n", __func__, n);
+				// TODO: error handling(return DeleteTAResponse with status fail)
+				return n;
+			}
+			// decrypt content to get ta id
+			n = decrypt_otrp_request(lao_ctx, teep_res_buf, sizeof(teep_res_buf), teep_tmp_buf, strlen(teep_tmp_buf));
+			if (n < 0) {
+				lwsl_err( "%s: decrypt_otrp_request failed: %d\n", __func__, n);
+				// TODO: error handling(return DeleteTAResponse with status fail)
+				return n;
+			}
+			// delete encrypted ta
+			n = parse_otrp_json_value("taid", teep_tmp_buf, sizeof(teep_tmp_buf), (char*)teep_res_buf, strlen(teep_res_buf));
+			if (n < 0) {
+				lwsl_err( "%s: parse_otrp_value failed: %d\n", __func__, n);
+				// TODO: error handling(return DeleteTAResponse with status fail)
+				return n;
+			}
+			lwsl_notice("delete ta_id=%s\n", teep_tmp_buf);
+			// TODO:
 			exit(1);
 			break;
 		default:
