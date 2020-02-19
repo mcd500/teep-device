@@ -12,6 +12,8 @@ all: teep-broker-app $(SCRIPT)
 $(SCRIPT): ita.sh dta.sh showtamurl.sh
 	sed -e s/127\.0\.\0\.1/$(IP_ADDR)/g < ita.sh > ita
 	sed -e s/127\.0\.\0\.1/$(IP_ADDR)/g < dta.sh > dta
+	sed -e s/127\.0\.\0\.1/$(IP_ADDR)/g < ista.sh > ista
+	sed -e s/127\.0\.\0\.1/$(IP_ADDR)/g < dsta.sh > dsta
 	sed -e s/127\.0\.\0\.1/$(IP_ADDR)/g < showtamurl.sh > showtamurl
 	chmod u+x ita dta showtamurl
 
