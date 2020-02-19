@@ -10,6 +10,7 @@ LDLIBS := -lwebsockets
 UNAME_S := $(shell uname -s)
 ETHER := $(shell ip link | awk -F: '$$0 !~ "lo|vir|wl|pp|docker|br|^[^0-9]"{print $$2;getline}')
 IP_ADDR := $(shell ifconfig $(ETHER) | awk '/inet / {gsub("addr:","",$$2); print $$2}')
+PORT := 3000
 
 TAM_PUB_JWK  := ../test-jw/tsm/identity/tam-mytam-public.jwk
 TAM_PRIV_JWK := ../test-jw/tsm/identity/private/tam-mytam-private.jwk
@@ -108,11 +109,19 @@ clean:
 
 .PHONY: run
 run: $(TARGET)
-	./$(TARGET) --tamurl http://${IP_ADDR}:3000/api/tam
+	./$(TARGET) --tamurl http://$(IP_ADDR):$(PORT)/api/tam
+
+.PHONY: drun
+drun: $(TARGET)
+	./$(TARGET) --tamurl http://$(IP_ADDR):$(PORT)/api/tam_delete --talist 8d82573a-926d-4754-9353-32dc29997f74
 
 .PHONY: run-jose
 run-jose: $(TARGET)
-	./$(TARGET) --tamurl http://${IP_ADDR}:3000/api/tam_jose --jose
+	./$(TARGET) --tamurl http://$(IP_ADDR):$(PORT)/api/tam_jose --jose
+
+.PHONY: drun-jose
+drun-jose: $(TARGET)
+	./$(TARGET) --tamurl http://$(IP_ADDR):$(PORT)/api/tam_jose_delete --jose --talist 8d82573a-926d-4754-9353-32dc29997f74
 
 MBED_JWE = ./$(LWS_M_BDIR)/bin/lws-crypto-jwe
 OSSL_JWE = ./$(LWS_O_BDIR)/bin/lws-crypto-jwe
