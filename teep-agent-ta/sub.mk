@@ -1,8 +1,6 @@
 global-incdirs-y += libwebsockets/build libwebsockets/lib .
 srcs-y += teep-agent-ta.c teep_message.c ta-store.c
 
-#BINARY=68373894-5bb3-403c-9eec-3114a1f5d3fc
-
 CFLAGS+=-nostdinc
 LDFLAGS+=-L$(TA_DEV_KIT_DIR)/lib  --whole-archive -lwebsockets --no-whole-archive
 

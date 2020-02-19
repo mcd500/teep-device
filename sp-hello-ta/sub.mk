@@ -1,10 +1,8 @@
-#global-incdirs-y += libwebsockets/build libwebsockets/lib boringssl/include .
+global-incdirs-y += .
 srcs-y += ta-aist-test.c
 
-#BINARY:="8d82573a-926d-4754-9353-32dc29997f74"
-
 CFLAGS+=-nostdinc
-LDFLAGS+=-L$(TA_DEV_KIT_DIR)/lib  --whole-archive -lwebsockets-ta --no-whole-archive
+LDFLAGS+=-L$(TA_DEV_KIT_DIR)/lib  --whole-archive --no-whole-archive
 
 # Eliminate unused symbols:
 # # 1. Tell compiler to place each data/function item in its own section
