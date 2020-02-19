@@ -56,6 +56,8 @@ teep_message_wrap(const char *msg, int msg_len, unsigned char *out, unsigned int
 	struct lws_jws jws;
 	struct lws_jwe jwe;
 	struct lws_jose jose;
+	static char sigbuf[200000];
+	int sign_len = 0;
 	int n = 0;
 
 	lwsl_user("%s: msg len %d\n", __func__, msg_len);
@@ -128,6 +130,7 @@ teep_message_wrap(const char *msg, int msg_len, unsigned char *out, unsigned int
 		goto bail1;
 	}
 
+#if 0
 	/* sign the plaintext */
 
 	n = lws_jws_sign_from_b64(&jose, &jws,
@@ -147,9 +150,10 @@ teep_message_wrap(const char *msg, int msg_len, unsigned char *out, unsigned int
 		lwsl_err("%s: failed write flattened json\n", __func__);
 		goto bail1;
 	}
-	int sign_len = strlen(sigbuf);
+	sign_len = strlen(sigbuf);
 	lwsl_user("Sign Ok %d\n", sign_len);
 
+#else
 
 	lwsl_user("Encrypt\n");
 	static const char *alg = "RSA1_5";
@@ -205,6 +209,30 @@ teep_message_wrap(const char *msg, int msg_len, unsigned char *out, unsigned int
 	}
 	lwsl_user("Encrypt OK\n");
 	*out_len = strlen((void *)out);
+
+	/* sign the plaintext */
+
+	n = lws_jws_sign_from_b64(&jose, &jws,
+			(char *)jws.map_b64.buf[LJWS_SIG],
+			jws.map_b64.len[LJWS_SIG]);
+	if (n < 0) {
+		lwsl_err("%s: failed signing test packet\n", __func__);
+		goto bail1;
+	}
+	/* set the actual b64 signature size */
+	jws.map_b64.len[LJWS_SIG] = n;
+
+	/* create the flattened representation */
+	n = lws_jws_write_flattened_json(&jws, (void *)sigbuf, sizeof(sigbuf) - 16);
+	if (n < 0) {
+		lwsl_err("%s: failed write flattened json\n", __func__);
+		goto bail1;
+	}
+	sign_len = strlen(sigbuf);
+	lwsl_user("Sign Ok %d\n", sign_len);
+
+#endif
+
 	return 0;
 	
 bail1:
