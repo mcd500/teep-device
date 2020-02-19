@@ -100,12 +100,15 @@ libwebsockets $(LWS_OBJ): $(MBEDTLS_OBJ) $(LWS_SRC)
 		../libwebsockets; \
 	make -j `nproc`
 
+.PHONY: clean-pctest
+clean-pctest:
+	$(RM) $(TARGET)
+
 .PHONY: clean
-clean:
+clean: clean-pctest
 	rm -fr $(LWS_M_BDIR)
 	rm -fr $(LWS_O_BDIR)
 	rm -fr $(MBEDTLS_BDIR)
-	$(RM) $(TARGET)
 
 .PHONY: run
 run: $(TARGET)
