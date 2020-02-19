@@ -83,77 +83,7 @@ teep_message_wrap(const char *msg, int msg_len, unsigned char *out, unsigned int
 		return -1;
 	}
 
-	lwsl_user("Sign\n");
-	static const char *sign_alg = "RS256";
-
-	if (lws_gencrypto_jws_alg_to_definition(sign_alg, &jose.alg)) {
-		lwsl_err("alg_to_definition failed %s\n", sign_alg);
-		return 1;
-	}
-	if (lws_jws_alloc_element(&jws.map, LJWS_JOSE,
-			lws_concat_temp(temp_buf, temp_len),
-			&temp_len, strlen(sign_alg) + 10, 0)) {
-		lwsl_err("%s: temp space too small\n", __func__);
-		return 1;
-	}
-
-	jws.map.len[LJWS_JOSE] = lws_snprintf((char *)jws.map.buf[LJWS_JOSE],
-				temp_len, "{\"alg\":\"%s\"}", sign_alg);
-
-	n = lws_jwk_import(&jwk_privkey_tee, NULL, NULL, tee_id_privkey_jwk, strlen(tee_id_privkey_jwk));
-	if (n) {
-		lwsl_err("lws jwk import failed\n");
-		return -1;
-	}
-
-	jws.map.buf[LJWS_PYLD] = msg;
-	jws.map.len[LJWS_PYLD] = msg_len;
-
-
-	if (lws_jws_encode_b64_element(&jws.map_b64, LJWS_PYLD,
-			lws_concat_temp(temp_buf, temp_len),
-			&temp_len, jws.map.buf[LJWS_PYLD],
-			jws.map.len[LJWS_PYLD]))
-		goto bail1;
-	if (lws_jws_encode_b64_element(&jws.map_b64, LJWS_JOSE,
-			lws_concat_temp(temp_buf, temp_len),
-			&temp_len, jws.map.buf[LJWS_JOSE],
-			jws.map.len[LJWS_JOSE]))
-		goto bail1;
-
-	/* prepare the space for the b64 signature in the map */
-
-	if (lws_jws_alloc_element(&jws.map_b64, LJWS_SIG,
-			lws_concat_temp(temp_buf, temp_len),
-		    &temp_len, lws_base64_size(LWS_JWE_LIMIT_KEY_ELEMENT_BYTES), 0)) {
-		lwsl_err("%s: temp space too small\n", __func__);
-		goto bail1;
-	}
-
-#if 0
-	/* sign the plaintext */
-
-	n = lws_jws_sign_from_b64(&jose, &jws,
-			(char *)jws.map_b64.buf[LJWS_SIG],
-			jws.map_b64.len[LJWS_SIG]);
-	if (n < 0) {
-		lwsl_err("%s: failed signing test packet\n", __func__);
-		goto bail1;
-	}
-	/* set the actual b64 signature size */
-	jws.map_b64.len[LJWS_SIG] = n;
-
-	static char sigbuf[200000];
-	/* create the flattened representation */
-	n = lws_jws_write_flattened_json(&jws, (void *)sigbuf, sizeof(sigbuf) - 16);
-	if (n < 0) {
-		lwsl_err("%s: failed write flattened json\n", __func__);
-		goto bail1;
-	}
-	sign_len = strlen(sigbuf);
-	lwsl_user("Sign Ok %d\n", sign_len);
-
-#else
+	/* Encrypt json */
 
 	lwsl_user("Encrypt\n");
 	static const char *alg = "RSA1_5";
@@ -210,7 +140,54 @@ teep_message_wrap(const char *msg, int msg_len, unsigned char *out, unsigned int
 	lwsl_user("Encrypt OK\n");
 	*out_len = strlen((void *)out);
 
-	/* sign the plaintext */
+	/* sign json */
+
+	lwsl_user("Sign\n");
+
+	static const char *sign_alg = "RS256";
+
+	if (lws_gencrypto_jws_alg_to_definition(sign_alg, &jose.alg)) {
+		lwsl_err("alg_to_definition failed %s\n", sign_alg);
+		return 1;
+	}
+	if (lws_jws_alloc_element(&jws.map, LJWS_JOSE,
+			lws_concat_temp(temp_buf, temp_len),
+			&temp_len, strlen(sign_alg) + 10, 0)) {
+		lwsl_err("%s: temp space too small\n", __func__);
+		return 1;
+	}
+
+	jws.map.len[LJWS_JOSE] = lws_snprintf((char *)jws.map.buf[LJWS_JOSE],
+				temp_len, "{\"alg\":\"%s\"}", sign_alg);
+
+	n = lws_jwk_import(&jwk_privkey_tee, NULL, NULL, tee_id_privkey_jwk, strlen(tee_id_privkey_jwk));
+	if (n) {
+		lwsl_err("lws jwk import failed\n");
+		return -1;
+	}
+
+	jws.map.buf[LJWS_PYLD] = msg;
+	jws.map.len[LJWS_PYLD] = msg_len;
+
+	if (lws_jws_encode_b64_element(&jws.map_b64, LJWS_PYLD,
+			lws_concat_temp(temp_buf, temp_len),
+			&temp_len, jws.map.buf[LJWS_PYLD],
+			jws.map.len[LJWS_PYLD]))
+		goto bail1;
+	if (lws_jws_encode_b64_element(&jws.map_b64, LJWS_JOSE,
+			lws_concat_temp(temp_buf, temp_len),
+			&temp_len, jws.map.buf[LJWS_JOSE],
+			jws.map.len[LJWS_JOSE]))
+		goto bail1;
+
+	/* prepare the space for the b64 signature in the map */
+
+	if (lws_jws_alloc_element(&jws.map_b64, LJWS_SIG,
+			lws_concat_temp(temp_buf, temp_len),
+		    &temp_len, lws_base64_size(LWS_JWE_LIMIT_KEY_ELEMENT_BYTES), 0)) {
+		lwsl_err("%s: temp space too small\n", __func__);
+		goto bail1;
+	}
 
 	n = lws_jws_sign_from_b64(&jose, &jws,
 			(char *)jws.map_b64.buf[LJWS_SIG],
@@ -231,8 +208,6 @@ teep_message_wrap(const char *msg, int msg_len, unsigned char *out, unsigned int
 	}
 	sign_len = strlen(sigbuf);
 	lwsl_user("Sign Ok %d\n", sign_len);
-
-#endif
 
 	return 0;
 	
