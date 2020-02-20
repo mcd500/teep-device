@@ -33,7 +33,7 @@
 static uint8_t http_res_buf[6 * 1024 * 1024];
 static char teep_req_buf[5 * 1024];
 static char teep_res_buf[5 * 1024];
-static char teep_tmp_buf[6 * 1024 * 1024];
+static char teep_tmp_buf[800 * 1024];
 static uint8_t http_req_buf[5 * 1024];
 
 static const char *uri = "http://127.0.0.1:3000/api/tam"; // TAM server uri
@@ -526,7 +526,7 @@ int loop_otrp(struct libteep_ctx *lao_ctx) {
 		};
 
 		m.type = parse_otrp_request(teep_tmp_buf, sizeof(teep_tmp_buf), (char*)http_res_buf, n);
-		n = verify_otrp_request(lao_ctx, http_res_buf, sizeof(http_res_buf), teep_tmp_buf, strlen(teep_tmp_buf));
+		n = verify_otrp_request(lao_ctx, http_res_buf, strlen(teep_tmp_buf), teep_tmp_buf, strlen(teep_tmp_buf));
 
 		switch (m.type) {
 		case OTRP_GET_DEVICE_STATE_REQUEST:
@@ -559,7 +559,7 @@ int loop_otrp(struct libteep_ctx *lao_ctx) {
 				"{\"GetDeviceStateResponse\":[{\"GetDeviceTEEStateResponse\": %s}]}",
 				http_req_buf);
 			lwsl_notice("GetDeviceStateResponse json: %s, len: %zd\n", teep_tmp_buf, strlen(teep_tmp_buf));
-			n = libteep_tam_msg(lao_ctx, http_res_buf, sizeof(http_res_buf), teep_tmp_buf, strlen(teep_tmp_buf));
+			n = libteep_tam_msg(lao_ctx, http_res_buf, 800*1024, teep_tmp_buf, strlen(teep_tmp_buf));
 			if (n < 0) {
 				lwsl_err( "%s: libteep_tam_msg: %d\n", __func__, n);
 				return n;
@@ -608,7 +608,7 @@ int loop_otrp(struct libteep_ctx *lao_ctx) {
 				"{\"InstallTAResponse\":%s}",
 				http_req_buf);
 			lwsl_notice("InstallTAResponse json: %s, len: %zd\n", teep_tmp_buf, strlen(teep_tmp_buf));
-			n = libteep_tam_msg(lao_ctx, http_res_buf, sizeof(http_res_buf), teep_tmp_buf, strlen(teep_tmp_buf));
+			n = libteep_tam_msg(lao_ctx, http_res_buf, 800*1024, teep_tmp_buf, strlen(teep_tmp_buf));
 			if (n < 0) {
 				lwsl_err( "%s: libteep_tam_msg: %d\n", __func__, n);
 				return n;
@@ -672,7 +672,7 @@ int loop_otrp(struct libteep_ctx *lao_ctx) {
 				"{\"DeleteTAResponse\":%s}",
 				http_req_buf);
 			lwsl_notice("DeleteTAResponse json: %s, len: %zd\n", teep_tmp_buf, strlen(teep_tmp_buf));
-			n = libteep_tam_msg(lao_ctx, http_res_buf, sizeof(http_res_buf), teep_tmp_buf, strlen(teep_tmp_buf));
+			n = libteep_tam_msg(lao_ctx, http_res_buf, 800*1024, teep_tmp_buf, strlen(teep_tmp_buf));
 			if (n < 0) {
 				lwsl_err( "%s: libteep_tam_msg: %d\n", __func__, n);
 				return n;

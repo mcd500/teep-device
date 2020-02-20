@@ -28,8 +28,7 @@
 
 #include <libwebsockets.h>
 #include "teep_message.h"
-// #define TEMP_BUF_SIZE (800 * 1024)
-#define TEMP_BUF_SIZE (6 * 1024 * 1024)  // increment size for parsing OTrP InstallTA(include TA binary)
+#define TEMP_BUF_SIZE (800 * 1024)
 
 static char temp_buf[TEMP_BUF_SIZE];
 
