@@ -27,11 +27,11 @@ module.exports = (tamPrivKey, teePubKey, taImage, taUrl, taname) => ({
 
 	async wrap(data) {
 		console.log(data)
-		signed = await this.sign(JSON.stringify(data))
-		console.log(signed)
-		encrypted = await this.encrypt(JSON.stringify(signed))
+		encrypted = await this.encrypt(JSON.stringify(data))
 		console.log(encrypted)
-		return JSON.stringify(encrypted)
+		signed = await this.sign(JSON.stringify(encrypted))
+		console.log(signed)
+		return JSON.stringify(signed)
 	},
 
 	async unwrap(data) {

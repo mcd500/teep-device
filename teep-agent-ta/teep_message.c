@@ -315,21 +315,13 @@ teep_message_unwrap(const char *msg, int msg_len, unsigned char *out, unsigned i
 	lws_jws_init(&jws, &jwk_pubkey_tam, context);
 	lws_jwe_init(&jwe, context);
 
-	n = lws_jwe_json_parse(&jwe, (void *)msg,
-				msg_len,
-				lws_concat_temp(temp_buf, temp_len), &temp_len);
-	if (n < 0) {
-		lwsl_err("%s: lws_jwe_json_parse failed\n", __func__);
-		goto bail;
-	}
-
 	lwsl_user("Verify\n");
 	n = lws_jwk_import(&jwk_pubkey_tam, NULL, NULL, tam_id_pubkey_jwk, strlen(tam_id_pubkey_jwk));
 	if (n < 0) {
 		lwsl_err("%s: unable to import tam jwk\n", __func__);
 		goto bail;
 	}
-	n = lws_jws_sig_confirm_json(jwe.jws.map.buf[LJWE_CTXT], jwe.jws.map.len[LJWE_CTXT], &jws, &jwk_pubkey_tam, context, temp_buf, &temp_len);
+	n = lws_jws_sig_confirm_json(msg, msg_len, &jws, &jwk_pubkey_tam, context, temp_buf, &temp_len);
 	if (n < 0) {
 		lwsl_err("%s: confirm rsa sig failed\n", __func__);
 		goto bail1;
@@ -341,6 +333,14 @@ teep_message_unwrap(const char *msg, int msg_len, unsigned char *out, unsigned i
 	}
 
 	lwsl_user("Decrypt\n");
+
+	n = lws_jwe_json_parse(&jwe, (void *)jws.map.buf[LJWS_PYLD],
+				jws.map.len[LJWS_PYLD],
+				lws_concat_temp(temp_buf, temp_len), &temp_len);
+	if (n < 0) {
+		lwsl_err("%s: lws_jwe_json_parse failed\n", __func__);
+		goto bail;
+	}
 
 	n = lws_jwk_import(&jwe.jwk, NULL, NULL, tee_id_privkey_jwk, strlen(tee_id_privkey_jwk));
 	if (n < 0) {
@@ -354,8 +354,8 @@ teep_message_unwrap(const char *msg, int msg_len, unsigned char *out, unsigned i
 	}
 	lwsl_user("Decrypt OK: length %d\n", n);
 
-	memcpy(out, jws.map.buf[LJWS_PYLD], jws.map.len[LJWS_PYLD]);
-	*out_len = jws.map.len[LJWS_PYLD];
+	memcpy(out, jwe.jws.map.buf[LJWE_CTXT], jwe.jws.map.len[LJWE_CTXT]);
+	*out_len = jwe.jws.map.len[LJWE_CTXT];
 	n = 0;
 bail1:
 	lws_jwk_destroy(&jwk_pubkey_tam);
