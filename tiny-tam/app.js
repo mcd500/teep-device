@@ -49,7 +49,7 @@ async function go() {
 	const signAndEncImage = await signAndEnc()
 	fs.writeFileSync("hoge", signAndEncImage, (err) => {console.log(err)})
 */
-	teepHandler = teep(tamPrivKey, teePubKey, taImage, taUrl);
+	teepHandler = teep(tamPrivKey, teePubKey, taImage, taUrl, path.basename(taname, ".ta.sign.enc"));
 	otrpHandler = otrp(tamPrivKey, teePubKey, taImage);
 	const server = http.createServer((req, res) => {
 		let res_chunks = []

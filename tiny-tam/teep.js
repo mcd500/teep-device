@@ -17,7 +17,7 @@ const encParam = {
 	contentAlg: "A128CBC-HS256",
 	format: 'flattened'
 }
-module.exports = (tamPrivKey, teePubKey, taImage, taUrl) => ({
+module.exports = (tamPrivKey, teePubKey, taImage, taUrl, taname) => ({
 	token: 0,
 	session: {},
 	sign(data) {return JWS.createSign(signParam, tamPrivKey).update(data).final()},
@@ -85,13 +85,7 @@ module.exports = (tamPrivKey, teePubKey, taImage, taUrl) => ({
 		console.log("sendTrustedAppDelete");
 		const mes = {
 			TYPE: TRUSTED_APP_DELETE,
-			TA_LIST: [
-				{
-					Vecndor_ID: "ietf-teep-wg",
-					Class_ID: "${taname}",
-					Device_ID: "teep-device"
-				}
-			]
+			TA_LIST: [ taname ]
 		}
 		this.sendTeepMessage(jose, mes, res, 200)
 	},
@@ -99,12 +93,22 @@ module.exports = (tamPrivKey, teePubKey, taImage, taUrl) => ({
 	async handleMessage(req, body, res) {
 		console.log("teep message detected")
 		let jose;
+		let del;
 		if (req.url == '/') {
 			jose = false
+			del = false
 		} else if (req.url == '/api/tam') {
 			jose = false
+			del = false
+		} else if (req.url == '/api/tam_delete') {
+			jose = false
+			del = true
 		} else if (req.url == '/api/tam_jose') {
 			jose = true
+			del = false
+		} else if (req.url == '/api/tam_jose_delete') {
+			jose = true
+			del = true
 		} else {
 			console.log("invalid url")
 			res.statusCode = 404
@@ -130,7 +134,7 @@ module.exports = (tamPrivKey, teePubKey, taImage, taUrl) => ({
 		console.log("parsed JSON:", teepRes)
 		if (teepRes.TYPE == QUERY_RESPONSE) {
 			console.log("detect QUERY_RESPONSE")
-			if (teepRes.TA_LIST.find((triple) => triple.Class_ID == "${taname}")) {
+			if (del) {
 				return this.sendTrustedAppDelete(jose, res)
 			} else {
 				return this.sendTrustedAppInstall(jose, res);
