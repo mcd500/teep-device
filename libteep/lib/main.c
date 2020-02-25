@@ -430,7 +430,7 @@ libteep_teep_agent_msg(struct libteep_ctx *ctx, uint32_t cmd,
 	}
 
 	io->out_len = op.params[3].value.a;
-	lwsl_hexdump_notice(io->out, io->out_len);
+	lwsl_hexdump_notice(io->out, (io->out_len > 2048) ? 2048 : io->out_len);
 	return n;
 }
 
