@@ -47,7 +47,7 @@ INCLUDES := -I../libteep/lib -I./$(LWS_M_BDIR)/include -I./mbedtls/include \
 CFLAGS  += $(INCLUDES) -DPCTEST=1
 LDFLAGS += -L$(LWS_M_BDIR)/lib
 
-TARGET = teep-broker-app
+TARGET = teep-broker-app libwebsockets-host
 
 # Makefile for TEEP Agent of UT
 
@@ -93,6 +93,9 @@ libwebsockets $(LWS_OBJ): $(MBEDTLS_OBJ) $(LWS_SRC)
 		../libwebsockets; \
 	make -j `nproc`;
 	sudo ldconfig $(CURDIR)/$(LWS_M_BDIR)/lib
+
+.PHONY: libwebsockets-host
+libwebsockets-host: $(LWS_SRC)
 	mkdir -p $(LWS_O_BDIR); cd $(LWS_O_BDIR); \
 	cmake 	-DLWS_WITH_SSL=1 \
 		-DLWS_WITH_JOSE=1 \
