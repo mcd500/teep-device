@@ -46,6 +46,10 @@ INCLUDES := -I../libteep/lib -I./$(LWS_M_BDIR)/include -I./mbedtls/include \
 	    -I../../optee_client/public -I../teep-agent-ta
 CFLAGS  += $(INCLUDES) -DPCTEST=1
 LDFLAGS += -L$(LWS_M_BDIR)/lib
+STATIC_LIB :=   ./$(LWS_M_BDIR)/lib/libwebsockets.a \
+		./$(MBEDTLS_BDIR)/library/libmbedtls.a \
+		./$(MBEDTLS_BDIR)/library/libmbedx509.a \
+		./$(MBEDTLS_BDIR)/library/libmbedcrypto.a
 
 TARGET = teep-broker-app libwebsockets-host
 
@@ -61,7 +65,7 @@ $(TEEP_KEY_H): $(TEEP_KEYS)
 	make -C .. generate-jwk-headers
 
 $(TARGET): $(TARGET_SRC)
-	$(CC) $(CFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ $(STATIC_LIB) $(LDLIBS) -o $@
 
 .PHONY: mbedtls
 mbedtls $(MBEDTLS_OBJ): $(MBEDTLS_SRC)
@@ -71,7 +75,8 @@ mbedtls $(MBEDTLS_OBJ): $(MBEDTLS_SRC)
 	mkdir -p $(MBEDTLS_BDIR); cd $(MBEDTLS_BDIR); \
 	cmake 	\
 		-DCMAKE_BUILD_TYPE=RELEASE \
-		-DUSE_SHARED_MBEDTLS_LIBRARY=1 \
+		-DUSE_STATIC_MBEDTLS_LIBRARY=1 \
+		-DUSE_SAHTED_MBEDTLS_LIBRARY=0 \
 		../mbedtls; \
 	make -j `nproc`
 	sudo ldconfig $(CURDIR)/$(MBEDTLS_BDIR)/library/
@@ -86,10 +91,12 @@ libwebsockets $(LWS_OBJ): $(MBEDTLS_OBJ) $(LWS_SRC)
 		-DLWS_WITH_MBEDTLS=1 \
 		-DLWS_WITH_JOSE=1 \
 		-DLWS_MBEDTLS_INCLUDE_DIRS=../mbedtls/include \
-		-DMBEDTLS_LIBRARY=../$(MBEDTLS_BDIR)/library/libmbedtls.so \
-		-DMBEDX509_LIBRARY=../$(MBEDTLS_BDIR)/library/libmbedx509.so \
-		-DMBEDCRYPTO_LIBRARY=../$(MBEDTLS_BDIR)/library/libmbedcrypto.so \
+		-DMBEDTLS_LIBRARY=../$(MBEDTLS_BDIR)/library/libmbedtls.a \
+		-DMBEDX509_LIBRARY=../$(MBEDTLS_BDIR)/library/libmbedx509.a \
+		-DMBEDCRYPTO_LIBRARY=../$(MBEDTLS_BDIR)/library/libmbedcrypto.a \
 		-DLWS_WITH_MINIMAL_EXAMPLES=1 \
+		-DLWS_STATIC_PIC=ON \
+		-DLWS_WITH_SHARED=OFF \
 		../libwebsockets; \
 	make -j `nproc`;
 	sudo ldconfig $(CURDIR)/$(LWS_M_BDIR)/lib
