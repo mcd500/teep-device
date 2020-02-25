@@ -139,8 +139,8 @@ teep_message_wrap(const char *msg, int msg_len, unsigned char *out, unsigned int
 		lwsl_err("%s: lws_jwe_render_flattened failed %d\n", __func__, n);
 		goto bail1;
 	}
-	lwsl_user("Encrypt OK\n");
 	enc_len = strlen((void *)encbuf);
+	lwsl_user("Encrypt OK %d\n", enc_len);
 
 	/* sign json */
 
@@ -208,8 +208,8 @@ teep_message_wrap(const char *msg, int msg_len, unsigned char *out, unsigned int
 		lwsl_err("%s: failed write flattened json\n", __func__);
 		goto bail1;
 	}
-	*out_len = strlen(out);
-	lwsl_user("Sign Ok %d\n", out_len);
+	*out_len = strlen((void *)out);
+	lwsl_user("Sign Ok %d\n", *out_len);
 
 	return 0;
 	
