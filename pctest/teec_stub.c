@@ -83,6 +83,20 @@ TEEC_Result TEEC_InvokeCommand(TEEC_Session *session,
 				(TEEC_PARAM_TYPE_GET(type, 3) != TEEC_VALUE_INOUT))
 			return TEEC_ERROR_BAD_PARAMETERS;
 		return teep_message_wrap(params[0].tmpref.buffer, params[1].value.a, params[2].tmpref.buffer, &params[3].value.a);
+	case TEEP_AGENT_TA_SIGN_MESSAGE: /* sign(wrap) OTrP message*/
+		if ((TEEC_PARAM_TYPE_GET(type, 0) != TEEC_MEMREF_TEMP_INPUT) ||
+				(TEEC_PARAM_TYPE_GET(type, 1) != TEEC_VALUE_INPUT) ||
+				(TEEC_PARAM_TYPE_GET(type, 2) != TEEC_MEMREF_TEMP_OUTPUT) ||
+				(TEEC_PARAM_TYPE_GET(type, 3) != TEEC_VALUE_INOUT))
+			return TEEC_ERROR_BAD_PARAMETERS;
+		return otrp_message_sign(params[0].tmpref.buffer, params[1].value.a, params[2].tmpref.buffer, &params[3].value.a);
+	case TEEP_AGENT_TA_ENCRYPT_MESSAGE: /* encrypt(wrap) OTrP message*/
+		if ((TEEC_PARAM_TYPE_GET(type, 0) != TEEC_MEMREF_TEMP_INPUT) ||
+				(TEEC_PARAM_TYPE_GET(type, 1) != TEEC_VALUE_INPUT) ||
+				(TEEC_PARAM_TYPE_GET(type, 2) != TEEC_MEMREF_TEMP_OUTPUT) ||
+				(TEEC_PARAM_TYPE_GET(type, 3) != TEEC_VALUE_INOUT))
+			return TEEC_ERROR_BAD_PARAMETERS;
+		return otrp_message_encrypt(params[0].tmpref.buffer, params[1].value.a, params[2].tmpref.buffer, &params[3].value.a);
 	case TEEP_AGENT_TA_UNWRAP_MESSAGE: /* unwrap TEEP message*/
 		if ((TEEC_PARAM_TYPE_GET(type, 0) != TEEC_MEMREF_TEMP_INPUT) ||
 				(TEEC_PARAM_TYPE_GET(type, 1) != TEEC_VALUE_INPUT) ||
@@ -90,6 +104,20 @@ TEEC_Result TEEC_InvokeCommand(TEEC_Session *session,
 				(TEEC_PARAM_TYPE_GET(type, 3) != TEEC_VALUE_INOUT))
 			return TEEC_ERROR_BAD_PARAMETERS;
 		return teep_message_unwrap(params[0].tmpref.buffer, params[1].value.a, params[2].tmpref.buffer, &params[3].value.a);
+	case TEEP_AGENT_TA_VERIFY_MESSAGE: /* verify(unwrap) OTrP message*/
+		if ((TEEC_PARAM_TYPE_GET(type, 0) != TEEC_MEMREF_TEMP_INPUT) ||
+				(TEEC_PARAM_TYPE_GET(type, 1) != TEEC_VALUE_INPUT) ||
+				(TEEC_PARAM_TYPE_GET(type, 2) != TEEC_MEMREF_TEMP_OUTPUT) ||
+				(TEEC_PARAM_TYPE_GET(type, 3) != TEEC_VALUE_INOUT))
+			return TEEC_ERROR_BAD_PARAMETERS;
+		return otrp_message_verify(params[0].tmpref.buffer, params[1].value.a, params[2].tmpref.buffer, &params[3].value.a);
+	case TEEP_AGENT_TA_DECRYPT_MESSAGE: /* decrypt(unwrap) OTrP message*/
+		if ((TEEC_PARAM_TYPE_GET(type, 0) != TEEC_MEMREF_TEMP_INPUT) ||
+				(TEEC_PARAM_TYPE_GET(type, 1) != TEEC_VALUE_INPUT) ||
+				(TEEC_PARAM_TYPE_GET(type, 2) != TEEC_MEMREF_TEMP_OUTPUT) ||
+				(TEEC_PARAM_TYPE_GET(type, 3) != TEEC_VALUE_INOUT))
+			return TEEC_ERROR_BAD_PARAMETERS;
+		return otrp_message_decrypt(params[0].tmpref.buffer, params[1].value.a, params[2].tmpref.buffer, &params[3].value.a);
 	case TEEP_AGENT_TA_INSTALL: /* Install TA */
 		if ((TEEC_PARAM_TYPE_GET(type, 0) != TEEC_MEMREF_TEMP_INPUT) ||
 				(TEEC_PARAM_TYPE_GET(type, 1) != TEEC_VALUE_INPUT) ||

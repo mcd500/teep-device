@@ -48,7 +48,7 @@ struct libteep_ctx;
 
 /*! teep protocol version */
 enum libteep_teep_ver {
-	LIBTEEP_TEEP_VER_OTRP_V3,	/*!< otrp v3 */
+	LIBTEEP_TEEP_VER_OTRP,		/*!< otrp */
 	LIBTEEP_TEEP_VER_TEEP,		/*!< teep */
 };
 
@@ -165,7 +165,19 @@ int
 libteep_msg_unwrap(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, size_t inlen);
 
 int
+libteep_msg_verify(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, size_t inlen);
+
+int
+libteep_msg_decrypt(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, size_t inlen);
+
+int
 libteep_msg_wrap(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, size_t inlen);
+
+int
+libteep_msg_sign(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, size_t inlen);
+
+int
+libteep_msg_encrypt(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, size_t inlen);
 
 int
 libteep_ta_image_unwrap(struct libteep_ctx *ctx, struct lao_rpc_io *io);

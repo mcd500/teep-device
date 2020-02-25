@@ -136,6 +136,22 @@ run-jose: $(TARGET)
 drun-jose: $(TARGET)
 	./$(TARGET) --tamurl http://$(IP_ADDR):$(PORT)/api/tam_jose_delete --jose --talist 8d82573a-926d-4754-9353-32dc29997f74
 
+.PHONY: run-otrp
+run-otrp: $(TARGET)
+	./$(TARGET) --tamurl http://${IP_ADDR}:3000/api/tam_jose -p otrp
+
+.PHONY: run-otrp-jose
+run-otrp-jose: $(TARGET)
+	./$(TARGET) --tamurl http://${IP_ADDR}:3000/api/tam_jose --jose -p otrp
+
+.PHONY: run-otrp-delete
+run-otrp-delete: $(TARGET)
+	./$(TARGET) --tamurl http://${IP_ADDR}:3000/api/tam_jose_delete -p otrp
+
+.PHONY: run-otrp-jose-elete
+run-otrp-jose-delete: $(TARGET)
+	./$(TARGET) --tamurl http://${IP_ADDR}:3000/api/tam_jose_delete --jose -p otrp
+
 MBED_JWE = ./$(LWS_M_BDIR)/bin/lws-crypto-jwe
 OSSL_JWE = ./$(LWS_O_BDIR)/bin/lws-crypto-jwe
 

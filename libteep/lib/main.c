@@ -72,7 +72,7 @@ static const char *teep_media_type(int teep_ver) {
 	switch (teep_ver) {
 	case LIBTEEP_TEEP_VER_TEEP:
 		return "application/teep+json";
-	case LIBTEEP_TEEP_VER_OTRP_V3:
+	case LIBTEEP_TEEP_VER_OTRP:
 		return "application/otrp+json";	
 	default:
 		return NULL;
@@ -440,7 +440,7 @@ libteep_init(struct libteep_ctx **ctx, enum libteep_teep_ver ver, const char *ta
 	struct lws_context_creation_info info;
 	TEEC_Operation op;
 	TEEC_Result r;
-	if (ver != LIBTEEP_TEEP_VER_TEEP && ver != LIBTEEP_TEEP_VER_OTRP_V3) {
+	if (ver != LIBTEEP_TEEP_VER_TEEP && ver != LIBTEEP_TEEP_VER_OTRP) {
 		lwsl_err("unsupported teep protocol version\n");
 		return 1;
 	}
@@ -535,6 +535,38 @@ libteep_msg_wrap(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, si
 }
 
 int
+libteep_msg_sign(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, size_t inlen)
+{
+	struct lao_rpc_io io = {
+		.in = in,
+		.in_len = inlen,
+		.out = out,
+		.out_len = outlen
+	};
+	int n = libteep_teep_agent_msg(ctx, 11, &io);
+	if (n < 0) {
+		return n;
+	}
+	return io.out_len;
+}
+
+int
+libteep_msg_encrypt(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, size_t inlen)
+{
+	struct lao_rpc_io io = {
+		.in = in,
+		.in_len = inlen,
+		.out = out,
+		.out_len = outlen
+	};
+	int n = libteep_teep_agent_msg(ctx, 12, &io);
+	if (n < 0) {
+		return n;
+	}
+	return io.out_len;
+}
+
+int
 libteep_msg_unwrap(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, size_t inlen)
 {
 	struct lao_rpc_io io = {
@@ -544,6 +576,38 @@ libteep_msg_unwrap(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, 
 		.out_len = outlen
 	};
 	int n = libteep_teep_agent_msg(ctx, 2, &io);
+	if (n < 0) {
+		return n;
+	}
+	return io.out_len;
+}
+
+int
+libteep_msg_verify(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, size_t inlen)
+{
+	struct lao_rpc_io io = {
+		.in = in,
+		.in_len = inlen,
+		.out = out,
+		.out_len = outlen
+	};
+	int n = libteep_teep_agent_msg(ctx, 21, &io);
+	if (n < 0) {
+		return n;
+	}
+	return io.out_len;
+}
+
+int
+libteep_msg_decrypt(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, size_t inlen)
+{
+	struct lao_rpc_io io = {
+		.in = in,
+		.in_len = inlen,
+		.out = out,
+		.out_len = outlen
+	};
+	int n = libteep_teep_agent_msg(ctx, 22, &io);
 	if (n < 0) {
 		return n;
 	}
