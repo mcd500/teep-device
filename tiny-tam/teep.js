@@ -35,14 +35,23 @@ module.exports = (tamPrivKey, teePubKey, taImage, taUrl, taname) => ({
 	},
 
 	async unwrap(data) {
-		console.log(data)
-		decrypted = await this.decrypt(JSON.parse(data))
-		console.log(decrypted)
-		verified = await this.verify(JSON.parse(decrypted.payload))
-		if (verified) {
-			return JSON.parse(verified.payload)
+		console.log("data=", JSON.parse(data));
+		verified = await this.verify(JSON.parse(data));
+		if (!verified) {
+			console.log("failed to verify JWS.");
+			return null;
 		}
-		return null
+		var verifyData = JSON.parse(verified.payload);
+		console.log("verifyData=", verifyData);
+		decrypted = await this.decrypt(verifyData);
+		console.log("decrypted=", decrypted);
+		if (!decrypted.plaintext) {
+			console.log("failed to decrypt JWE.");
+			return null;
+		}
+		var retJson = JSON.parse(decrypted.plaintext);
+		console.log("unwrapped retJson=", retJson);
+		return retJson;
 	},
 
 	async finishTeep(res) {

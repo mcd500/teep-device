@@ -119,6 +119,7 @@ teep_message_wrap(const char *msg, int msg_len, unsigned char *out, unsigned int
 	msg_len += pad;
 
 	jwe.jws.map.buf[LJWE_CTXT] = (void *)msgbuf;
+
 	jwe.jws.map.len[LJWE_CTXT] = msg_len;
 	n = lws_gencrypto_bits_to_bytes(jwe.jose.enc_alg->keybits_fixed);
 	if (lws_jws_randomize_element(context, &jwe.jws.map, LJWE_EKEY,
@@ -135,10 +136,12 @@ teep_message_wrap(const char *msg, int msg_len, unsigned char *out, unsigned int
 		goto bail1;
 	}
 	n = lws_jwe_render_flattened(&jwe, (void *)encbuf, enc_len);
+
 	if (n < 0) {
 		lwsl_err("%s: lws_jwe_render_flattened failed %d\n", __func__, n);
 		goto bail1;
 	}
+
 	enc_len = strlen((void *)encbuf);
 	lwsl_user("Encrypt OK %d\n", enc_len);
 
@@ -170,6 +173,7 @@ teep_message_wrap(const char *msg, int msg_len, unsigned char *out, unsigned int
 
 	jws.map.buf[LJWS_PYLD] = encbuf;
 	jws.map.len[LJWS_PYLD] = enc_len;
+
 
 	if (lws_jws_encode_b64_element(&jws.map_b64, LJWS_PYLD,
 			lws_concat_temp(temp_buf, temp_len),
@@ -203,7 +207,9 @@ teep_message_wrap(const char *msg, int msg_len, unsigned char *out, unsigned int
 	jws.map_b64.len[LJWS_SIG] = n;
 
 	/* create the flattened representation */
+
 	n = lws_jws_write_flattened_json(&jws, (void *)out, *out_len);
+
 	if (n < 0) {
 		lwsl_err("%s: failed write flattened json\n", __func__);
 		goto bail1;
