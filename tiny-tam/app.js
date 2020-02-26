@@ -29,26 +29,7 @@ async function go() {
 	/* TA image signed by SP */
 	const taImage = fs.readFileSync(config.ta, (err) => {console.log(err)})
 	const taUrl = `http://${hostname}:${port}/TAs/${taname}`
-/*
-	async function signAndEnc() {
-		const signParam = {
-			alg: 'RS256',
-			format: 'flattened'
-		}
-		const encParam = {
-			fields: {
-				alg: 'RSA1_5'
-			},
-			contentAlg: "A128CBC-HS256",
-			format: 'flattened'
-		}
-		signed = await JWS.createSign(signParam, spSignKey).update(taImage).final()
-		encrypted = await JWE.createEncrypt(encParam, teePubKey).update(JSON.stringify(signed)).final()
-		return JSON.stringify(encrypted)
-	}
-	const signAndEncImage = await signAndEnc()
-	fs.writeFileSync("hoge", signAndEncImage, (err) => {console.log(err)})
-*/
+
 	teepHandler = teep(tamPrivKey, teePubKey, taImage, taUrl, path.basename(taname, ".ta.sign.enc"));
 	otrpHandler = otrp(tamPrivKey, teePubKey, taImage);
 	const server = http.createServer((req, res) => {
