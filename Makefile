@@ -76,6 +76,7 @@ sp-hello-ta:
 		TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) \
 		CFG_MSG_LONG_PREFIX_THRESHOLD=3 \
 		V=0 VERBOSE=0 all
+	(cd sample-senario && npm install)
 	node ./sample-senario/sign-then-enc.js $(SP_PRIV_JWK) $(TEE_PUB_JWK)\
 		 $(CURDIR)/sp-hello-ta/$(HELLO_TA_UUID).ta
 	cp $(CURDIR)/sp-hello-ta/$(HELLO_TA_UUID).ta* $(CURDIR)/tiny-tam/TAs/
