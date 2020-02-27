@@ -6,7 +6,6 @@ MBED_BRANCH  ?= mbedtls-2.16
 #SHELL = /bin/bash -xu
 
 CFLAGS := -g -O0 -Wall
-LDLIBS := -lwebsockets -lcap
 UNAME_S := $(shell uname -s)
 ETHER := $(shell ip link | awk -F: '$$0 !~ "lo|vir|wl|pp|docker|br|^[^0-9]"{print $$2;getline}')
 IP_ADDR := $(shell ifconfig $(ETHER) | awk '/inet / {gsub("addr:","",$$2); print $$2}')
