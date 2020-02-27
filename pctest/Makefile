@@ -50,7 +50,10 @@ STATIC_LIB :=   ./$(LWS_M_BDIR)/lib/libwebsockets.a \
 		./$(MBEDTLS_BDIR)/library/libmbedx509.a \
 		./$(MBEDTLS_BDIR)/library/libmbedcrypto.a
 
-TARGET = teep-broker-app libwebsockets-host
+MBED_JWE = ./$(LWS_M_BDIR)/bin/lws-crypto-jwe
+OSSL_JWE = ./$(LWS_O_BDIR)/bin/lws-crypto-jwe
+
+TARGET = teep-broker-app
 
 # Makefile for TEEP Agent of UT
 
@@ -100,8 +103,7 @@ libwebsockets $(LWS_OBJ): $(MBEDTLS_OBJ) $(LWS_SRC)
 	make -j `nproc`;
 	sudo ldconfig $(CURDIR)/$(LWS_M_BDIR)/lib
 
-.PHONY: libwebsockets-host
-libwebsockets-host: $(LWS_SRC)
+$(MBED_JWE) $(OSSL_JWE): $(LWS_SRC)
 	mkdir -p $(LWS_O_BDIR); cd $(LWS_O_BDIR); \
 	cmake 	-DLWS_WITH_SSL=1 \
 		-DLWS_WITH_JOSE=1 \
@@ -151,11 +153,8 @@ run-otrp-delete: $(TARGET)
 run-otrp-jose-delete: $(TARGET)
 	./$(TARGET) --tamurl http://${IP_ADDR}:3000/api/tam_jose_delete --jose -p otrp
 
-MBED_JWE = ./$(LWS_M_BDIR)/bin/lws-crypto-jwe
-OSSL_JWE = ./$(LWS_O_BDIR)/bin/lws-crypto-jwe
-
 .PHONY: lws-sample-ok lws-sample-fail
-lws-sample-ok:
+lws-sample-ok: $(MBED_JWE) $(OSSL_JWE)
 	echo -n 0123456789ABCDEF | \
 		$(MBED_JWE) -f -k $(TAM_PUB_JWK) -e "RSA1_5 A128CBC-HS256"
 	echo -n 0123456789ABCDEF | \
@@ -166,7 +165,7 @@ lws-sample-ok:
 		$(OSSL_JWE) -f -k $(TAM_PUB_JWK) -e "RSA-OAEP A128CBC-HS256" | \
 		$(OSSL_JWE) -f -k $(TAM_PRIV_JWK); echo
 
-lws-sample-fail:
+lws-sample-fail: $(MBED_JWE) $(OSSL_JWE)
 	# no padding bug
 	echo -n 0123456789ABCDE  | \
 		$(MBED_JWE) -f -k $(TAM_PUB_JWK) -e "RSA1_5 A128CBC-HS256"
