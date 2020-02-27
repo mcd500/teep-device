@@ -148,7 +148,7 @@ run-otrp-jose: $(TARGET)
 run-otrp-delete: $(TARGET)
 	./$(TARGET) --tamurl http://${IP_ADDR}:3000/api/tam_jose_delete -p otrp
 
-.PHONY: run-otrp-jose-elete
+.PHONY: run-otrp-jose-delete
 run-otrp-jose-delete: $(TARGET)
 	./$(TARGET) --tamurl http://${IP_ADDR}:3000/api/tam_jose_delete --jose -p otrp
 
