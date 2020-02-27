@@ -81,7 +81,6 @@ mbedtls $(MBEDTLS_OBJ): $(MBEDTLS_SRC)
 		-DUSE_SAHTED_MBEDTLS_LIBRARY=0 \
 		../mbedtls; \
 	make -j `nproc`
-	sudo ldconfig $(CURDIR)/$(MBEDTLS_BDIR)/library/
 
 .PHONY: libwebsockets
 libwebsockets $(LWS_OBJ): $(MBEDTLS_OBJ) $(LWS_SRC)
