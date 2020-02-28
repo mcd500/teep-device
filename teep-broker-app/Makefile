@@ -4,18 +4,15 @@ IP_ADDR := $(shell ifconfig $(ETHER) | awk '/inet / {gsub("addr:","",$$2); print
 MBEDTLS_BDIR := build-mbedtls
 LWS_M_BDIR := build-lws-mbed
 
-SCRIPT := ita dta sta dsta showtamurl
+SCRIPT := ita dta ista dsta iota dota showtamurl
 
 .PHONY: all
 all: teep-broker-app $(SCRIPT)
 
-$(SCRIPT): showtamurl.sh ita.sh dta.sh ista.sh dsta.sh
-	sed -e s/127\.0\.\0\.1/$(IP_ADDR)/g < ita.sh > ita
-	sed -e s/127\.0\.\0\.1/$(IP_ADDR)/g < dta.sh > dta
-	sed -e s/127\.0\.\0\.1/$(IP_ADDR)/g < ista.sh > ista
-	sed -e s/127\.0\.\0\.1/$(IP_ADDR)/g < dsta.sh > dsta
-	sed -e s/127\.0\.\0\.1/$(IP_ADDR)/g < showtamurl.sh > showtamurl
-	chmod u+x showtamurl ita dta ista dsta
+$(SCRIPT): %: %.sh
+	sed -e s/127\.0\.\0\.1/$(IP_ADDR)/g < $^ > $@
+	sed -e s/IPSEG/$(IP_SEG)/g < iup.sh > iup
+	chmod u+x $@ iup
 
 teep-broker-app: main.o
 	#
@@ -38,4 +35,4 @@ main.o: main.c
 
 .PHONY: clean
 clean:
-	rm -f *.o teep-broker-app $(SCRIPT)
+	rm -f *.o teep-broker-app $(SCRIPT) iup
