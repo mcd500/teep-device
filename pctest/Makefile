@@ -100,7 +100,6 @@ libwebsockets $(LWS_OBJ): $(MBEDTLS_OBJ) $(LWS_SRC)
 		-DLWS_WITH_SHARED=OFF \
 		../libwebsockets; \
 	make -j `nproc`;
-	sudo ldconfig $(CURDIR)/$(LWS_M_BDIR)/lib
 
 $(MBED_JWE) $(OSSL_JWE): $(LWS_SRC)
 	mkdir -p $(LWS_O_BDIR); cd $(LWS_O_BDIR); \
