@@ -59,3 +59,38 @@ Show help
 ```bash
 ./teep-broker-app --help
 ```
+
+## Scripts on PC
+
+There are some helper scripts to make it easier to type ane run.
+
+* Run Install TA without encrypted json message
+```sh
+./ita
+```
+
+* Run Deleting TA without encrypted json message
+```sh
+./dta
+```
+
+* Run Install TA with encrypted json message
+```sh
+./ista
+```
+
+* Run Deleting TA with encrypted jsone message
+```sh
+./dsta
+```
+
+* Install TA with encrypted json through OTrP
+```sh
+./iota
+```
+
+
+* Deleting TA with encrypted json through OTrP
+```sh
+./dota
+```

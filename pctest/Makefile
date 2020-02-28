@@ -53,13 +53,20 @@ STATIC_LIB :=   ./$(LWS_M_BDIR)/lib/libwebsockets.a \
 MBED_JWE = ./$(LWS_M_BDIR)/bin/lws-crypto-jwe
 OSSL_JWE = ./$(LWS_O_BDIR)/bin/lws-crypto-jwe
 
+SCRIPT := ita dta ista dsta iota dota
+
 TARGET = teep-broker-app
 
 # Makefile for TEEP Agent of UT
 
 .PHONY: all
-all: $(TEEP_KEY_H) $(LWS_OBJ) $(TARGET)
-	cp ../teep-broker-app/*.sh .
+all: $(TEEP_KEY_H) $(LWS_OBJ) $(TARGET) $(SCRIPT)
+
+$(SCRIPT): %: ../teep-broker-app/%.sh
+	cp ../teep-broker-app/$^ .
+	sed -e "s/127\.0\.\0\.1/$(IP_ADDR)/g; \
+		s/teep-broker-app/\.\/teep-broker-app/g" < $^ > $@
+	chmod u+x $@
 
 $(TEEP_KEYS):
 	make -C .. generate-jwks
