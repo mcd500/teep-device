@@ -45,6 +45,16 @@ Usage:
 ./teep-broker-app --tamurl http://192.168.11.3:3000/api/tam_jose --jose --talist 8d82573a-926d-4754-9353-32dc29997f74
 ```
 
+* Install TA with encrypted json through OTrP
+```bash
+./teep-broker-app --tamurl http://192.168.11.3:3000/api/tam_jose -p otrp --jose
+```
+
+* Deleting TA with encrypted json through OTrP
+```bash
+./teep-broker-app --tamurl http://192.168.11.3:3000/api/tam_jose_delete -p otrp --jose --talist 8d82573a-926d-4754-9353-32dc29997f74
+```
+
 Show help
 ```bash
 ./teep-broker-app --help
