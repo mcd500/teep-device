@@ -59,6 +59,7 @@ TARGET = teep-broker-app
 
 .PHONY: all
 all: $(TEEP_KEY_H) $(LWS_OBJ) $(TARGET)
+	cp ../teep-broker-app/*.sh .
 
 $(TEEP_KEYS):
 	make -C .. generate-jwks
