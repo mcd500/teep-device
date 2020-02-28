@@ -73,7 +73,7 @@ sp_hello_app()
 
 	fprintf(stderr, "\n");
 
-	fprintf(stderr, "%s: done\n", __func__);
+//	fprintf(stderr, "%s: done\n", __func__);
 
 	return n;
 }

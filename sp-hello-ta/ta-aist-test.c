@@ -73,7 +73,7 @@ TEE_Result TA_InvokeCommandEntryPoint(void __maybe_unused *sess_ctx,
 
 	case 1: /* Confirm the TA is installed */
 //		IMSG("%s:\n", __func__);
-		IMSG("\nsp-hello-ta: Hello IETF TEEP!\n");
+		IMSG("\nsp-hello-ta: Hello from TA!\n");
 
 		return TEE_SUCCESS;
 
