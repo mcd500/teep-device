@@ -1,5 +1,6 @@
 ETHER := $(shell ip link | awk -F: '$$0 !~ "lo|vir|wl|pp|docker|br|^[^0-9]"{print $$2;getline}')
-IP_ADDR := $(shell ifconfig $(ETHER) | awk '/inet / {gsub("addr:","",$$2); print $$2}')
+export IP_ADDR := $(shell ifconfig $(ETHER) | awk '/inet / {gsub("addr:","",$$2); print $$2}')
+IP_SEG  := $(shell echo ${IP_ADDR} | cut --complement -d'.' -f 4)
 
 MBEDTLS_BDIR := build-mbedtls
 LWS_M_BDIR := build-lws-mbed
