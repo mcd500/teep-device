@@ -4,7 +4,11 @@ IP=127.0.0.1
 PORT=3000
 
 if [ ! -z "$1" ]; then
-  PORT=$1
+  IP=$1
+fi
+
+if [ ! -z "$2" ]; then
+  PORT=$2
 fi
 
 teep-broker-app --tamurl http://${IP}:${PORT}/api/tam_jose -p otrp --jose
