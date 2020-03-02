@@ -35,3 +35,10 @@ tiny-tam/node_modules/
 libteep/build-lws-mbed/
 libteep/build-mbedtls/
 libteep/mbedtls-build/
+pctest/i*ta*
+pctest/d*ta*
+pctest/teep-broker-app
+pctest/showtamurl
+teep-broker-app/i*ta
+teep-broker-app/d*ta
+teep-broker-app/showtamurl
