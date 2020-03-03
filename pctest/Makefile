@@ -119,7 +119,7 @@ $(MBED_JWE) $(OSSL_JWE): $(LWS_SRC)
 
 .PHONY: clean-pctest
 clean-pctest:
-	$(RM) $(TARGET)
+	$(RM) $(TARGET) $(SCRIPT)
 
 .PHONY: clean
 clean: clean-pctest
