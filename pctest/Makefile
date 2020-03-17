@@ -3,12 +3,11 @@ LWS_BRANCH   ?= v3.2-stable
 MBED_GIT_URL ?= https://github.com/ARMmbed/mbedtls.git
 MBED_BRANCH  ?= mbedtls-2.16
 
-#SHELL = /bin/bash -xu
+SHELL = /bin/bash -eu
 
 CFLAGS := -g -O0 -Wall
 UNAME_S := $(shell uname -s)
-ETHER := $(shell ip link | awk -F: '$$0 !~ "lo|vir|wl|pp|docker|br|^[^0-9]"{print $$2;getline}')
-IP_ADDR := $(shell ifconfig $(ETHER) | awk '/inet / {gsub("addr:","",$$2); print $$2}')
+IP_ADDR := $(shell ../scripts/get-ip.sh)
 PORT := 3000
 
 TAM_PUB_JWK  := ../test-jw/tsm/identity/tam-mytam-public.jwk
