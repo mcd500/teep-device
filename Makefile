@@ -69,38 +69,38 @@ teep-agent-ta: $(TEEP_KEY_SRCS)
 		LDADD="-L$(TA_DEV_KIT_DIR)/lib -lutils -lutee -lmbedtls -lwebsockets" \
 		V=1 VERBOSE=1 all
 
-.PHONY: sp-hello-ta
-sp-hello-ta:
-	make -C sp-hello-ta CROSS_COMPILE_HOST=$(CROSS_COMPILE) \
+.PHONY: hello-ta
+hello-ta:
+	make -C hello-ta CROSS_COMPILE_HOST=$(CROSS_COMPILE) \
 		CROSS_COMPILE_TA=aarch64-linux-gnu- \
 		TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) \
 		CFG_MSG_LONG_PREFIX_THRESHOLD=3 \
 		V=0 VERBOSE=0 all
 	(cd sample-senario && npm install)
 	node ./sample-senario/sign-then-enc.js $(SP_PRIV_JWK) $(TEE_PUB_JWK)\
-		 $(CURDIR)/sp-hello-ta/$(HELLO_TA_UUID).ta
-	cp $(CURDIR)/sp-hello-ta/$(HELLO_TA_UUID).ta* $(CURDIR)/tiny-tam/TAs/
+		 $(CURDIR)/hello-ta/$(HELLO_TA_UUID).ta
+	cp $(CURDIR)/hello-ta/$(HELLO_TA_UUID).ta* $(CURDIR)/tiny-tam/TAs/
 
 .PHONY: aist-teep
-aist-teep: $(TA_DEV_KIT_DIR)/mk/ta_dev_kit.mk ../optee_client/out/export/bin/tee-supplicant teep-agent-ta sp-hello-ta
+aist-teep: $(TA_DEV_KIT_DIR)/mk/ta_dev_kit.mk ../optee_client/out/export/bin/tee-supplicant teep-agent-ta hello-ta
 	make -C libteep TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE)
 	make -C teep-broker-app TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE)
-	make -C sp-hello-app TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE)
+	make -C hello-app TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE)
 
 .PHONY: clean
 clean:
 	make -C libteep TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) clean
 	make -C teep-broker-app TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) clean
 	make -C teep-agent-ta TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) clean
-	make -C sp-hello-app TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) clean
-	make -C sp-hello-ta TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) clean
+	make -C hello-app TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) clean
+	make -C hello-ta TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) clean
 	make -C pctest clean
 	rm -f $(TEEP_KEY_SRCS)
 
 .PHONY: clean-ta
 clean-ta:
 	make -C teep-agent-ta TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) clean
-	make -C sp-hello-ta TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) clean
+	make -C hello-ta TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) clean
 
 .PHONY: distclean
 distclean:

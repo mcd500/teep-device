@@ -1,5 +1,5 @@
 global-incdirs-y += .
-srcs-y += ta-aist-test.c
+srcs-y += hello-ta.c
 
 CFLAGS+=-nostdinc
 LDFLAGS+=-L$(TA_DEV_KIT_DIR)/lib  --whole-archive --no-whole-archive

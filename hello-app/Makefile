@@ -1,4 +1,4 @@
-TARGET=sp-hello-app
+TARGET=hello-app
 
 .PHONY: all
 all: $(TARGET)
