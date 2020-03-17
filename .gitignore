@@ -32,6 +32,7 @@ pctest/build-mbedtls
 sample-senario/node_modules/
 sample-senario/package-lock.json
 tiny-tam/node_modules/
+tiny-tam/package*json
 libteep/build-lws-mbed/
 libteep/build-mbedtls/
 libteep/mbedtls-build/
@@ -42,3 +43,4 @@ pctest/showtamurl
 teep-broker-app/i*ta
 teep-broker-app/d*ta
 teep-broker-app/showtamurl
+teep-broker-app/iup
