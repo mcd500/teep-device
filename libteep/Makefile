@@ -50,7 +50,7 @@ mbedtls-ree $(MBEDTLS_OBJ): $(MBEDTLS_SRC)
 	#
 #	rm -fr mbedtls
 #	git clone $(MBED_GIT_URL);
-#	cd mbedtls; git checkout $(MBED_BRANCH)
+	cd mbedtls; git checkout $(MBED_BRANCH)
 	mkdir -p $(MBEDTLS_BDIR)/staging
 	cd $(MBEDTLS_BDIR) && \
 	cmake -DCMAKE_TOOLCHAIN_FILE=../cross-aarch64.cmake \
@@ -66,7 +66,7 @@ libwebsockets-ree $(LWS_OBJ): $(MBEDTLS_OBJ) $(LWS_SRC)
 	#
 #	rm -fr libwebsockets
 #	git clone $(LWS_GIT_URL)
-#	cd libwebsockets; git checkout $(LWS_BRANCH)
+	cd libwebsockets; git checkout $(LWS_BRANCH)
 	mkdir -p $(LWS_M_BDIR)
 	cd $(LWS_M_BDIR) && \
 	cmake -DCMAKE_TOOLCHAIN_FILE=../cross-aarch64.cmake \

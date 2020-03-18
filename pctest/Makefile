@@ -80,7 +80,7 @@ $(TARGET): $(TARGET_SRC)
 mbedtls $(MBEDTLS_OBJ): $(MBEDTLS_SRC)
 #	rm -fr /mbedtls
 #	git clone $(MBED_GIT_URL)
-#	cd mbedtls; git checkout $(MBED_BRANCH)
+	cd mbedtls; git checkout $(MBED_BRANCH)
 	mkdir -p $(MBEDTLS_BDIR); cd $(MBEDTLS_BDIR); \
 	cmake 	\
 		-DCMAKE_BUILD_TYPE=RELEASE \
@@ -93,7 +93,7 @@ mbedtls $(MBEDTLS_OBJ): $(MBEDTLS_SRC)
 libwebsockets $(LWS_OBJ): $(MBEDTLS_OBJ) $(LWS_SRC)
 #	rm -fr libwebsockets
 #	git clone $(LWS_GIT_URL)
-#	cd libwebsocketsl; git checkout $(LWS_BRANCH);
+	cd libwebsockets; git checkout $(LWS_BRANCH);
 	mkdir -p $(LWS_M_BDIR); cd $(LWS_M_BDIR); \
 	cmake 	-DLWS_WITH_SSL=1 \
 		-DLWS_WITH_MBEDTLS=1 \
