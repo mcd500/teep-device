@@ -52,7 +52,7 @@ teep_message_wrap(const char *msg, int msg_len, unsigned char *out, unsigned int
 	struct lws_context_creation_info info;
 	static struct lws_context *context = NULL;
 	struct lws_jwk jwk_privkey_tee;
-	int temp_len = sizeof(temp_buf);
+	int temp_len = TEMP_BUF_SIZE - 1;
 	struct lws_jws jws;
 	struct lws_jwe jwe;
 	struct lws_jose jose;
@@ -62,6 +62,7 @@ teep_message_wrap(const char *msg, int msg_len, unsigned char *out, unsigned int
 	int n = 0;
 
 	lwsl_user("%s: msg len %d\n", __func__, msg_len);
+	*temp_buf = '0';
 	memset(&info, 0, sizeof(info));
 	info.port = CONTEXT_PORT_NO_LISTEN;
 	info.options = 0;
@@ -228,12 +229,13 @@ otrp_message_sign(const char *msg, int msg_len, unsigned char *out, unsigned int
 	struct lws_context_creation_info info;
 	static struct lws_context *context = NULL;
 	struct lws_jwk jwk_privkey_tee;
-	int temp_len = sizeof(temp_buf);
+	int temp_len = TEMP_BUF_SIZE - 1;
 	struct lws_jws jws;
 	struct lws_jose jose;
 	int n = 0;
 
 	lwsl_user("%s: msg len %d\n", __func__, msg_len);
+	*temp_buf = '0';
 	memset(&info, 0, sizeof(info));
 	info.port = CONTEXT_PORT_NO_LISTEN;
 	info.options = 0;
@@ -328,12 +330,13 @@ int
 otrp_message_encrypt(const char *msg, int msg_len, unsigned char *out, unsigned int *out_len) {
 	struct lws_context_creation_info info;
 	static struct lws_context *context = NULL;
-	int temp_len = sizeof(temp_buf);
+	int temp_len = TEMP_BUF_SIZE - 1;
 	struct lws_jwe jwe;
 	struct lws_jose jose;
 	int n = 0;
 
 	lwsl_user("%s: msg len %d\n", __func__, msg_len);
+	*temp_buf = '0';
 	memset(&info, 0, sizeof(info));
 	info.port = CONTEXT_PORT_NO_LISTEN;
 	info.options = 0;
@@ -418,12 +421,13 @@ int teep_message_unwrap_ta_image(const char *msg, int msg_len, char *out, int *o
 	struct lws_context_creation_info info;
 	static struct lws_context *context = NULL;
 	struct lws_jwk jwk_pubkey_sp;
-	int temp_len = sizeof(temp_buf);
+	int temp_len = TEMP_BUF_SIZE - 1;
 	struct lws_jws jws;
 	struct lws_jwe jwe;
 	int n = 0;
 
 	lwsl_user("%s: msg len %d\n", __func__, msg_len);
+	*temp_buf = '0';
 	memset(&info, 0, sizeof(info));
 	info.port = CONTEXT_PORT_NO_LISTEN;
 	info.options = 0;
@@ -494,12 +498,13 @@ teep_message_unwrap(const char *msg, int msg_len, unsigned char *out, unsigned i
 	struct lws_context_creation_info info;
 	static struct lws_context *context = NULL;
 	struct lws_jwk jwk_pubkey_tam;
-	int temp_len = sizeof(temp_buf);
+	int temp_len = TEMP_BUF_SIZE - 1;
 	struct lws_jws jws;
 	struct lws_jwe jwe;
 	int n = 0;
 
 	lwsl_user("%s: msg len %d\n", __func__, msg_len);
+	*temp_buf = '0';
 	memset(&info, 0, sizeof(info));
 	info.port = CONTEXT_PORT_NO_LISTEN;
 	info.options = 0;
@@ -571,11 +576,12 @@ otrp_message_verify(const char *msg, int msg_len, unsigned char *out, unsigned i
 	struct lws_context_creation_info info;
 	static struct lws_context *context = NULL;
 	struct lws_jwk jwk_pubkey_tam;
-	int temp_len = sizeof(temp_buf);
+	int temp_len = TEMP_BUF_SIZE - 1;
 	struct lws_jws jws;
 	int n = 0;
 
 	lwsl_user("%s: msg len %d\n", __func__, msg_len);
+	*temp_buf = '0';
 	memset(&info, 0, sizeof(info));
 	info.port = CONTEXT_PORT_NO_LISTEN;
 	info.options = 0;
@@ -622,11 +628,12 @@ int
 otrp_message_decrypt(const char *msg, int msg_len, unsigned char *out, unsigned int *out_len) {
 	struct lws_context_creation_info info;
 	static struct lws_context *context = NULL;
-	int temp_len = sizeof(temp_buf);
+	int temp_len = TEMP_BUF_SIZE - 1;
 	struct lws_jwe jwe;
 	int n = 0;
 
 	lwsl_user("%s: msg len %d\n", __func__, msg_len);
+	*temp_buf = '0';
 	memset(&info, 0, sizeof(info));
 	info.port = CONTEXT_PORT_NO_LISTEN;
 	info.options = 0;
