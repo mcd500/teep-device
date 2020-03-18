@@ -34,8 +34,6 @@
 
 // TEEC Stub
 
-int teep_message_unwrap_ta_image(const char *msg, int msg_len, char *out, int *out_len);
-
 TEEC_Result TEEC_InitializeContext(const char *name, TEEC_Context *context)
 {
 	lws_set_log_level(LLL_USER | LLL_ERR | LLL_WARN | LLL_NOTICE
