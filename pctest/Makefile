@@ -53,6 +53,7 @@ MBED_JWE = ./$(LWS_M_BDIR)/bin/lws-crypto-jwe
 OSSL_JWE = ./$(LWS_O_BDIR)/bin/lws-crypto-jwe
 
 SCRIPT := ita dta ista dsta iota dota
+SCRIPT_SH := $(patsubst %, %.sh, $(SCRIPT))
 
 TARGET = teep-broker-app
 
@@ -118,7 +119,7 @@ $(MBED_JWE) $(OSSL_JWE): $(LWS_SRC)
 
 .PHONY: clean-pctest
 clean-pctest:
-	$(RM) $(TARGET) $(SCRIPT)
+	$(RM) $(TARGET) $(SCRIPT) $(SCRIPT_SH)
 
 .PHONY: clean
 clean: clean-pctest
