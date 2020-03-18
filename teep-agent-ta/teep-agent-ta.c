@@ -34,12 +34,7 @@
 #include "teep_message.h"
 #include "ta-store.h"
 
-
-#define TA_NAME		"aist-otrp.ta"
-#define TA_PRINT_PREFIX	"AIST-OTRP: "
-
 /* in a real system this'd come from the encrypted packet */
-
 
 time_t time(time_t *tloc)
 {
