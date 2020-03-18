@@ -125,7 +125,6 @@ teep_message_wrap(const char *msg, int msg_len, unsigned char *out, unsigned int
 	msg_len += pad;
 
 	jwe.jws.map.buf[LJWE_CTXT] = (void *)msgbuf;
-
 	jwe.jws.map.len[LJWE_CTXT] = msg_len;
 	n = lws_gencrypto_bits_to_bytes(jwe.jose.enc_alg->keybits_fixed);
 	if (lws_jws_randomize_element(context, &jwe.jws.map, LJWE_EKEY,
