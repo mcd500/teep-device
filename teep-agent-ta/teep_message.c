@@ -56,9 +56,10 @@ teep_message_wrap(const char *msg, int msg_len, unsigned char *out, unsigned int
 	struct lws_jws jws;
 	struct lws_jwe jwe;
 	struct lws_jose jose;
-	static char msgbuf[200000];
-	static char encbuf[200000];
-	int enc_len = sizeof(encbuf);
+	#define MSG_LEN 200000
+	static char msgbuf[MSG_LEN];
+	static char encbuf[MSG_LEN];
+	int enc_len = sizeof(encbuf) - 1;
 	int n = 0;
 
 	lwsl_user("%s: msg len %d\n", __func__, msg_len);
@@ -114,6 +115,10 @@ teep_message_wrap(const char *msg, int msg_len, unsigned char *out, unsigned int
 
 	// need manual padding
 	// https://github.com/warmcat/libwebsockets/commit/63ad616941e080cbdb94f706e388b0cf8c5beb70#diff-69a3998d35803592c0e1c24b9c1b1757
+	if (msg_len > MSG_LEN - 1) {
+		lwsl_err("%s: msg_len too long %d\n", __func__, msg_len);
+		goto bail1;
+	}
 	memcpy(msgbuf, msg, msg_len);
 	int pad = ((msg_len + 16) & ~15) - msg_len;
 	memset(msgbuf + msg_len, pad, pad);
