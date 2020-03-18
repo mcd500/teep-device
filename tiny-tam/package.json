@@ -11,5 +11,7 @@
   },
   "devDependencies": {
     "nodemon": "^2.0.2"
-  }
+  },
+  "author": "",
+  "license": "ISC"
 }
