@@ -422,6 +422,7 @@ int teep_message_unwrap_ta_image(const char *msg, int msg_len, char *out, int *o
 	struct lws_jws jws;
 	struct lws_jwe jwe;
 	int n = 0;
+
 	lwsl_user("%s: msg len %d\n", __func__, msg_len);
 	memset(&info, 0, sizeof(info));
 	info.port = CONTEXT_PORT_NO_LISTEN;
@@ -497,6 +498,7 @@ teep_message_unwrap(const char *msg, int msg_len, unsigned char *out, unsigned i
 	struct lws_jws jws;
 	struct lws_jwe jwe;
 	int n = 0;
+
 	lwsl_user("%s: msg len %d\n", __func__, msg_len);
 	memset(&info, 0, sizeof(info));
 	info.port = CONTEXT_PORT_NO_LISTEN;
@@ -572,6 +574,7 @@ otrp_message_verify(const char *msg, int msg_len, unsigned char *out, unsigned i
 	int temp_len = sizeof(temp_buf);
 	struct lws_jws jws;
 	int n = 0;
+
 	lwsl_user("%s: msg len %d\n", __func__, msg_len);
 	memset(&info, 0, sizeof(info));
 	info.port = CONTEXT_PORT_NO_LISTEN;
@@ -622,6 +625,7 @@ otrp_message_decrypt(const char *msg, int msg_len, unsigned char *out, unsigned 
 	int temp_len = sizeof(temp_buf);
 	struct lws_jwe jwe;
 	int n = 0;
+
 	lwsl_user("%s: msg len %d\n", __func__, msg_len);
 	memset(&info, 0, sizeof(info));
 	info.port = CONTEXT_PORT_NO_LISTEN;
