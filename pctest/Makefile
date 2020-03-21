@@ -74,7 +74,7 @@ $(TEEP_KEYS):
 $(TEEP_KEY_H): $(TEEP_KEYS)
 	make -C .. generate-jwk-headers
 
-$(TARGET): $(TARGET_SRC)
+$(TARGET): $(TARGET_SRC) $(STATIC_LIB)
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ $(STATIC_LIB) $(LDLIBS) -o $@
 
 .PHONY: mbedtls
