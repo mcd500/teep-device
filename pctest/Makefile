@@ -106,6 +106,9 @@ libwebsockets $(LWS_OBJ): $(MBEDTLS_OBJ) $(LWS_SRC)
 		-DLWS_WITH_MINIMAL_EXAMPLES=1 \
 		-DLWS_STATIC_PIC=ON \
 		-DLWS_WITH_SHARED=OFF \
+		-DLWS_WITH_STATIC=1 \
+		-DLWS_WITHOUT_SERVER=1 \
+		-DCMAKE_BUILD_TYPE=Debug \
 		../libwebsockets; \
 	make -j `nproc`;
 
