@@ -39,8 +39,10 @@ libteep/mbedtls-build/
 pctest/i*ta*
 pctest/d*ta*
 pctest/teep-broker-app
-pctest/showtamurl
 teep-broker-app/i*ta
 teep-broker-app/d*ta
-teep-broker-app/showtamurl
 teep-broker-app/iup
+showtamurl
+tam_ip
+CMakeCache.txt
+CMakeFiles
