@@ -1,5 +1,6 @@
 IP_ADDR := $(shell ../scripts/get-ip.sh)
 IP_SEG  := $(shell echo ${IP_ADDR} | cut --complement -d'.' -f 4)
+IP_FILE := $(shell echo $(IP_SEG) > tam_ip)
 
 MBEDTLS_BDIR := build-mbedtls
 LWS_M_BDIR := build-lws-mbed
@@ -9,7 +10,7 @@ SCRIPT := ita dta ista dsta iota dota showtamurl
 .PHONY: all
 all: teep-broker-app $(SCRIPT)
 
-$(SCRIPT): %: %.sh
+$(SCRIPT): %: tam_ip %.sh
 	sed -e s/127\.0\.\0\.1/$(IP_ADDR)/g < $^ > $@
 	sed -e s/IPSEG/$(IP_SEG)/g < iup.sh > iup
 	chmod u+x $@ iup

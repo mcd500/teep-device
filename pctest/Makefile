@@ -8,6 +8,7 @@ SHELL = /bin/bash -eu
 CFLAGS := -g -O0 -Wall
 UNAME_S := $(shell uname -s)
 IP_ADDR := $(shell ../scripts/get-ip.sh)
+IP_FILE := $(shell echo $(IP_SEG) > tam_ip)
 PORT := 3000
 
 TAM_PUB_JWK  := ../test-jw/tsm/identity/tam-mytam-public.jwk
@@ -62,7 +63,7 @@ TARGET = teep-broker-app
 .PHONY: all
 all: $(TEEP_KEY_H) $(LWS_OBJ) $(TARGET) $(SCRIPT)
 
-$(SCRIPT): %: ../teep-broker-app/%.sh
+$(SCRIPT): %: tam_ip ../teep-broker-app/%.sh
 	cp ../teep-broker-app/$^ .
 	sed -e "s/127\.0\.\0\.1/$(IP_ADDR)/g; \
 		s/teep-broker-app/\.\/teep-broker-app/g" < $^ > $@
