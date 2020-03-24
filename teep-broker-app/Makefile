@@ -36,4 +36,4 @@ main.o: main.c
 
 .PHONY: clean
 clean:
-	rm -f *.o teep-broker-app $(SCRIPT) iup
+	rm -f *.o teep-broker-app $(SCRIPT) iup tam_ip
