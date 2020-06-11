@@ -28,7 +28,7 @@ teep-broker-app: main.o
 
 main.o: main.c
 	$(CROSS_COMPILE)gcc $(CFLAGS) \
-		-I$(TA_DEV_KIT_DIR)/host_include $(INCLUDES) \
+		-I$(TA_DEV_KIT_DIR) $(INCLUDES) \
 		-c $< -o $@
 
 
