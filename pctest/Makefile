@@ -6,6 +6,7 @@ MBED_BRANCH  ?= mbedtls-2.16
 SHELL = /bin/bash -eu
 
 CFLAGS := -g -O0 -Wall
+LDLIBS += -lcap
 UNAME_S := $(shell uname -s)
 IP_ADDR := $(shell ../scripts/get-ip.sh)
 IP_FILE := $(shell echo $(IP_SEG) > ../teep-broker-app/tam_ip)
