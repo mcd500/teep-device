@@ -81,6 +81,10 @@ hello-ta:
 		 $(CURDIR)/hello-ta/$(HELLO_TA_UUID).ta
 	cp $(CURDIR)/hello-ta/$(HELLO_TA_UUID).ta* $(CURDIR)/tiny-tam/TAs/
 
+.PHONY: hello-app
+hello-app:
+	make -C hello-app TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) INCLUDES="$(INCLUDES)"
+
 .PHONY: aist-teep
 aist-teep: $(TA_DEV_KIT_DIR)/mk/ta_dev_kit.mk ../optee_client/out/export/bin/tee-supplicant teep-agent-ta hello-ta
 	make -C libteep TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE)
@@ -101,6 +105,11 @@ clean:
 clean-ta:
 	make -C teep-agent-ta TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) clean
 	make -C hello-ta TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) clean
+
+.PHONY: clean-hello-ta
+clean-hello-ta:
+	make -C hello-ta TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) clean
+	make -C hello-app TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) clean
 
 .PHONY: distclean
 distclean:
