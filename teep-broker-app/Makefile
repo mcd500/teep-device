@@ -27,11 +27,9 @@ teep-broker-app: main.o
 		-o $@
 
 main.o: main.c
-	$(CROSS_COMPILE)gcc $(CFLAGS) -I../libteep/libwebsockets/include \
-		-I../libteep/$(LWS_M_BDIR)/include \
-		-I$(TA_DEV_KIT_DIR) -I../libteep/mbedtls/include\
-		-I../../optee_client/out/export/include \
-		-I../libteep/lib -c $< -o $@
+	$(CROSS_COMPILE)gcc $(CFLAGS) \
+		-I$(TA_DEV_KIT_DIR)/host_include $(INCLUDES) \
+		-c $< -o $@
 
 
 .PHONY: clean
