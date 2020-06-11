@@ -42,7 +42,7 @@ LWS_SRC := $(shell find libwebsockets -name "*.c") \
 	   $(shell find libwebsockets -name "*.cmake")
 LWS_OBJ = $(LWS_M_BDIR)/lib ./$(LWS_M_BDIR)/include
 
-INCLUDES := -I../libteep/lib -I./$(LWS_M_BDIR)/include -I./mbedtls/include \
+INCLUDES += -I../libteep/lib -I./$(LWS_M_BDIR)/include -I./mbedtls/include \
 	    -I../../optee_client/public -I../teep-agent-ta -I../../include
 CFLAGS  += $(INCLUDES) -DPCTEST=1
 LDFLAGS += -L$(LWS_M_BDIR)/lib

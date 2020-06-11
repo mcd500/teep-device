@@ -4,7 +4,7 @@ TARGET=hello-app
 all: $(TARGET)
 
 $(TARGET): main.c
-	$(CROSS_COMPILE)gcc -I$(TA_DEV_KIT_DIR)/host_include -I../../optee_client/public -L../../optee_client/out/libteec $^ -lteec -o $@
+	$(CROSS_COMPILE)gcc -I$(TA_DEV_KIT_DIR)/host_include $(INCLUDES) -L../../optee_client/out/libteec $(LDTEEC) $^ -lteec -o $@
 
 .PHONY: clean
 clean:
