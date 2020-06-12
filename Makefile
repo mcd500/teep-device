@@ -14,6 +14,8 @@ TEEP_KEY_SRC := teep-agent-ta/tam_id_pubkey_jwk.h \
                 teep-agent-ta/tee_id_pubkey_jwk.h \
                 teep-agent-ta/sp_pubkey_jwk.h
 
+LIBTEEP_DIR := $(CURDIR)/libteep
+
 HELLO_TA_UUID  ?= 8d82573a-926d-4754-9353-32dc29997f74
 TEE_AGENT_UUID ?= 68373894-5bb3-403c-9eec-3114a1f5d3fc
 export HELLO_TA_UUID
@@ -64,6 +66,7 @@ teep-agent-ta: $(TEEP_KEY_SRCS)
 		TEE_AGENT_UUID=$(TEE_AGENT_UUID) \
 		CROSS_COMPILE_TA=aarch64-linux-gnu- \
 		TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) \
+		LIBTEEP_DIR=$(LIBTEEP_DIR) \
 		CFG_MSG_LONG_PREFIX_THRESHOLD=3 \
 		CMAKE_C_FLAGS=-Wno-deprecated-declarations \
 		LDADD="-L$(TA_DEV_KIT_DIR)/lib -lutils -lutee -lmbedtls -lwebsockets" \

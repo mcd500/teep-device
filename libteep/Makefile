@@ -31,10 +31,10 @@ LIBTEEP_OBJ := lib/libteep.so
 
 REE_CFLAGS := -Wall -Werror -fPIC \
 	      -I./$(LWS_M_BDIR)/include -I ./libwebsockets/include \
-	      -I ./mbedtls/include \
+	      -I ./mbedtls/include $(INCLUDES) \
 	      -I../../optee_client/public -I$(TA_DEV_KIT_DIR)
 CFLAGS += $(REE_CFLAGS) -I$(TA_DEV_KIT_DIR)/host_include
-LDFLAGS += -L$(LWS_M_BDIR)/lib -L$(MBEDTLS_BDIR)/library
+LDFLAGS += -L$(LWS_M_BDIR)/lib -L$(MBEDTLS_BDIR)/library $(LDTEEC)
 
 
 %.o: %.c
