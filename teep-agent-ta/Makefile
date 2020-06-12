@@ -1,7 +1,7 @@
 CFG_TEE_TA_LOG_LEVEL ?= 3
 CPPFLAGS += -DCFG_TEE_TA_LOG_LEVEL=$(CFG_TEE_TA_LOG_LEVEL)
 CFLAGS += -DPLAT_OPTEE=1  \
-	  -Wno-overlength-strings -I$(TA_DEV_KIT_DIR) -L$(TA_DEV_KIT_DIR)/lib
+	  -Wno-overlength-strings -I$(TA_DEV_KIT_DIR) -L$(TA_DEV_KIT_DIR)/lib  -I../libteep/build-lws-tee/include
 
 CROSS_COMPILE=${CROSS_COMPILE_TA}
 
@@ -19,7 +19,7 @@ LDFLAGS+=-L$(TA_DEV_KIT_DIR)/lib  --whole-archive -lwebsockets --no-whole-archiv
 
 -include $(TA_DEV_KIT_DIR)/mk/ta_dev_kit.mk
 
-$(BINARY).elf: $(TA_DEV_KIT_DIR)/lib/libwebsockets.a \
+$(BINARY).elf: ../libteep/build-lws-tee/lib/libwebsockets.a \
 		$(TA_DEV_KIT_DIR)/lib/libmbedtls.a \
 			*.c *.h
 

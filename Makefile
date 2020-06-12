@@ -69,7 +69,7 @@ teep-agent-ta: $(TEEP_KEY_SRCS)
 		LIBTEEP_DIR=$(LIBTEEP_DIR) \
 		CFG_MSG_LONG_PREFIX_THRESHOLD=3 \
 		CMAKE_C_FLAGS=-Wno-deprecated-declarations \
-		LDADD="-L$(TA_DEV_KIT_DIR)/lib -lutils -lutee -lmbedtls -lwebsockets" \
+		LDADD="-L$(TA_DEV_KIT_DIR)/lib -lutils -lutee -lmbedtls -L../libteep/build-lws-tee/lib -lwebsockets" \
 		V=1 VERBOSE=1 all
 
 .PHONY: hello-ta
@@ -89,7 +89,7 @@ hello-app:
 	make -C hello-app TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) INCLUDES="$(INCLUDES)"
 
 .PHONY: aist-teep
-aist-teep: $(TA_DEV_KIT_DIR)/mk/ta_dev_kit.mk ../optee_client/out/export/bin/tee-supplicant teep-agent-ta hello-ta
+aist-teep: $(TA_DEV_KIT_DIR)/mk/ta_dev_kit.mk $(OPTEE_DIR)/out-br/target/usr/sbin/tee-supplicant teep-agent-ta hello-ta
 	make -C libteep TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE)
 	make -C teep-broker-app TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE)
 	make -C hello-app TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) INCLUDES="$(INCLUDES)"
