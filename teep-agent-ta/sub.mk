@@ -1,7 +1,9 @@
-global-incdirs-y += libwebsockets/build libwebsockets/lib .
+global-incdirs-y += ../libteep/$(LWS_M_BDIR) \
+		    ../libteep/libwebsockets/lib \
+		    ../libteep/libwebsockets/include .
 srcs-y += teep-agent-ta.c teep_message.c ta-store.c
 
-CFLAGS+=-nostdinc
+CFLAGS+=-nostdinc -DOPTEE_TA
 LDFLAGS+=-L$(TA_DEV_KIT_DIR)/lib  --whole-archive -lwebsockets --no-whole-archive
 
 # Eliminate unused symbols:
