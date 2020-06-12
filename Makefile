@@ -60,8 +60,12 @@ generate-jwk-headers $(TEEP_KEY_SRCS): $(TAM_PUB_JWK) $(SP_PUB_JWK) $(TEE_PUB_JW
 	cat $(TEE_PRIV_JWK) | sed 's/\"/\\\"/g' | sed 's/^/\"/g' | sed 's/$$/\\\n\"\n/g' > \
                teep-agent-ta/tee_id_privkey_jwk.h
 
+.PHONY: libteep
+libteep:
+	make -C libteep TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE)
+
 .PHONY: teep-agent-ta
-teep-agent-ta: $(TEEP_KEY_SRCS)
+teep-agent-ta: $(TEEP_KEY_SRCS) libteep
 	make -C teep-agent-ta CROSS_COMPILE_HOST=$(CROSS_COMPILE) \
 		TEE_AGENT_UUID=$(TEE_AGENT_UUID) \
 		CROSS_COMPILE_TA=aarch64-linux-gnu- \
@@ -90,7 +94,6 @@ hello-app:
 
 .PHONY: aist-teep
 aist-teep: $(TA_DEV_KIT_DIR)/mk/ta_dev_kit.mk $(OPTEE_DIR)/out-br/target/usr/sbin/tee-supplicant teep-agent-ta hello-ta
-	make -C libteep TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE)
 	make -C teep-broker-app TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE)
 	make -C hello-app TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) INCLUDES="$(INCLUDES)"
 
