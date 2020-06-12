@@ -69,11 +69,13 @@ TEE_Result TA_InvokeCommandEntryPoint(void __maybe_unused *sess_ctx,
 {
 	unsigned long oneway;
 
+	IMSG("\nhello-ta: Hello from TA!\n");
+
 	switch (cmd_id) {
 
 	case 1: /* Confirm the TA is installed */
 //		IMSG("%s:\n", __func__);
-		IMSG("\nhello-ta: Hello from TA!\n");
+		IMSG("\nhello-ta: Recived smd_id: %d\n", cmd_id);
 
 		return TEE_SUCCESS;
 
