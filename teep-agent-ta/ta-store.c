@@ -106,6 +106,7 @@ ta_store_delete(const char *uuid_string, size_t uuid_string_len)
 	memset(pars, 0, sizeof(pars));
 	pars[0].memref.buffer = (void *)uuid_octets;
 	pars[0].memref.size = 16;
+#ifndef TEE_TA
 	res = TEE_InvokeTACommand(sess, 0,
 			PTA_SECSTOR_TA_MGMT_DELETE_TA,
 			TEE_PARAM_TYPES(
@@ -119,6 +120,7 @@ ta_store_delete(const char *uuid_string, size_t uuid_string_len)
 		lwsl_err("%s: Command failed\n", __func__);
 		return -1;
 	}
+#endif
 	lwsl_notice("Deleted TA from secure storage\n");
 	return 0;
 #endif
