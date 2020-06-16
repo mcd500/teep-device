@@ -15,6 +15,8 @@ TEEP_KEY_SRC := teep-agent-ta/tam_id_pubkey_jwk.h \
                 teep-agent-ta/sp_pubkey_jwk.h
 
 LIBTEEP_DIR := $(CURDIR)/libteep
+OPTEE_DIR ?= build-optee
+TEEC_BIN_DIR ?= $(build-optee)/out-br/target/usr/sbin
 
 HELLO_TA_UUID  ?= 8d82573a-926d-4754-9353-32dc29997f74
 TEE_AGENT_UUID ?= 68373894-5bb3-403c-9eec-3114a1f5d3fc
@@ -93,7 +95,7 @@ hello-app:
 	make -C hello-app TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) INCLUDES="$(INCLUDES)"
 
 .PHONY: aist-teep
-aist-teep: $(TA_DEV_KIT_DIR)/mk/ta_dev_kit.mk $(OPTEE_DIR)/out-br/target/usr/sbin/tee-supplicant teep-agent-ta hello-ta
+aist-teep: $(TA_DEV_KIT_DIR)/mk/ta_dev_kit.mk $(TEEC_BIN_DIR)/tee-supplicant teep-agent-ta hello-ta
 	make -C teep-broker-app TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE)
 	make -C hello-app TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) INCLUDES="$(INCLUDES)"
 
