@@ -34,8 +34,8 @@ sample-senario/package-lock.json
 tiny-tam/node_modules/
 tiny-tam/package*json
 libteep/build-lws-mbed/
+libteep/build-lws-tee
 libteep/build-mbedtls/
-libteep/mbedtls-build/
 pctest/i*ta*
 pctest/d*ta*
 pctest/teep-broker-app
