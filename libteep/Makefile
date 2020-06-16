@@ -92,9 +92,11 @@ libwebsockets-ree $(LWS_OBJ): $(MBEDTLS_OBJ) $(LWS_SRC)
 	make -j `nproc`
 	$(CROSS_COMPILE)strip $(LWS_M_BDIR)/lib/libwebsockets.so*
 
+OPTEE_DEV_KIT_DIR ?= ../../build-optee/optee_os/out/arm
+
 .PHONY: libwebsockets-tee
 libwebsockets-tee:
-#	cd libwebsockets; git checkout $(LWS_BRANCH)
+	cd libwebsockets; git checkout $(LWS_BRANCH)
 	mkdir -p build-lws-tee
 	cd build-lws-tee && \
 	cmake -DCMAKE_TOOLCHAIN_FILE=../cross-aarch64-tee.cmake \
@@ -103,7 +105,7 @@ libwebsockets-tee:
 		-DLWS_WITH_SSL=1 \
 		-DLWS_WITH_MBEDTLS=1 \
 		-DLWS_MBEDTLS_LIBRARIES=libmbedtls.a \
-		-DLWS_MBEDTLS_INCLUDE_DIRS="../../../build-optee/optee_os/lib/libmbedtls/mbedtls/include;../../../build-optee/optee_os/lib/libmbedtls/include" \
+		-DLWS_MBEDTLS_INCLUDE_DIRS="$(OPTEE_DEV_KIT_DIR)/export-ta_arm64/include;../../../build-optee/optee_os/lib/libmbedtls/mbedtls/include;../../../build-optee/optee_os/lib/libmbedtls/include" \
 		-DLWS_WITH_JOSE=1 \
 		-DLWS_WITHOUT_SERVER=1 \
 		-DLWS_WITH_STATIC=1 \
@@ -112,13 +114,14 @@ libwebsockets-tee:
 		-DLWS_MAX_SMP=1 \
 		-DLWS_PLAT_OPTEE=1 \
 		-DLWS_OPTEE_DIR=../../../build-optee/optee_os \
-		-DLWS_OPTEE_DEV_KIT_DIR=../../../build-optee/optee_os/out/arm-plat-hikey/export-ta_arm64/include \
+		-DLWS_OPTEE_DEV_KIT_DIR=$(OPTEE_DEV_KIT_DIR) \
 		-DCMAKE_BUILD_TYPE=RELEASE \
 		-DLWS_WITHOUT_TESTAPPS=1 \
 		-DLWS_WITHOUT_EXTENSIONS=1 \
 		-DLWS_WITH_ZLIB=0 \
 		-DLWS_WITH_DIR=0 \
 		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_C_FLAGS=-Wno-unused-variable \
 		../libwebsockets && make V=1 VERBOSE=1
 
 .PHONY: libwebsockets-host
@@ -158,7 +161,7 @@ libteep-ree $(LIBTEEP_OBJ): $(LWS_OBJ) $(LIBTEEP_SRC)
 	$(CROSS_COMPILE)gcc $(LDFLAGS) \
 		-shared -Wl,-soname,libteep.so.1 \
 		-L$(OPTEE_DIR)/out-br/target/usr/lib \
-		lib/main.o -lteec -lwebsockets -lmbedx509 -lmbedtls -lmbedcrypto \
+		lib/main.o -lwebsockets -lmbedx509 -lmbedtls -lmbedcrypto \
 		-o lib/libteep.so.1
 	ln -sf libteep.so.1 lib/libteep.so
 
