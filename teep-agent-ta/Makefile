@@ -1,5 +1,7 @@
 CFG_TEE_TA_LOG_LEVEL ?= 3
-CPPFLAGS += -DCFG_TEE_TA_LOG_LEVEL=$(CFG_TEE_TA_LOG_LEVEL)
+CPPFLAGS += -DCFG_TEE_TA_LOG_LEVEL=$(CFG_TEE_TA_LOG_LEVEL) \
+		-DMBEDTLS_SELF_TEST=1 \
+		-DMBEDTLS_AES_C=1 -DMBEDTLS_GCM_C=1 
 CFLAGS += -DPLAT_OPTEE=1  \
 	  -Wno-overlength-strings -I$(TA_DEV_KIT_DIR) -L$(TA_DEV_KIT_DIR)/lib  -I../libteep/build-lws-tee/include
 
@@ -21,6 +23,7 @@ LDFLAGS+=-L$(TA_DEV_KIT_DIR)/lib  --whole-archive -lwebsockets --no-whole-archiv
 
 $(BINARY).elf: ../libteep/build-lws-tee/lib/libwebsockets.a \
 		$(TA_DEV_KIT_DIR)/lib/libmbedtls.a \
+		../../build-optee/optee_os/lib/libmbedtls/mbedtls/library/gcm.c \
 			*.c *.h
 
 $(BINARY).ta:	$(BINARY).elf

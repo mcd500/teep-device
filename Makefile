@@ -75,7 +75,7 @@ teep-agent-ta: $(TEEP_KEY_SRCS) libteep
 		LIBTEEP_DIR=$(LIBTEEP_DIR) \
 		CFG_MSG_LONG_PREFIX_THRESHOLD=3 \
 		CMAKE_C_FLAGS=-Wno-deprecated-declarations \
-		LDADD="-L$(TA_DEV_KIT_DIR)/lib -lutils -lutee -L../libteep/build-mbedtls/library -lmbedcrypto -lmbedtls -L../libteep/build-lws-tee/lib -lwebsockets" \
+		LDADD="../../build-optee/optee_os/out/arm/core-lib/libmbedtls/mbedtls/library/gcm.o -L$(TA_DEV_KIT_DIR)/lib -lutils -lutee -L../libteep/build-mbedtls/library -L../libteep/build-lws-tee/lib -lwebsockets ../../build-optee/optee_os/out/arm/core-lib/libmbedtls/libmbedtls.a " \
 		V=1 VERBOSE=1 all
 
 .PHONY: hello-ta
