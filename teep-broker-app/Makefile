@@ -19,8 +19,10 @@ teep-broker-app: main.o
 	#
 	# teep-broker-app (REE test application includes libteep)
 	#
-	$(CROSS_COMPILE)gcc -Llibwebsockets/build/lib -Lmbedtls-build/lib \
-		-L../../optee_client/out/libteec -Llib -L../libteep/lib \
+	$(CROSS_COMPILE)gcc \
+		-L../../optee_client/out/libteec \
+		$(LDTEEC) \
+		-L../libteep/lib \
 		-L ../libteep/$(MBEDTLS_BDIR)/library -L../libteep/$(LWS_M_BDIR)/lib \
 		$^ \
 		-lteec -lteep -lwebsockets -lmbedx509 -lmbedtls -l mbedcrypto \
