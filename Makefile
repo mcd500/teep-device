@@ -66,7 +66,7 @@ generate-jwk-headers $(TEEP_KEY_SRCS): $(TAM_PUB_JWK) $(SP_PUB_JWK) $(TEE_PUB_JW
 libteep:
 	make -C libteep TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE)
 
-OPTEE_OS ?= $(PWD)/../build_optee/optee_os
+OPTEE_OS ?= $(PWD)/build-optee/optee_os
 ARM_PLAT ?= arm
 
 .PHONY: teep-agent-ta
@@ -78,6 +78,7 @@ teep-agent-ta: $(TEEP_KEY_SRCS) libteep
 		LIBTEEP_DIR=$(LIBTEEP_DIR) \
 		CFG_MSG_LONG_PREFIX_THRESHOLD=3 \
 		CMAKE_C_FLAGS=-Wno-deprecated-declarations \
+		OPTEE_OS=$(OPTEE_OS) \
 		LDADD="$(OPTEE_OS)/out/$(ARM_PLAT)/core-lib/libmbedtls/mbedtls/library/gcm.o -L$(TA_DEV_KIT_DIR)/lib -lutils -lutee -L../libteep/build-mbedtls/library -L../libteep/build-lws-tee/lib -lwebsockets $(OPTEE_OS)/out/$(ARM_PLAT)/core-lib/libmbedtls/libmbedtls.a " \
 		V=1 VERBOSE=1 all
 
