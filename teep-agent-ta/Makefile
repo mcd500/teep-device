@@ -21,9 +21,9 @@ LDFLAGS+=-L$(TA_DEV_KIT_DIR)/lib  --whole-archive -lwebsockets --no-whole-archiv
 
 -include $(TA_DEV_KIT_DIR)/mk/ta_dev_kit.mk
 
-$(BINARY).elf: ../libteep/build-lws-tee/lib/libwebsockets.a \
+$(BINARY).elf: \
 		$(TA_DEV_KIT_DIR)/lib/libmbedtls.a \
-		../../build-optee/optee_os/lib/libmbedtls/mbedtls/library/gcm.c \
+		$(OPTEE_OS)/lib/libmbedtls/mbedtls/library/gcm.c \
 			*.c *.h
 
 $(BINARY).ta:	$(BINARY).elf
