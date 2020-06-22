@@ -16,7 +16,7 @@ TEEP_KEY_SRC := teep-agent-ta/tam_id_pubkey_jwk.h \
 
 LIBTEEP_DIR := $(CURDIR)/libteep
 OPTEE_DIR ?= build-optee
-TEEC_BIN_DIR ?= $(build-optee)/out-br/target/usr/sbin
+TEEC_BIN_DIR ?= $(OPTEE_DIR)/out-br/target/usr/sbin
 
 HELLO_TA_UUID  ?= 8d82573a-926d-4754-9353-32dc29997f74
 TEE_AGENT_UUID ?= 68373894-5bb3-403c-9eec-3114a1f5d3fc
