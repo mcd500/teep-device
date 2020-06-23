@@ -14,3 +14,6 @@ clean:
 update:
 	scp $(TARGET) root@${HIKEY_IP}:/usr/bin
 
+.PHONY: keystone
+keystone:
+	@echo TODO

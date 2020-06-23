@@ -94,9 +94,17 @@ hello-ta:
 		 $(CURDIR)/hello-ta/$(HELLO_TA_UUID).ta
 	cp $(CURDIR)/hello-ta/$(HELLO_TA_UUID).ta* $(CURDIR)/tiny-tam/TAs/
 
+.PHONY: hello-ta-keystone
+hello-ta-keystone:
+	make -C hello-ta -f keystone.mk all
+
 .PHONY: hello-app
 hello-app:
 	make -C hello-app TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) INCLUDES="$(INCLUDES)"
+
+.PHONY: hello-app-keystone
+hello-app-keystone:
+	make -C hello-app keystone
 
 .PHONY: aist-teep
 aist-teep: $(TA_DEV_KIT_DIR)/mk/ta_dev_kit.mk $(TEEC_BIN_DIR)/tee-supplicant teep-agent-ta hello-ta
