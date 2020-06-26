@@ -19,18 +19,6 @@ hello-ta.keystone.o: hello-ta.c
 OBJ = \
   $(TEE_REF_TA_DIR)/ref-ta/keystone/Enclave/Enclave_t.o \
   $(TEE_REF_TA_DIR)/platform/keystone/tee-internal-api-keystone.o \
-  $(TEE_REF_TA_DIR)/ref-ta/keystone/Enclave/secure_storage.o \
-  $(TEE_REF_TA_DIR)/ref-ta/keystone/Enclave/symmetric_key_gcm.o \
-  $(TEE_REF_TA_DIR)/ref-ta/keystone/Enclave/time.o \
-  $(TEE_REF_TA_DIR)/ref-ta/keystone/Enclave/asymmetric_key.o \
-  $(TEE_REF_TA_DIR)/ref-ta/keystone/Enclave/symmetric_key.o \
-  $(TEE_REF_TA_DIR)/ref-ta/keystone/Enclave/message_digest.o \
-  $(TEE_REF_TA_DIR)/ref-ta/keystone/Enclave/tee_wrapper.o \
-  $(TEE_REF_TA_DIR)/ref-ta/keystone/Enclave/random.o \
-  $(TEE_REF_TA_DIR)/ref-ta/keystone/Enclave/printf.o \
-  $(TEE_REF_TA_DIR)/ref-ta/keystone/Enclave/tools.o \
-  $(TEE_REF_TA_DIR)/ref-ta/keystone/Enclave/strcmp.o \
-  $(TEE_REF_TA_DIR)/ref-ta/keystone/Enclave/startup.o \
   $(TEE_REF_TA_DIR)/ref-ta/keystone/Enclave/../libbuild/ed25519/sign.o \
   $(TEE_REF_TA_DIR)/ref-ta/keystone/Enclave/../libbuild/ed25519/keypair.o \
   $(TEE_REF_TA_DIR)/ref-ta/keystone/Enclave/../libbuild/ed25519/seed.o \
@@ -50,8 +38,7 @@ OBJ = \
   $(TEE_REF_TA_DIR)/ref-ta/keystone/Enclave/../libbuild/tiny_sha3/sha3.o \
   $(TEE_REF_TA_DIR)/build-keystone/sdk/lib/libkeystone-eapp.a \
   $(TEE_REF_TA_DIR)/build-keystone/sdk/lib/libkeystone-edge.a \
-  $(TEE_REF_TA_DIR)/ref-ta/keystone/../../keyedge/lib/flatccrt.a \
-  $(TEE_REF_TA_DIR)/ref-ta/keystone/Enclave/../../profiler/libprofiler.a
+  $(TEE_REF_TA_DIR)/ref-ta/keystone/../../keyedge/lib/flatccrt.a
 
 hello-ta.keystone: hello-ta.keystone.o ref-ta
 	$(LINK) -o $@ -static hello-ta.keystone.o $(OBJ) -T $(TEE_REF_TA_DIR)/ref-ta/keystone/Enclave/Enclave.lds
