@@ -9,7 +9,7 @@ SP_PRIV_JWK=test-jw/tee/sds/xbank/spaik-priv.jwk
 
 TEEP_KEYS= $(TAM_PRIV_JWK) $(TAM_PUB_JWK) $(TEE_PRIV_JWK) $(TEE_PUB_JWK) $(SP_PRIV_JWK) $(SP_PUB_JWK)
 
-TEEP_KEY_SRC := teep-agent-ta/tam_id_pubkey_jwk.h \
+TEEP_KEY_SRCS := teep-agent-ta/tam_id_pubkey_jwk.h \
                 teep-agent-ta/tee_id_privkey_jwk.h \
                 teep-agent-ta/tee_id_pubkey_jwk.h \
                 teep-agent-ta/sp_pubkey_jwk.h
