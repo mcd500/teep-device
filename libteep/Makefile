@@ -1,5 +1,6 @@
 LWS_GIT_URL  ?= https://github.com/warmcat/libwebsockets.git
-LWS_BRANCH   ?= for-teep-device
+#LWS_BRANCH   ?= for-teep-device
+LWS_BRANCH   ?= v3.2-stable
 MBED_GIT_URL ?= https://github.com/ARMmbed/mbedtls.git
 MBED_BRANCH  ?= mbedtls-2.16
 
@@ -120,6 +121,7 @@ libwebsockets-tee:
 		-DLWS_WITHOUT_EXTENSIONS=1 \
 		-DLWS_WITH_ZLIB=0 \
 		-DLWS_WITH_DIR=0 \
+		-DLWS__INCLUDE_DIRS=$(INCLUDES) \
 		-DCMAKE_BUILD_TYPE=Release \
 		-DCMAKE_C_FLAGS=-Wno-unused-variable \
 		../libwebsockets && make V=1 VERBOSE=1
