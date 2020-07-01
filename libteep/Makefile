@@ -1,6 +1,5 @@
 LWS_GIT_URL  ?= https://github.com/warmcat/libwebsockets.git
-#LWS_BRANCH   ?= for-teep-device
-LWS_BRANCH   ?= v3.2-stable
+LWS_BRANCH   ?= for-teep-device
 MBED_GIT_URL ?= https://github.com/ARMmbed/mbedtls.git
 MBED_BRANCH  ?= mbedtls-2.16
 
