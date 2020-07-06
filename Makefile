@@ -102,7 +102,7 @@ hello-ta-keystone:
 
 .PHONY: hello-app
 hello-app:
-	make -C hello-app TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) INCLUDES="$(INCLUDES)"
+	make -C hello-app TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) INCLUDES="$(INCLUDES)" TARGET=$(TARGET)
 
 .PHONY: hello-app-keystone
 hello-app-keystone:

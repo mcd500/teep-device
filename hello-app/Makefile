@@ -1,4 +1,4 @@
-TARGET=hello-app hello-app-keystone
+TARGET ?= hello-app hello-app-keystone
 TEE_REF_TA_DIR = $(CURDIR)/../..
 ifndef KEYSTONE_SDK_DIR
 export KEYSTONE_SDK_DIR = $(KEYSTONE_DIR)/sdk
