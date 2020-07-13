@@ -43,7 +43,7 @@ REE_CFLAGS ?= -Wall -Werror -fPIC \
 REE_LDFLAGS ?= \
 	-L$(BUILD)/libteep/ree/libwebsockets/lib \
 	-L$(BUILD)/libteep/ree/mbedtls/library
-CROSS_COMPILE = aarch64-linux-gnu-
+export CROSS_COMPILE = aarch64-linux-gnu-
 LIBTEEP_SRC = $(SOURCE)/libteep/lib/main.c
 
 libteep-mbedtls-host-DISABLE = y
