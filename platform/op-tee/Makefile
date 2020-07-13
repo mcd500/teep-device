@@ -12,13 +12,13 @@ export APP_CFLAGS ?= \
 	-I$(SOURCE)/libteep/lib \
 	-I$(SOURCE)/libteep/libwebsockets/include \
 	-I$(SOURCE)/libteep/mbedtls/include \
-	-I$(CURDIR)/../../../build-optee/optee_client/public \
-	-I$(CURDIR)/../../../include \
+	-I$(OPTEE_DIR)/optee_client/public \
+	-I$(TEE_REF_TA_DIR)/include \
 	-I$(BUILD)/libteep/ree/mbedtls/include \
 	-I$(BUILD)/libteep/ree/libwebsockets/include
 
 export APP_LDFLAGS ?= \
-	-L$(CURDIR)/../../../build-optee/out-br/target/usr/lib \
+	-L$(OPTEE_DIR)/out-br/target/usr/lib \
 	-L$(BUILD)/libteep/ree/lib \
 	-L$(BUILD)/libteep/ree/mbedtls/library \
 	-L$(BUILD)/libteep/ree/libwebsockets/lib

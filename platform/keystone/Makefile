@@ -2,9 +2,9 @@ BUILD ?= $(CURDIR)/build
 SOURCE ?= $(CURDIR)/../..
 PLAT = keystone
 
-#export OPTEE_DEV_KIT_DIR ?= $(CURDIR)/../../../build-optee/optee_os/out/arm
+#export OPTEE_DEV_KIT_DIR ?= $(OPTEE_DIR)/optee_os/out/arm
 
-export KEYSTONE_SDK_DIR ?= $(CURDIR)/../../../build-keystone/sdk
+export KEYSTONE_SDK_DIR ?= $(KEYSTONE_DIR)/sdk
 
 #export HELLO_TA_UUID  ?= 8d82573a-926d-4754-9353-32dc29997f74
 #export TEE_AGENT_UUID ?= 68373894-5bb3-403c-9eec-3114a1f5d3fc
@@ -16,17 +16,17 @@ APP_CFLAGS = \
 	-I$(KEYSTONE_SDK_DIR)/lib/edge/include \
 	-I$(KEYSTONE_SDK_DIR)/lib/verifier \
 	-I$(TEE_REF_TA_DIR)/include \
-	-I$(TEE_REF_TA_DIR)/ref-ta/keystone/../../keyedge/target/include \
-	-I$(TEE_REF_TA_DIR)/ref-ta/keystone/../../keyedge/flatcc/include \
+	-I$(TEE_REF_TA_DIR)/keyedge/target/include \
+	-I$(TEE_REF_TA_DIR)/keyedge/flatcc/include \
 	-I$(TEE_REF_TA_DIR)/ref-ta/keystone//Edge \
 	-I./ \
-	-I$(TEE_REF_TA_DIR)/ref-ta/keystone/App/../../profiler \
+	-I$(TEE_REF_TA_DIR)/ref-ta/profiler \
 	-DKEYSTONE -DAPP_VERBOSE
 
 APP_LDFLAGS = \
 	-L$(KEYSTONE_SDK_DIR)/lib \
 	-L$(KEYSTONE_SDK_DIR)/sdk/lib \
-	-L$(TEE_REF_TA_DIR)/ref-ta/keystone/App/../../profiler
+	-L$(TEE_REF_TA_DIR)/ref-ta/profiler
 
 APP_LIBS = \
 	$(TEE_REF_TA_DIR)/ref-ta/keystone//Edge/App_ocalls.o \
@@ -34,7 +34,7 @@ APP_LIBS = \
 	-lkeystone-host \
 	-lkeystone-edge \
 	-lkeystone-verifier \
-	$(TEE_REF_TA_DIR)/ref-ta/keystone/../../keyedge/flatccrt.a \
+	$(TEE_REF_TA_DIR)/keyedge/flatccrt.a \
 	-lhostprofiler
 
 TOOLCHAIN-ree = $(CURDIR)/cross-riscv64.cmake
