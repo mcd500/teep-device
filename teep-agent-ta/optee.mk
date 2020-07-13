@@ -1,26 +1,34 @@
 CFG_TEE_TA_LOG_LEVEL ?= 3
-CPPFLAGS += -DCFG_TEE_TA_LOG_LEVEL=$(CFG_TEE_TA_LOG_LEVEL)
+CPPFLAGS += -DCFG_TEE_TA_LOG_LEVEL=$(CFG_TEE_TA_LOG_LEVEL) \
+		-DMBEDTLS_SELF_TEST=1 \
+		-DMBEDTLS_GCM_C=1 -DTEE_TA
 CFLAGS += -DPLAT_OPTEE=1  \
-	  -DAIST_TB_TA_UUID_STRUCT="$(AIST_TB_TA_UUID_STRUCT)" \
-	  -Wno-overlength-strings -I$(TA_DEV_KIT_DIR) -L$(TA_DEV_KIT_DIR)/lib
+	  -Wno-overlength-strings \
+	  -I$(TA_DEV_KIT_DIR) \
+	  -L$(TA_DEV_KIT_DIR)/lib \
+	  -I../platform/op-tee/build/libteep/tee/libwebsockets/include
 
-CROSS_COMPILE=${CROSS_COMPILE_TA}
+#CROSS_COMPILE=${CROSS_COMPILE_TA}
 
 export CROSS_COMPILE_HOST
 export CROSS_COMPILE_TA
 export TA_DEV_KIT_DIR
 export CROSS_COMPILE
-export AIST_TB_KERNEL_SRC_DIR
-export AIST_TB_KERNEL_BUILD_DIR
 
 GCC_VER=$(shell $(CROSS_COMPILE)gcc --version | head -n1 )
 
-BINARY:=$(HELLO_TA_UUID)
+BINARY:=$(TEE_AGENT_UUID)
 export BINARY
+#LDFLAGS+= hoge -L$(TA_DEV_KIT_DIR)/lib  --whole-archive -lwebsockets --no-whole-archive
+
+libdirs += ../platform/op-tee/build/libteep/tee/libwebsockets/lib
+libnames += websockets
 
 -include $(TA_DEV_KIT_DIR)/mk/ta_dev_kit.mk
 
-$(BINARY).elf: *.c *.h
+$(BINARY).elf: \
+		$(TA_DEV_KIT_DIR)/lib/libmbedtls.a \
+			*.c *.h
 
 $(BINARY).ta:	$(BINARY).elf
 

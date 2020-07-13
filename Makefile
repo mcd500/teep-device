@@ -67,11 +67,11 @@ libteep:
 	make -C libteep TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) \
 		INCLUDES="$(INCLUDES)"
 
-OPTEE_OS ?= $(PWD)/build-optee/optee_os
+OPTEE_OS ?= $(OPTEE_DIR)/optee_os
 ARM_PLAT ?= arm
 
 .PHONY: teep-agent-ta
-teep-agent-ta: $(TEEP_KEY_SRCS) libteep
+teep-agent-ta: $(TEEP_KEY_SRCS) #libteep
 	make -C teep-agent-ta CROSS_COMPILE_HOST=$(CROSS_COMPILE) \
 		TEE_AGENT_UUID=$(TEE_AGENT_UUID) \
 		CROSS_COMPILE_TA=aarch64-linux-gnu- \
@@ -80,8 +80,9 @@ teep-agent-ta: $(TEEP_KEY_SRCS) libteep
 		CFG_MSG_LONG_PREFIX_THRESHOLD=3 \
 		CMAKE_C_FLAGS=-Wno-deprecated-declarations \
 		OPTEE_OS=$(OPTEE_OS) \
-		LDADD="$(OPTEE_OS)/out/$(ARM_PLAT)/core-lib/libmbedtls/mbedtls/library/gcm.o -L$(TA_DEV_KIT_DIR)/lib -lutils -lutee -L../libteep/build-mbedtls/library -L../libteep/build-lws-tee/lib -lwebsockets $(OPTEE_OS)/out/$(ARM_PLAT)/core-lib/libmbedtls/libmbedtls.a " \
+		LDADD="$(OPTEE_OS)/out/$(ARM_PLAT)/core-lib/libmbedtls/mbedtls/library/gcm.o -L$(TA_DEV_KIT_DIR)/lib -lutils -lutee -L../platform/op-tee/build/libteep/tee/libwebsockets/lib -lwebsockets $(OPTEE_OS)/out/$(ARM_PLAT)/core-lib/libmbedtls/libmbedtls.a " \
 		INCLUDES="$(INCLUDES)" \
+		PLAT=tee \
 		V=1 VERBOSE=1 all
 
 .PHONY: hello-ta
@@ -137,3 +138,19 @@ clean-hello-ta:
 distclean:
 	rm -fr sample-senario/node_modules/ sample-senario/package-lock.json
 	rm -fr test-jw
+
+.PHONY: build-optee build-keystone
+
+build-optee:
+	make -C platform/op-tee
+
+clean-optee:
+	make -C platform/op-tee clean
+
+build-keystone:
+	make -C platform/keystone
+
+clean-keystone:
+	make -C platform/keystone clean
+
+

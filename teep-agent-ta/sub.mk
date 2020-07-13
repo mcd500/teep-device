@@ -1,8 +1,8 @@
-global-incdirs-y += ../libteep/$(LWS_M_BDIR) \
+global-incdirs-y += ../platform/op-tee/build/libteep/tee/libwebsockets/include \
 		    ../libteep/libwebsockets/lib \
 		    ../libteep/libwebsockets/include .
 srcs-y += teep-agent-ta.c teep_message.c ta-store.c \
-		$(OPTEE_OS)/lib/libmbedtls/mbedtls/library/gcm.c
+#		$(OPTEE_OS)/lib/libmbedtls/mbedtls/library/gcm.c
 
 CFLAGS+=-nostdinc
 LDFLAGS+=-L$(TA_DEV_KIT_DIR)/lib  --whole-archive -lwebsockets --no-whole-archive

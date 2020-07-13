@@ -29,7 +29,9 @@
 #ifndef PCTEST
 #include <tee_internal_api.h>
 #include <tee_internal_api_extensions.h>
+#ifndef PLAT_KEYSTONE
 #include <pta_secstor_ta_mgmt.h>
+#endif
 #endif
 #include <libwebsockets.h>
 #include "ta-store.h"
@@ -42,7 +44,7 @@ int string_to_uuid_octets(const char *s, uint8_t *octets16);
 int
 ta_store_install(const char *ta_image, size_t ta_image_len)
 {
-#ifdef PCTEST
+#if defined(PCTEST) || defined(PLAT_KEYSTONE)
 	lwsl_user("%s: stub called ta_image_len = %zd\n", __func__, ta_image_len);
 	return 0;
 #else
@@ -82,7 +84,7 @@ ta_store_install(const char *ta_image, size_t ta_image_len)
 int
 ta_store_delete(const char *uuid_string, size_t uuid_string_len)
 {
-#ifdef PCTEST
+#if defined(PCTEST) || defined(PLAT_KEYSTONE)
 	lwsl_user("%s: stub called\n", __func__);
 	return 0;
 #else 

@@ -8,18 +8,18 @@
 
 # Target operating system name.
 set(CMAKE_SYSTEM_NAME Linux)
-set(CMAKE_SYSTEM_PROCESSOR aarch64)
+set(CMAKE_SYSTEM_PROCESSOR riscv64)
 
 # Name of C compiler.
-set(CMAKE_C_COMPILER "aarch64-linux-gnu-gcc")
-set(CMAKE_CXX_COMPILER "aarch64-linux-gnu-g++")
+set(CMAKE_C_COMPILER "riscv64-unknown-linux-gnu-gcc")
+set(CMAKE_CXX_COMPILER "riscv64-unknown-linux-gnu-g++")
 
 #-nostdlib
-SET(CMAKE_C_FLAGS "-DGCC_VER=\"\\\"$(GCC_VER)\\\"\" -DARM64=1 -D__LP64__=1 -Os -g3 -fpie -mstrict-align -DOPTEE_DEV_KIT=${LWS_OPTEE_DEV_KIT_DIR}/export-ta_arm64/include -I../early -I${LWS_OPTEE_DIR}/lib/libutee/include  -fPIC -ffunction-sections -fdata-sections -I${LWS_OPTEE_DIR}/core/include ${CMAKE_C_FLAGS}" CACHE STRING "" FORCE)
+#SET(CMAKE_C_FLAGS "-DGCC_VER=\"\\\"$(GCC_VER)\\\"\" -DARM64=1 -D__LP64__=1 -Os -g3 -fpie -mstrict-align -fPIC -ffunction-sections -fdata-sections -L../../mbedtls-build/library" CACHE STRING "" FORCE)
 
 
 # Where to look for the target environment. (More paths can be added here)
-set(CMAKE_FIND_ROOT_PATH "/projects/aist-tb/arm64-tc/" "~/arm64-tc-8/")
+#set(CMAKE_FIND_ROOT_PATH "/projects/aist-tb/arm64-tc/" "~/arm64-tc-8/")
 
 # Adjust the default behavior of the FIND_XXX() commands:
 # search programs in the host environment only.
