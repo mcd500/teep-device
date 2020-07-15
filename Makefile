@@ -141,13 +141,13 @@ distclean:
 
 .PHONY: build-optee build-keystone
 
-build-optee:
+build-optee: generate-jwk-headers
 	make -C platform/op-tee
 
 clean-optee:
 	make -C platform/op-tee clean
 
-build-keystone:
+build-keystone: generate-jwk-headers
 	make -C platform/keystone
 
 clean-keystone:
