@@ -36,8 +36,6 @@
 #if !defined(__LIBAISTOTRP__)
 #define __LIBAISTOTRP__
 
-#include <tee_client_api.h>
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

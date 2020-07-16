@@ -33,6 +33,7 @@
  * The return convention is 0 means all is OK.  Nonzero indicates an error.
  */
 
+#include <tee_client_api.h>
 #include "libteep.h"
 #include <libwebsockets.h>
 #include <pthread.h>

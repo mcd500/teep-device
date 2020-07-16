@@ -84,3 +84,18 @@ TEE_Result TA_InvokeCommandEntryPoint(void __maybe_unused *sess_ctx,
 	}
 }
 
+#ifdef KEYSTONE
+// TODO: should implemet in ref-ta/api???
+
+int main()
+{
+	return 0;
+}
+
+void trace_printf(const char *func, int line, int level, bool level_ok,
+                  const char *fmt, ...)
+{
+
+}
+
+#endif

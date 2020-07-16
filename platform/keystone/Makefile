@@ -9,12 +9,13 @@ export KEYSTONE_SDK_DIR ?= $(KEYSTONE_DIR)/sdk
 #export HELLO_TA_UUID  ?= 8d82573a-926d-4754-9353-32dc29997f74
 #export TEE_AGENT_UUID ?= 68373894-5bb3-403c-9eec-3114a1f5d3fc
 
-TEE_REF_TA_DIR = $(CURDIR)/../../..
+export TEE_REF_TA_DIR = $(CURDIR)/../../..
 
 APP_CFLAGS = \
 	-I$(KEYSTONE_SDK_DIR)/lib/host/include \
 	-I$(KEYSTONE_SDK_DIR)/lib/edge/include \
 	-I$(KEYSTONE_SDK_DIR)/lib/verifier \
+	-I$(TEE_REF_TA_DIR)/api/include \
 	-I$(TEE_REF_TA_DIR)/include \
 	-I$(TEE_REF_TA_DIR)/keyedge/target/include \
 	-I$(TEE_REF_TA_DIR)/keyedge/flatcc/include \
@@ -44,8 +45,8 @@ REE_CFLAGS = -Wall -Werror -fPIC \
 	      -I$(BUILD)/libteep/ree/libwebsockets/include \
 		  -I$(SOURCE)/libteep/libwebsockets/include \
 	      -I$(SOURCE)/libteep/mbedtls/include $(INCLUDES) \
-	      -I$(OPTEE_DIR)/optee_client/public \
-		  -I$(TA_DEV_KIT_DIR)
+	      -I$(TEE_REF_TA_DIR)/api/include
+
 REE_LDFLAGS = \
 	-L$(BUILD)/libteep/ree/libwebsockets/lib \
 	-L$(BUILD)/libteep/ree/mbedtls/library
