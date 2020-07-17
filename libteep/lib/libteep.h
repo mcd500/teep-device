@@ -36,6 +36,8 @@
 #if !defined(__LIBAISTOTRP__)
 #define __LIBAISTOTRP__
 
+#include <stdint.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
