@@ -25,16 +25,10 @@ export APP_CFLAGS = \
 export APP_LDFLAGS = \
 	-L$(KEYSTONE_SDK_DIR)/lib \
 	-L$(KEYSTONE_SDK_DIR)/sdk/lib \
-	-L$(TEE_REF_TA_DIR)/ref-ta/profiler
+	-L$(TEE_REF_TA_DIR)/build/lib
 
 export APP_LIBS = \
-	$(TEE_REF_TA_DIR)/ref-ta/keystone//Edge/App_ocalls.o \
-	$(TEE_REF_TA_DIR)/ref-ta/keystone//Edge/Enclave_u.o \
-	-lkeystone-host \
-	-lkeystone-edge \
-	-lkeystone-verifier \
-	$(TEE_REF_TA_DIR)/keyedge/flatccrt.a \
-	-lhostprofiler
+	-lkeystone-host -lkeystone-edge -lEnclave_u -lflatccrt
 
 TOOLCHAIN-ree = $(CURDIR)/cross-riscv64.cmake
 TOOLCHAIN-tee = $(CURDIR)/cross-riscv64.cmake
