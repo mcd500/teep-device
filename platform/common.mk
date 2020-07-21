@@ -70,7 +70,7 @@ hello-ta: libteep
 	$(MAKE) -C $(SOURCE)/hello-ta -f $(PLAT).mk out-dir=$(BUILD)/hello-ta
 
 hello-app: libteep
-	$(MAKE) -C $(SOURCE)/hello-app -f $(PLAT).mk out-dir=$(BUILD)/hello-app
+	$(MAKE) -C $(SOURCE)/hello-app -f $(PLAT).mk out-dir=$(BUILD)/hello-app APP_CFLAGS="$(APP_CFLAGS)"
 
 teep-agent-ta: libteep
 	$(MAKE) -C $(SOURCE)/teep-agent-ta -f $(PLAT).mk out-dir=$(BUILD)/teep-agent-ta
