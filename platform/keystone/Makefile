@@ -14,6 +14,7 @@ export APP_CFLAGS = \
 	-I$(KEYSTONE_SDK_DIR)/lib/edge/include \
 	-I$(KEYSTONE_SDK_DIR)/lib/verifier \
 	-I$(TEE_REF_TA_DIR)/build/include/api \
+	-I$(TEE_REF_TA_DIR)/build/include \
 	-I$(TEE_REF_TA_DIR)/include \
 	-I$(TEE_REF_TA_DIR)/keyedge/target/include \
 	-I$(TEE_REF_TA_DIR)/keyedge/flatcc/include \
@@ -28,7 +29,8 @@ export APP_LDFLAGS = \
 	-L$(TEE_REF_TA_DIR)/build/lib
 
 export APP_LIBS = \
-	-lkeystone-host -lkeystone-edge -lEnclave_u -lflatccrt
+	-lkeystone-host -lkeystone-edge -lEnclave_u -lflatccrt \
+	$(TEE_REF_TA_DIR)/api/libtee_api.a
 
 TOOLCHAIN-ree = $(CURDIR)/cross-riscv64.cmake
 TOOLCHAIN-tee = $(CURDIR)/cross-riscv64.cmake
@@ -37,11 +39,15 @@ REE_CFLAGS = -Wall -Werror -fPIC \
 	      -I$(BUILD)/libteep/ree/libwebsockets/include \
 		  -I$(SOURCE)/libteep/libwebsockets/include \
 	      -I$(SOURCE)/libteep/mbedtls/include $(INCLUDES) \
-	      -I$(TEE_REF_TA_DIR)/api/include
+	      -I$(TEE_REF_TA_DIR)/build/include/api \
+	      -I$(TEE_REF_TA_DIR)/build/include \
+	      -I$(TEE_REF_TA_DIR)/api/include \
+	      -DPLAT_KEYSTONE
 
 REE_LDFLAGS = \
 	-L$(BUILD)/libteep/ree/libwebsockets/lib \
-	-L$(BUILD)/libteep/ree/mbedtls/library
+	-L$(BUILD)/libteep/ree/mbedtls/library \
+	$(TEE_REF_TA_DIR)/api/libtee_api.a
 export CROSS_COMPILE = riscv64-unknown-linux-gnu-
 LIBTEEP_SRC = $(SOURCE)/libteep/lib/main.c
 
