@@ -5,8 +5,7 @@ AS = riscv64-unknown-linux-gnu-as
 
 CFLAGS += \
 	-I. \
-	-I$(TEE_REF_TA_DIR)/api/include \
-	-I$(TEE_REF_TA_DIR)/api/keystone \
+	-I$(TEE_REF_TA_DIR)/build/include/api \
 	-I$(TEE_REF_TA_DIR)/build/include \
 	-I$(TEE_REF_TA_DIR)/keyedge/target/include \
 	-I$(KEYSTONE_SDK_DIR)/lib/app/include \

@@ -13,7 +13,7 @@ export APP_CFLAGS = \
 	-I$(KEYSTONE_SDK_DIR)/lib/host/include \
 	-I$(KEYSTONE_SDK_DIR)/lib/edge/include \
 	-I$(KEYSTONE_SDK_DIR)/lib/verifier \
-	-I$(TEE_REF_TA_DIR)/api/include \
+	-I$(TEE_REF_TA_DIR)/build/include/api \
 	-I$(TEE_REF_TA_DIR)/include \
 	-I$(TEE_REF_TA_DIR)/keyedge/target/include \
 	-I$(TEE_REF_TA_DIR)/keyedge/flatcc/include \
