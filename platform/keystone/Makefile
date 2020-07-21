@@ -1,8 +1,6 @@
-BUILD ?= $(CURDIR)/build
-SOURCE ?= $(CURDIR)/../..
-PLAT = keystone
-
-#export OPTEE_DEV_KIT_DIR ?= $(OPTEE_DIR)/optee_os/out/arm
+export BUILD ?= $(CURDIR)/build
+export SOURCE ?= $(CURDIR)/../..
+export PLAT = keystone
 
 export KEYSTONE_SDK_DIR ?= $(KEYSTONE_DIR)/sdk
 
@@ -11,7 +9,7 @@ export KEYSTONE_SDK_DIR ?= $(KEYSTONE_DIR)/sdk
 
 export TEE_REF_TA_DIR = $(CURDIR)/../../..
 
-APP_CFLAGS = \
+export APP_CFLAGS = \
 	-I$(KEYSTONE_SDK_DIR)/lib/host/include \
 	-I$(KEYSTONE_SDK_DIR)/lib/edge/include \
 	-I$(KEYSTONE_SDK_DIR)/lib/verifier \
@@ -24,19 +22,13 @@ APP_CFLAGS = \
 	-I$(TEE_REF_TA_DIR)/ref-ta/profiler \
 	-DKEYSTONE -DAPP_VERBOSE
 
-APP_LDFLAGS = \
+export APP_LDFLAGS = \
 	-L$(KEYSTONE_SDK_DIR)/lib \
 	-L$(KEYSTONE_SDK_DIR)/sdk/lib \
-	-L$(TEE_REF_TA_DIR)/ref-ta/profiler
+	-L$(TEE_REF_TA_DIR)/build/lib
 
-APP_LIBS = \
-	$(TEE_REF_TA_DIR)/ref-ta/keystone//Edge/App_ocalls.o \
-	$(TEE_REF_TA_DIR)/ref-ta/keystone//Edge/Enclave_u.o \
-	-lkeystone-host \
-	-lkeystone-edge \
-	-lkeystone-verifier \
-	$(TEE_REF_TA_DIR)/keyedge/flatccrt.a \
-	-lhostprofiler
+export APP_LIBS = \
+	-lkeystone-host -lkeystone-edge -lEnclave_u -lflatccrt
 
 TOOLCHAIN-ree = $(CURDIR)/cross-riscv64.cmake
 TOOLCHAIN-tee = $(CURDIR)/cross-riscv64.cmake
@@ -50,7 +42,7 @@ REE_CFLAGS = -Wall -Werror -fPIC \
 REE_LDFLAGS = \
 	-L$(BUILD)/libteep/ree/libwebsockets/lib \
 	-L$(BUILD)/libteep/ree/mbedtls/library
-CROSS_COMPILE = riscv64-unknown-linux-gnu-
+export CROSS_COMPILE = riscv64-unknown-linux-gnu-
 LIBTEEP_SRC = $(SOURCE)/libteep/lib/main.c
 
 libteep-mbedtls-host-DISABLE = y
