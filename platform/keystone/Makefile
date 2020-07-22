@@ -21,6 +21,10 @@ export APP_CFLAGS = \
 	-I$(TEE_REF_TA_DIR)/ref-ta/keystone//Edge \
 	-I./ \
 	-I$(TEE_REF_TA_DIR)/ref-ta/profiler \
+	-I$(SOURCE)/libteep/lib \
+	-I$(SOURCE)/platform/keystone/build/libteep/ree/libwebsockets/include \
+	-I$(SOURCE)/libteep/libwebsockets/include \
+	-I$(SOURCE)/libteep/mbedtls/include \
 	-DKEYSTONE -DAPP_VERBOSE
 
 export APP_LDFLAGS = \
