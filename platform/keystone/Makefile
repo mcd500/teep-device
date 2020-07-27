@@ -99,6 +99,8 @@ libteep-mbedtls-tee-FLAGS = \
 
 libteep-libwebsockets-tee-FLAGS = \
 	-DCMAKE_TOOLCHAIN_FILE=$(TOOLCHAIN-tee) \
+	-DLWS_PLAT_OPTEE=1 \
+	-DLWS_PLAT_KEYSTONE=1 \
 	-DLWS_ROLE_WS=0 \
 	-DLWS_WITH_SSL=1 \
 	-DLWS_WITH_MBEDTLS=1 \
