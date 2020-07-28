@@ -67,7 +67,7 @@ OBJ = \
 $(TEE_REF_TA_DIR)/ref-ta/keystone/../../keyedge/lib/flatccrt.a
 
 $(out-dir)/teep-agent-ta: $(out-dir)/teep-agent-ta.o $(out-dir)/teep_message.o $(out-dir)/ta-store.o
-	$(LINK) -o $@ -static $^ $(LDFLAGS) $(LIBS)
+	$(LINK) -o $@ -static $^ $(LDFLAGS) $(LIBS) -T Enclave.lds
 
 	#$(LINK) -o $@ -static $(out-dir)/teep-agent-ta.o $(out-dir)/teep_message.o $(out-dir)/ta-store.o $(OBJ) -T $(TEE_REF_TA_DIR)/ref-ta/keystone/Enclave/Enclave.lds \
 	-L../platform/keystone/build/libteep/tee/libwebsockets/lib \
