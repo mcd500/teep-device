@@ -13,6 +13,14 @@ SECTIONS
     *(.rdata)
     *(.rodata)
   }
+  .tdata	  : { *(.tdata .tdata.* .gnu.linkonce.td.*) }
+  .tbss		  : { *(.tbss .tbss.* .gnu.linkonce.tb.*) *(.tcommon) }
+  .preinit_array     :
+  {
+    PROVIDE_HIDDEN (__preinit_array_start = .);
+    KEEP (*(.preinit_array))
+    PROVIDE_HIDDEN (__preinit_array_end = .);
+  }
   . = ALIGN(8);
   .init_array : {
     PROVIDE_HIDDEN (__init_array_start = .);
@@ -27,6 +35,13 @@ SECTIONS
     PROVIDE_HIDDEN (__fini_array_end = .);
   }
   .data : { *(.data) }
+  .sdata          :
+  {
+    __global_pointer$ = . + 0x800;
+    *(.srodata.cst16) *(.srodata.cst8) *(.srodata.cst4) *(.srodata.cst2) *(.srodata .srodata.*)
+    *(.sdata .sdata.* .gnu.linkonce.s.*)
+  }
+
   .bss : { *(.bss) }
   .debug : { *(.debug) }
   
