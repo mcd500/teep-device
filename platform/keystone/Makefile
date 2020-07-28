@@ -25,7 +25,7 @@ export APP_CFLAGS = \
 	-I$(SOURCE)/platform/keystone/build/libteep/ree/libwebsockets/include \
 	-I$(SOURCE)/libteep/libwebsockets/include \
 	-I$(SOURCE)/libteep/mbedtls/include \
-	-DKEYSTONE -DAPP_VERBOSE
+	-DKEYSTONE -DAPP_VERBOSE -Wall
 
 export APP_LDFLAGS = \
 	-L$(KEYSTONE_SDK_DIR)/lib \
