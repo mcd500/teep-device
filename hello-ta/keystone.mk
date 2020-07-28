@@ -31,5 +31,5 @@ LIBS = \
 	-ltee_api
 
 $(out-dir)/hello-ta: $(out-dir)/hello-ta.o
-	$(LINK) -o $@ -static $(out-dir)/hello-ta.o $(LDFLAGS) $(LIBS) -T Enclabe.lds
+	$(LINK) -o $@ -static $(out-dir)/hello-ta.o $(LDFLAGS) $(LIBS) -T Enclave.lds
 
