@@ -32,12 +32,13 @@ export APP_LDFLAGS = \
 	-L$(KEYSTONE_SDK_DIR)/sdk/lib \
 	-L$(TEE_REF_TA_DIR)/build/lib \
 	-L$(SOURCE)/platform/keystone/build/libteep/ree/mbedtls/library \
+	-Xlinker -rpath-link -Xlinker $(SOURCE)/platform/keystone/build/libteep/ree/mbedtls/library \
 	-L$(SOURCE)/platform/keystone/build/libteep/ree/libwebsockets/lib \
 	-L$(SOURCE)/platform/keystone/build/libteep/ree/lib
 
 export APP_LIBS = \
 	-lkeystone-host -lkeystone-edge -lEnclave_u -lflatccrt -lmbedcrypto -lmbedx509 -lmbedtls -lwebsockets -lteep \
-	$(TEE_REF_TA_DIR)/api/libtee_api.a
+	-ltee_api
 
 TOOLCHAIN-ree = $(CURDIR)/cross-riscv64.cmake
 TOOLCHAIN-tee = $(CURDIR)/cross-riscv64.cmake
