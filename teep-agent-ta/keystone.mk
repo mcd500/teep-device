@@ -1,6 +1,6 @@
 CC = riscv64-unknown-linux-gnu-gcc
 CFLAGS = -Wall -fno-builtin-printf -DEDGE_IGNORE_EGDE_RESULT -DCRYPTLIB=MBEDCRYPT
-LINK = riscv64-unknown-linux-gnu-ld
+LINK = riscv64-unknown-linux-gnu-gcc
 AS = riscv64-unknown-linux-gnu-as
 
 CFLAGS += \
@@ -35,14 +35,12 @@ LDFLAGS = \
 	-L$(BUILD)/libteep/tee/libwebsockets/lib
 
 LIBS = \
-	--start-group \
 	-lEnclave_t \
 	-lflatccrt \
 	-lkeystone-eapp \
 	-ltee_api \
 	-lwebsockets \
-	-lmbedtls \
-	--end-group
+	-lmbedtls
 
 OBJ = \
 	$(TEE_REF_TA_DIR)/ref-ta/keystone/Enclave/Enclave_t.o \
