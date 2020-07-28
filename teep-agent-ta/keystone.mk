@@ -35,12 +35,12 @@ LDFLAGS = \
 	-L$(BUILD)/libteep/tee/libwebsockets/lib
 
 LIBS = \
-	-lEnclave_t \
-	-lflatccrt \
-	-lkeystone-eapp \
 	-ltee_api \
 	-lwebsockets \
-	-lmbedtls
+	-lmbedtls \
+	-lEnclave_t \
+	-lflatccrt \
+	-lkeystone-eapp
 
 OBJ = \
 	$(TEE_REF_TA_DIR)/ref-ta/keystone/Enclave/Enclave_t.o \
