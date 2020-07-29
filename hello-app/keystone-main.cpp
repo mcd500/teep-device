@@ -18,7 +18,7 @@
 #include "tee_client_api.h"
 
 /* We hardcode these for demo purposes. */
-const char* enc_path = "hello";
+const char* enc_path = "hello-ta";
 const char* runtime_path = "eyrie-rt";
 
 int main(int argc, char** argv)

@@ -132,3 +132,30 @@ clean:
 	rm -rf $(BUILD)
 
 
+prefix ?= $(KEYSTONE_DIR)/buildroot_overlay
+
+install: all
+	test -n "$(prefix)"
+	mkdir -p $(prefix)/root/teep-device
+	install $(BUILD)/hello-ta/hello-ta $(prefix)/root/teep-device
+	install $(BUILD)/hello-app/hello-app $(prefix)/root/teep-device
+	install $(BUILD)/teep-agent-ta/teep-agent-ta $(prefix)/root/teep-device
+	install $(BUILD)/teep-broker-app/teep-broker-app $(prefix)/root/teep-device
+	install $(KEYSTONE_DIR)/sdk/rts/eyrie/eyrie-rt $(prefix)/root/teep-device
+	mkdir -p $(prefix)/usr/lib
+	install $(BUILD)/libteep/ree/mbedtls/library/lib* $(prefix)/usr/lib
+	install $(BUILD)/libteep/ree/libwebsockets/lib/lib* $(prefix)/usr/lib
+	install $(BUILD)/libteep/ree/lib/lib* $(prefix)/usr/lib
+
+image: install
+	make -C $(KEYSTONE_DIR) image
+
+qemu: image
+	$(KEYSTONE_DIR)/riscv-qemu/riscv64-softmmu/qemu-system-riscv64 \
+		-m 4G \
+		-bios $(KEYSTONE_DIR)/bootrom/bootrom.elf \
+		-nographic \
+		-machine virt \
+		-kernel $(KEYSTONE_DIR)/hifive-work/riscv-pk/bbl \
+		-netdev user,id=net0,net=192.168.100.1/24,dhcpstart=192.168.100.128,hostfwd=tcp::10032-:22 \
+		-device virtio-net-device,netdev=net0
