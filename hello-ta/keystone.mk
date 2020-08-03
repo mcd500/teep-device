@@ -1,6 +1,6 @@
 CC = riscv64-unknown-linux-gnu-gcc
 CFLAGS = -Wall -fno-builtin-printf -DEDGE_IGNORE_EGDE_RESULT -DCRYPTLIB=MBEDCRYPT
-LINK = riscv64-unknown-linux-gnu-ld
+LINK = riscv64-unknown-linux-gnu-gcc
 AS = riscv64-unknown-linux-gnu-as
 
 CFLAGS += \
@@ -31,5 +31,4 @@ LIBS = \
 	-ltee_api
 
 $(out-dir)/hello-ta: $(out-dir)/hello-ta.o
-	$(LINK) -o $@ -static $(out-dir)/hello-ta.o $(LDFLAGS) $(LIBS) -T Enclave.lds
-
+	$(LINK) -o $@ -static $(out-dir)/hello-ta.o $(LDFLAGS) $(LIBS)

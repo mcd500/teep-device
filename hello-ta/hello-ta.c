@@ -89,6 +89,7 @@ TEE_Result TA_InvokeCommandEntryPoint(void __maybe_unused *sess_ctx,
 
 int main()
 {
+	printf("hello ta\n");
 	return 0;
 }
 

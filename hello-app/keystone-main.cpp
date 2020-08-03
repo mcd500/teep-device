@@ -39,6 +39,7 @@ int main(int argc, char** argv)
     edge_call_init_internals((uintptr_t)enclave.getSharedBuffer(),
                             enclave.getSharedBufferSize());
 
+    printf("enclave.run\n");
     enclave.run();
     return 0;
 }
