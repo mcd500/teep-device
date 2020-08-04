@@ -13,12 +13,7 @@ export APP_CFLAGS = \
 	-I$(KEYSTONE_SDK_DIR)/lib/host/include \
 	-I$(KEYSTONE_SDK_DIR)/lib/edge/include \
 	-I$(KEYSTONE_SDK_DIR)/lib/verifier \
-	-I$(TEE_REF_TA_DIR)/build/include/api \
 	-I$(TEE_REF_TA_DIR)/build/include \
-	-I$(TEE_REF_TA_DIR)/include \
-	-I$(TEE_REF_TA_DIR)/keyedge/target/include \
-	-I$(TEE_REF_TA_DIR)/keyedge/flatcc/include \
-	-I$(TEE_REF_TA_DIR)/ref-ta/keystone//Edge \
 	-I./ \
 	-I$(TEE_REF_TA_DIR)/ref-ta/profiler \
 	-I$(SOURCE)/libteep/lib \
@@ -47,9 +42,7 @@ REE_CFLAGS = -Wall -Werror -fPIC \
 	      -I$(BUILD)/libteep/ree/libwebsockets/include \
 		  -I$(SOURCE)/libteep/libwebsockets/include \
 	      -I$(SOURCE)/libteep/mbedtls/include $(INCLUDES) \
-	      -I$(TEE_REF_TA_DIR)/build/include/api \
 	      -I$(TEE_REF_TA_DIR)/build/include \
-	      -I$(TEE_REF_TA_DIR)/api/include \
 	      -DPLAT_KEYSTONE
 
 REE_LDFLAGS = \
@@ -122,7 +115,7 @@ libteep-libwebsockets-tee-FLAGS = \
 	-DLWS_WITH_DIR=0 \
 	-DLWS__INCLUDE_DIRS=$(INCLUDES) \
 	-DCMAKE_BUILD_TYPE=Release \
-	-DCMAKE_C_FLAGS="-Wno-unused-variable -I$(TEE_REF_TA_DIR)/build/include/api"
+	-DCMAKE_C_FLAGS="-Wno-unused-variable -I$(TEE_REF_TA_DIR)/build/include"
 
 all: libteep hello teep
 
