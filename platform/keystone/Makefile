@@ -144,6 +144,9 @@ image: install
 	make -C $(KEYSTONE_DIR) image
 
 qemu: image
+	$(MAKE) run-qemu
+
+run-qemu:
 	$(KEYSTONE_DIR)/riscv-qemu/riscv64-softmmu/qemu-system-riscv64 \
 		-m 4G \
 		-bios $(KEYSTONE_DIR)/bootrom/bootrom.elf \
@@ -152,3 +155,11 @@ qemu: image
 		-kernel $(KEYSTONE_DIR)/hifive-work/riscv-pk/bbl \
 		-netdev user,id=net0,net=192.168.100.1/24,dhcpstart=192.168.100.128,hostfwd=tcp::10032-:22 \
 		-device virtio-net-device,netdev=net0
+
+test: image
+	screen -L -dmS qemu make run-qemu
+	sleep 7
+	PORT=10032 USER=root IP_ADDR=localhost PASSWD=sifive ./script/test.expect
+	screen -S qemu -X poweroff
+	pkill screen
+	pkill qemu

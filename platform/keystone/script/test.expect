@@ -1,0 +1,45 @@
+#!/usr/bin/expect
+
+set timeout 360
+set PORT $::env(PORT)
+set USER $::env(USER)
+set IP_ADDR $::env(IP_ADDR)
+set PASSWD $::env(PASSWD)
+
+spawn ssh $USER@$IP_ADDR -p $PORT
+expect "?" {
+    send "yes\r"
+    expect "*?assword" {
+        send "$PASSWD\r"
+    }
+}
+
+expect "# " {
+    send "cd /home/gitlab/out\r"
+}
+
+expect "# " {
+    send "insmod keystone-driver.ko; sleep 2; true\r"
+}
+
+expect "# " {
+    send "./App.client  Enclave.eapp_riscv eyrie-rt\r"
+    expect "main start\r" {} timeout {
+        exit 1
+    }
+    expect "main end\r" {} timeout {
+        exit 1
+    }
+}
+
+expect "# " {
+    send "ls -lsa .\r"
+}
+
+expect "# " {
+    send "exit\r"
+}
+
+expect eof
+
+exit
