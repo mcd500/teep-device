@@ -15,19 +15,16 @@ expect "?" {
 }
 
 expect "# " {
-    send "cd /home/gitlab/out\r"
-}
-
-expect "# " {
     send "insmod keystone-driver.ko; sleep 2; true\r"
 }
 
 expect "# " {
-    send "./App.client  Enclave.eapp_riscv eyrie-rt\r"
-    expect "main start\r" {} timeout {
+    send "cd /root/teep-device\r"
+    send "./hello-app\r"
+    expect "enclave.run\r" {} timeout {
         exit 1
     }
-    expect "main end\r" {} timeout {
+    expect "hello ta\r" {} timeout {
         exit 1
     }
 }
