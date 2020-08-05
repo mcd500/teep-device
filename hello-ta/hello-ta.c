@@ -85,18 +85,15 @@ TEE_Result TA_InvokeCommandEntryPoint(void __maybe_unused *sess_ctx,
 }
 
 #ifdef KEYSTONE
+#include <eapp_utils.h>
 // TODO: should implemet in ref-ta/api???
 
-int main()
+void EAPP_ENTRY eapp_entry()
 {
-	printf("hello ta\n");
-	return 0;
-}
-
-void trace_printf(const char *func, int line, int level, bool level_ok,
-                  const char *fmt, ...)
-{
-
+	//printf("hello ta\n");
+	ocall_print_string("hello ocall\n");
+	IMSG("hello IMSG %d\n", 42);
+	EAPP_RETURN(0);
 }
 
 #endif

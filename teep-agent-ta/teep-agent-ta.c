@@ -232,17 +232,14 @@ TA_InvokeCommandEntryPoint(void __maybe_unused *sess_ctx,
 }
 
 #ifdef KEYSTONE
+#include <eapp_utils.h>
 // TODO: should implemet in ref-ta/api???
 
-int main()
+void EAPP_ENTRY eapp_entry()
 {
-	return 0;
-}
-
-void trace_printf(const char *func, int line, int level, bool level_ok,
-                  const char *fmt, ...)
-{
-
+	ocall_print_string("hello agent ta\n");
+	IMSG("agent ta IMSG %d\n", 42);
+	EAPP_RETURN(0);
 }
 
 #endif

@@ -24,9 +24,10 @@ expect "# " {
     expect "enclave.run\r" {} timeout {
         exit 1
     }
-    expect "hello ta\r" {} timeout {
+    expect "hello ocall\r" {} timeout {
         exit 1
     }
+    send "./teep-broker-app\r"
 }
 
 expect "# " {
