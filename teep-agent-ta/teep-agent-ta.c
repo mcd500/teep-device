@@ -233,12 +233,19 @@ TA_InvokeCommandEntryPoint(void __maybe_unused *sess_ctx,
 
 #ifdef KEYSTONE
 #include <eapp_utils.h>
+#include <edger/Enclave_t.h>
 // TODO: should implemet in ref-ta/api???
 
 void EAPP_ENTRY eapp_entry()
 {
 	ocall_print_string("hello agent ta\n");
 	IMSG("agent ta IMSG %d\n", 42);
+	invoke_command_t c = ocall_pull_invoke_command();
+	int ret = -1;
+	if (c.commandID == 42) {
+		ret = 10080;
+	}
+	ocall_put_invoke_command_result(ret);
 	EAPP_RETURN(0);
 }
 

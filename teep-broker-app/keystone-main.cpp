@@ -9,6 +9,9 @@
 #include <cstdio>
 #include <string>
 #include <cstring>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
 
 #include "edger/Enclave_u.h"
 #ifdef APP_PERF_ENABLE
@@ -20,6 +23,50 @@
 /* We hardcode these for demo purposes. */
 const char* enc_path = "teep-agent-ta";
 const char* runtime_path = "eyrie-rt";
+
+std::mutex mutex;
+std::condition_variable cv;
+bool invoking = false;
+invoke_command_t command;
+int command_result;
+
+invoke_command_t pull_invoke_command()
+{
+    std::unique_lock<std::mutex> lock(mutex);
+    cv.wait(lock, []{ return invoking; });
+    return command;
+}
+
+void put_invoke_command_result(int result)
+{
+    std::unique_lock<std::mutex> lock(mutex);
+    command_result = result;
+    invoking = false;
+    lock.unlock();
+    cv.notify_one();
+}
+
+void put_invoke_command(const invoke_command_t& c)
+{
+    std::unique_lock<std::mutex> lock(mutex);
+    command = c;
+    invoking = true;
+    lock.unlock();
+    cv.notify_one();
+}
+
+int pull_invoke_command_result()
+{
+    std::unique_lock<std::mutex> lock(mutex);
+    cv.wait(lock, []{ return !invoking; });
+    return command_result;
+}
+
+int my_TEEC_InvokeCommand(const invoke_command_t& c)
+{
+    put_invoke_command(c);
+    return pull_invoke_command_result();
+}
 
 int main(int argc, char** argv)
 {
@@ -39,7 +86,19 @@ int main(int argc, char** argv)
     edge_call_init_internals((uintptr_t)enclave.getSharedBuffer(),
                             enclave.getSharedBufferSize());
 
-    enclave.run();
+    std::thread enclave_thread(
+        [&]{ enclave.run(); }
+    );
+
+    {
+        invoke_command_t c;
+        c.commandID = 42;
+        int ret = my_TEEC_InvokeCommand(c);
+        printf("result: %d\n", ret);
+    }
+
+    enclave_thread.join();
+
     return 0;
 }
 
@@ -65,6 +124,18 @@ ob16_t ocall_getrandom16(unsigned int flags) {}
 ob196_t ocall_getrandom196(unsigned int flags) {}
 invoke_command_t ocall_invoke_command_polling(void) {}
 int ocall_invoke_command_callback(invoke_command_t cb_cmd) {}
+
+
+invoke_command_t ocall_pull_invoke_command()
+{
+    return pull_invoke_command();
+}
+
+void ocall_put_invoke_command_result(int result)
+{
+    return put_invoke_command_result(result);
+}
+
 #endif
 
 EDGE_EXTERNC_END

@@ -157,7 +157,7 @@ run-qemu:
 		-device virtio-net-device,netdev=net0
 
 test: image
-	ssh-keygen -R '[localhost]:10032'
+	-ssh-keygen -R '[localhost]:10032'
 	screen -L -dmS qemu make run-qemu
 	sleep 7
 	PORT=10032 USER=root IP_ADDR=localhost PASSWD=sifive ./script/test.expect

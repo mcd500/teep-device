@@ -66,6 +66,15 @@ ob16_t ocall_getrandom16(unsigned int flags) {}
 ob196_t ocall_getrandom196(unsigned int flags) {}
 invoke_command_t ocall_invoke_command_polling(void) {}
 int ocall_invoke_command_callback(invoke_command_t cb_cmd) {}
+
+invoke_command_t ocall_pull_invoke_command()
+{
+}
+
+void ocall_put_invoke_command_result(int result)
+{
+}
+
 #endif
 
 EDGE_EXTERNC_END
