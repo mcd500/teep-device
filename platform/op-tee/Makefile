@@ -152,6 +152,7 @@ run-qemu:
 test:
 	ln -sf $(prefix)/rootfs.cpio.gz $(OPTEE_DIR)/out/bin
 	curl http://tamproto_tam_api_1:8888/api/
+	curl http://tamproto_tam_api_1:8888/panel/upload -F "file=@$(BUILD)/hello-ta/$(HELLO_TA_UUID).ta"
 	cd $(OPTEE_DIR)/out/bin && \
 		QEMU=$(OPTEE_DIR)/qemu/aarch64-softmmu/qemu-system-aarch64 \
 		QEMU_SMP=2 \
