@@ -148,3 +148,11 @@ run-qemu:
 			-kernel Image -no-acpi \
 			-append 'console=ttyAMA0,38400 keep_bootcon root=/dev/vda2' \
 			$(QEMU_EXTRA_ARGS)
+
+test:
+	ln -sf $(prefix)/rootfs.cpio.gz $(OPTEE_DIR)/out/bin
+	curl http://tamproto_tam_api_1:8888/api/
+	cd $(OPTEE_DIR)/out/bin && \
+		QEMU=$(OPTEE_DIR)/qemu/aarch64-softmmu/qemu-system-aarch64 \
+		QEMU_SMP=2 \
+		expect $(CURDIR)/script/test.expect
