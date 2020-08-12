@@ -149,6 +149,8 @@ run-qemu:
 			-append 'console=ttyAMA0,38400 keep_bootcon root=/dev/vda2' \
 			$(QEMU_EXTRA_ARGS)
 
+TAM_URL ?= http://tamproto_tam_api_1:8888
+
 test:
 	ln -sf $(prefix)/rootfs.cpio.gz $(OPTEE_DIR)/out/bin
 	cd $(SOURCE)/sample-senario && npm install
@@ -156,10 +158,11 @@ test:
 		$(SOURCE)/test-jw/tee/sds/xbank/spaik-priv.jwk \
 		$(SOURCE)/test-jw/tee/identity/tee-mytee-public.jwk \
 		$(BUILD)/hello-ta/$(HELLO_TA_UUID).ta
-	curl http://tamproto_tam_api_1:8888/api/
-	curl http://tamproto_tam_api_1:8888/panel/upload \
+	curl $(TAM_URL)/api/
+	curl $(TAM_URL)/panel/upload \
 		-F "file=@$(BUILD)/hello-ta/$(HELLO_TA_UUID).ta.sign.enc;filename=$(HELLO_TA_UUID).ta"
 	cd $(OPTEE_DIR)/out/bin && \
 		QEMU=$(OPTEE_DIR)/qemu/aarch64-softmmu/qemu-system-aarch64 \
 		QEMU_SMP=2 \
+		TAM_URL=$(TAM_URL) \
 		expect $(CURDIR)/script/test.expect
