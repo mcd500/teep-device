@@ -7,6 +7,13 @@ TEE_PRIV_JWK=test-jw/tee/identity/private/tee-mytee-private.jwk
 SP_PUB_JWK=test-jw/tee/sds/xbank/spaik-pub.jwk
 SP_PRIV_JWK=test-jw/tee/sds/xbank/spaik-priv.jwk
 
+FIXED_TAM_PUB_JWK  = key/test-jw_tsm_identity_tam-mytam-public.jwk
+FIXED_TAM_PRIV_JWK = key/test-jw_tsm_identity_private_tam-mytam-private.jwk
+FIXED_TEE_PUB_JWK  = key/test-jw_tee_identity_tee-mytee-public.jwk
+FIXED_TEE_PRIV_JWK = key/test-jw_tee_identity_private_tee-mytee-private.jwk
+FIXED_SP_PUB_JWK   = key/test-jw_tee_sds_xbank_spaik-pub.jwk
+FIXED_SP_PRIV_JWK  = key/test-jw_tee_sds_xbank_spaik-priv.jwk
+
 TEEP_KEYS= $(TAM_PRIV_JWK) $(TAM_PUB_JWK) $(TEE_PRIV_JWK) $(TEE_PUB_JWK) $(SP_PRIV_JWK) $(SP_PUB_JWK)
 
 TEEP_KEY_SRCS := teep-agent-ta/tam_id_pubkey_jwk.h \
@@ -60,6 +67,17 @@ generate-jwk-headers $(TEEP_KEY_SRCS): $(TAM_PUB_JWK) $(SP_PUB_JWK) $(TEE_PUB_JW
 	cat $(TEE_PUB_JWK) | sed 's/\"/\\\"/g' | sed 's/^/\"/g' | sed 's/$$/\\\n\"\n/g' > \
                teep-agent-ta/tee_id_pubkey_jwk.h
 	cat $(TEE_PRIV_JWK) | sed 's/\"/\\\"/g' | sed 's/^/\"/g' | sed 's/$$/\\\n\"\n/g' > \
+               teep-agent-ta/tee_id_privkey_jwk.h
+
+.PHONY: jwk-headers
+jwk-headers:
+	cat $(FIXED_TAM_PUB_JWK) | sed 's/\"/\\\"/g' | sed 's/^/\"/g' | sed 's/$$/\\\n\"\n/g' > \
+               teep-agent-ta/tam_id_pubkey_jwk.h
+	cat $(FIXED_SP_PUB_JWK) | sed 's/\"/\\\"/g' | sed 's/^/\"/g' | sed 's/$$/\\\n\"\n/g' > \
+               teep-agent-ta/sp_pubkey_jwk.h
+	cat $(FIXED_TEE_PUB_JWK) | sed 's/\"/\\\"/g' | sed 's/^/\"/g' | sed 's/$$/\\\n\"\n/g' > \
+               teep-agent-ta/tee_id_pubkey_jwk.h
+	cat $(FIXED_TEE_PRIV_JWK) | sed 's/\"/\\\"/g' | sed 's/^/\"/g' | sed 's/$$/\\\n\"\n/g' > \
                teep-agent-ta/tee_id_privkey_jwk.h
 
 .PHONY: libteep
@@ -141,13 +159,13 @@ distclean:
 
 .PHONY: build-optee build-keystone
 
-build-optee: generate-jwk-headers
+build-optee: jwk-headers
 	make -C platform/op-tee
 
 clean-optee:
 	make -C platform/op-tee clean
 
-build-keystone: generate-jwk-headers
+build-keystone: jwk-headers
 	make -C platform/keystone
 
 clean-keystone:
