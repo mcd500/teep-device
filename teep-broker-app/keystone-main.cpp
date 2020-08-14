@@ -217,12 +217,13 @@ EDGE_EXTERNC_END
 
 TEEC_Result TEEC_InitializeContext(const char *name, TEEC_Context *context)
 {
-
+    fprintf(stderr, "TEEC_InitializeContext\n");
+    return TEEC_SUCCESS;
 }
 
 void TEEC_FinalizeContext(TEEC_Context *context)
 {
-
+    fprintf(stderr, "TEEC_FinalizeContext\n");
 }
 
 TEEC_Result TEEC_OpenSession(TEEC_Context *context,
@@ -233,12 +234,14 @@ TEEC_Result TEEC_OpenSession(TEEC_Context *context,
 			     TEEC_Operation *operation,
 			     uint32_t *returnOrigin)
 {
+    fprintf(stderr, "TEEC_OpenSession\n");
+    return TEEC_SUCCESS;
 
 }
 
 void TEEC_CloseSession(TEEC_Session *session)
 {
-
+    fprintf(stderr, "TEEC_CloseSession\n");
 }
 
 TEEC_Result TEEC_InvokeCommand(TEEC_Session *session,
@@ -246,5 +249,6 @@ TEEC_Result TEEC_InvokeCommand(TEEC_Session *session,
 			       TEEC_Operation *operation,
 			       uint32_t *returnOrigin)
 {
-
+    fprintf(stderr, "TEEC_InvokeCommand\n");
+    return TEEC_ERROR_NOT_IMPLEMENTED;
 }
