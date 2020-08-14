@@ -156,11 +156,15 @@ run-qemu:
 		-netdev user,id=net0,net=192.168.100.1/24,dhcpstart=192.168.100.128,hostfwd=tcp::10032-:22 \
 		-device virtio-net-device,netdev=net0
 
-test: image
-	-ssh-keygen -R '[localhost]:10032'
-	screen -L -dmS qemu make run-qemu
-	sleep 7
-	PORT=10032 USER=root IP_ADDR=localhost PASSWD=sifive ./script/test.expect
-	screen -S qemu -X poweroff
-	pkill screen
-	pkill qemu
+TAM_URL ?= http://tamproto_tam_api_1:8888
+
+test:
+	cd $(SOURCE)/sample-senario && npm install
+	node $(SOURCE)/sample-senario/sign-then-enc.js \
+		$(SOURCE)/key/test-jw_tee_sds_xbank_spaik-priv.jwk \
+		$(SOURCE)/key/test-jw_tee_identity_tee-mytee-public.jwk \
+		$(BUILD)/hello-ta/hello-ta
+	curl $(TAM_URL)/api/
+	curl $(TAM_URL)/panel/upload \
+		-F "file=@$(BUILD)/hello-ta/hello-ta.sign.enc;filename=$(HELLO_TA_UUID).ta"
+	TAM_URL=$(TAM_URL) expect ./script/test.expect

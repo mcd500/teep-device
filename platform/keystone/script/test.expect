@@ -1,18 +1,22 @@
 #!/usr/bin/expect
 
 set timeout 360
-set PORT $::env(PORT)
-set USER $::env(USER)
-set IP_ADDR $::env(IP_ADDR)
-set PASSWD $::env(PASSWD)
 
-spawn ssh $USER@$IP_ADDR -p $PORT
-expect "?" {
-    send "yes\r"
-    expect "*?assword" {
-        send "$PASSWD\r"
-    }
-}
+
+spawn $::env(KEYSTONE_DIR)/riscv-qemu/riscv64-softmmu/qemu-system-riscv64 \
+		-m 4G \
+		-bios $::env(KEYSTONE_DIR)/bootrom/bootrom.elf \
+		-nographic \
+		-machine virt \
+		-kernel $::env(KEYSTONE_DIR)/hifive-work/riscv-pk/bbl \
+		-netdev user,id=net0,net=192.168.100.1/24,dhcpstart=192.168.100.128,hostfwd=tcp::10032-:22 \
+		-device virtio-net-device,netdev=net0
+
+expect "ogin: "
+send "root\r"
+
+expect "assword: "
+send "sifive\r"
 
 expect "# " {
     send "insmod keystone-driver.ko; sleep 2; true\r"
@@ -27,17 +31,36 @@ expect "# " {
     expect "hello ocall\r" {} timeout {
         exit 1
     }
-    send "./teep-broker-app\r"
 }
 
-expect "# " {
-    send "ls -lsa .\r"
+send -- "./teep-broker-app --tamurl $::env(TAM_URL)/api/tam\r"
+expect {
+	-re " ERR:.*$" { exit 1 }
+	timeout { exit 1 }
+	"# "
 }
 
-expect "# " {
-    send "exit\r"
+send -- "./teep-broker-app --tamurl $::env(TAM_URL)/api/tam_delete  --talist 8d82573a-926d-4754-9353-32dc29997f74\r"
+expect {
+	-re " ERR:.*$" { exit 1 }
+	timeout { exit 1 }
+	"# "
 }
 
-expect eof
+send -- "./teep-broker-app --tamurl $::env(TAM_URL)/api/tam_jose2 --jose\r"
+expect {
+	-re " ERR:.*$" { exit 1 }
+	timeout { exit 1 }
+	"# "
+}
+
+send -- "./teep-broker-app --tamurl $::env(TAM_URL)/api/tam_jose2_delete --jose --talist 8d82573a-926d-4754-9353-32dc29997f74\r"
+expect {
+	-re " ERR:.*$" { exit 1 }
+	timeout { exit 1 }
+	"# "
+}
+
+puts " done\n"
 
 exit
