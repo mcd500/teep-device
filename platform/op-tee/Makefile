@@ -155,8 +155,8 @@ test:
 	ln -sf $(prefix)/rootfs.cpio.gz $(OPTEE_DIR)/out/bin
 	cd $(SOURCE)/sample-senario && npm install
 	node $(SOURCE)/sample-senario/sign-then-enc.js \
-		$(SOURCE)/test-jw/tee/sds/xbank/spaik-priv.jwk \
-		$(SOURCE)/test-jw/tee/identity/tee-mytee-public.jwk \
+		$(SOURCE)/key/test-jw_tee_sds_xbank_spaik-priv.jwk \
+		$(SOURCE)/key/test-jw_tee_identity_tee-mytee-public.jwk \
 		$(BUILD)/hello-ta/$(HELLO_TA_UUID).ta
 	curl $(TAM_URL)/api/
 	curl $(TAM_URL)/panel/upload \

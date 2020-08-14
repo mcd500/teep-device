@@ -1,52 +1,18 @@
 #!/usr/bin/expect -f
 #
-# This scripts starts QEMU, loads and boots Linux/OP-TEE, then runs
-# xtest in the guest. The return code is 0 for success, >0 for error.
-#
-# Options:
-#   --bios    Path to the binary to be run [../out/bios-qemu/bios.bin]
-#   -q        Suppress output to stdout (quiet)
-#   --timeout Timeout for each test (sub)case, in seconds [480]
 
-set bios "../out/bios-qemu/bios.bin"
-set cmd "xtest"
-set quiet 0
-
-# The time required to run some tests (e.g., key generation tests [4007.*])
-# can be significant and vary widely -- typically, from about one minute to
-# several minutes depending on the host machine.
 set timeout 480
 
-# Parse command line
-set myargs $argv
-while {[llength $myargs]} {
-	set myargs [lassign $myargs arg]
-	switch -exact -- $arg {
-		"--bios"	{set myargs [lassign $myargs ::bios]}
-		"--timeout"	{set myargs [lassign $myargs ::timeout]}
-		"-q"		{set ::quiet 1}
-	}
-}
+puts "Starting QEMU..."
 
-proc info arg {
-	if {$::quiet==1} { return }
-	puts -nonewline $arg
-	flush stdout
-}
+spawn $::env(QEMU) \
+	-nographic -monitor none -serial mon:stdio -serial file:serial1.log \
+	-smp $::env(QEMU_SMP) -machine virt,secure=on -cpu cortex-a57 -d unimp \
+	-semihosting-config enable,target=native \
+	-m 1057 \
+	-bios bl1.bin -initrd rootfs.cpio.gz -kernel Image -no-acpi \
+	-append "root=/dev/vda2"
 
-# Disable echoing of guest output
-#log_user 0
-# Save guest console output to a file
-log_file -a -noappend "serial0.log"
-info "Starting QEMU..."
-open "serial1.log" "w+"
-spawn -open [open "|tail -f serial1.log"]
-set teecore $spawn_id
-if {[string first "aarch64" $::env(QEMU)] != -1} {
-	spawn $::env(QEMU) -serial stdio -serial file:serial1.log -smp $::env(QEMU_SMP) -machine virt,secure=on -cpu cortex-a57 -d unimp -semihosting-config enable,target=native -m 1057 -bios bl1.bin -initrd rootfs.cpio.gz -kernel Image -no-acpi -append "root=/dev/vda2"
-} else {
-	spawn $::env(QEMU) -nographic -monitor none -machine virt -machine secure=on -cpu cortex-a15 -smp $::env(QEMU_SMP) -d unimp -semihosting-config enable,target=native -m 1057 -serial stdio -serial file:serial1.log -bios $bios
-}
 expect {
 	"Kernel panic" {
 		info "!!! Kernel panic\n"
@@ -58,25 +24,45 @@ expect {
 	}
 	"ogin:"
 }
+
 send -- "root\r\r"
 expect "# "
-info " done, guest is booted.\n"
+puts " done, guest is booted.\n"
 # Toolchain libraries might be here or there
 send -- "export LD_LIBRARY_PATH=/lib:/lib/arm-linux-gnueabihf\r"
 expect "# "
-send -- "wget -q -O - $::env(TAM_URL)/api/; echo\r"
-expect "# "
+
 send -- "cd teep-device\r"
 expect "# "
 send -- "./hello-app\r"
 expect "# "
 
 send -- "./teep-broker-app --tamurl $::env(TAM_URL)/api/tam\r"
-expect "# "
+expect {
+	-re " ERR:.*$" { exit 1 }
+	timeout { exit 1 }
+	"# "
+}
+
 send -- "./teep-broker-app --tamurl $::env(TAM_URL)/api/tam_delete  --talist 8d82573a-926d-4754-9353-32dc29997f74\r"
-expect "# "
+expect {
+	-re " ERR:.*$" { exit 1 }
+	timeout { exit 1 }
+	"# "
+}
 
 send -- "./teep-broker-app --tamurl $::env(TAM_URL)/api/tam_jose2 --jose\r"
-expect "# "
+expect {
+	-re " ERR:.*$" { exit 1 }
+	timeout { exit 1 }
+	"# "
+}
+
 send -- "./teep-broker-app --tamurl $::env(TAM_URL)/api/tam_jose2_delete --jose --talist 8d82573a-926d-4754-9353-32dc29997f74\r"
-expect "# "
+expect {
+	-re " ERR:.*$" { exit 1 }
+	timeout { exit 1 }
+	"# "
+}
+
+puts " done\n"
