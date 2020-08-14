@@ -44,6 +44,10 @@
 #include <signal.h>
 #include <unistd.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct libteep_ctx;
 
 /*! teep protocol version */
@@ -190,6 +194,10 @@ libteep_ta_store_install(struct libteep_ctx *ctx, char *ta_image, size_t ta_imag
 
 int
 libteep_ta_store_delete(struct libteep_ctx *ctx, char *uuid, size_t uuid_len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 
