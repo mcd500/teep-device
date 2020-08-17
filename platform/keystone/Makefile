@@ -4,8 +4,8 @@ export PLAT = keystone
 
 export KEYSTONE_SDK_DIR ?= $(KEYSTONE_DIR)/sdk
 
-#export HELLO_TA_UUID  ?= 8d82573a-926d-4754-9353-32dc29997f74
-#export TEE_AGENT_UUID ?= 68373894-5bb3-403c-9eec-3114a1f5d3fc
+export HELLO_TA_UUID  ?= 8d82573a-926d-4754-9353-32dc29997f74
+export TEE_AGENT_UUID ?= 68373894-5bb3-403c-9eec-3114a1f5d3fc
 
 export TEE_REF_TA_DIR = $(CURDIR)/../../..
 
@@ -115,7 +115,7 @@ libteep-libwebsockets-tee-FLAGS = \
 	-DLWS_WITH_DIR=0 \
 	-DLWS__INCLUDE_DIRS=$(INCLUDES) \
 	-DCMAKE_BUILD_TYPE=Release \
-	-DCMAKE_C_FLAGS="-Wno-unused-variable -I$(TEE_REF_TA_DIR)/build/include"
+	-DCMAKE_C_FLAGS="-Wno-unused-variable -I$(TEE_REF_TA_DIR)/build/include -DCRYPTLIB=MBEDCRYPT -DPLAT_KEYSTONE"
 
 all: libteep hello teep
 

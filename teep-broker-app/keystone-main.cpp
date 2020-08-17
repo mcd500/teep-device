@@ -85,7 +85,8 @@ std::mutex mutex;
 std::condition_variable cv;
 bool invoking = false;
 invoke_command_t command;
-int command_result;
+TEEC_Operation *operation;
+unsigned int command_result;
 
 invoke_command_t pull_invoke_command()
 {
@@ -94,19 +95,61 @@ invoke_command_t pull_invoke_command()
     return command;
 }
 
-void put_invoke_command_result(int result)
+param_buffer_t read_invoke_param(int index, unsigned int offset)
+{
+    //printf("%s: %u\n", __func__, offset);
+    param_buffer_t ret;
+    // TODO: check paramType
+    TEEC_TempMemoryReference *ref = &operation->params[index].tmpref;
+    if (offset > ref->size) {
+        ret.size = 0;
+    } else {
+        unsigned int size = std::min(ref->size - offset, sizeof ret.buf);
+        ret.size = size;
+        memcpy(ret.buf, ref->buffer + offset, size);
+    }
+    //printf("%s: %u %u\n", __func__, offset, ret.size);
+    return ret;
+}
+
+void write_invoke_param(int index, unsigned int offset, unsigned int size, const char *buf)
+{
+    //printf("%s: %u\n", __func__, offset);
+    // TODO: check paramType
+    TEEC_TempMemoryReference *ref = &operation->params[index].tmpref;
+    if (offset > ref->size) {
+    } else {
+        unsigned int n = std::min<size_t>(ref->size - offset, size);
+        memcpy(ref->buffer + offset, buf, n);
+    }
+}
+
+void put_invoke_command_result(invoke_command_t cmd, unsigned int result)
 {
     std::unique_lock<std::mutex> lock(mutex);
+    for (int i = 0; i < 4; i++) {
+        switch (TEEC_PARAM_TYPE_GET(cmd.paramTypes, i)) {
+        default:
+            break;
+        case TEEC_VALUE_OUTPUT:
+        case TEEC_VALUE_INOUT:
+            operation->params[i].value.a = cmd.params[i].a;
+            operation->params[i].value.b = cmd.params[i].b;
+            break;
+        }
+    }
     command_result = result;
+    operation = NULL;
     invoking = false;
     lock.unlock();
     cv.notify_one();
 }
 
-void put_invoke_command(const invoke_command_t& c)
+void put_invoke_command(const invoke_command_t& c, TEEC_Operation *op)
 {
     std::unique_lock<std::mutex> lock(mutex);
     command = c;
+    operation = op;
     invoking = true;
     lock.unlock();
     cv.notify_one();
@@ -121,8 +164,44 @@ int pull_invoke_command_result()
 
 int my_TEEC_InvokeCommand(const invoke_command_t& c)
 {
-    put_invoke_command(c);
+    put_invoke_command(c, NULL);
     return pull_invoke_command_result();
+}
+
+
+TEEC_Result TEEC_InvokeCommand(TEEC_Session *session,
+			       uint32_t commandID,
+			       TEEC_Operation *operation,
+			       uint32_t *returnOrigin)
+{
+    fprintf(stderr, "TEEC_InvokeCommand\n");
+
+    invoke_command_t c;
+    c.commandID = commandID;
+    c.paramTypes = operation->paramTypes;
+    for (int i = 0; i < 4; i++) {
+        c.params[i].a = 0;
+        c.params[i].b = 0;
+        c.params[i].size = 0;
+        switch (TEEC_PARAM_TYPE_GET(c.paramTypes, i)) {
+        default:
+            break;
+        case TEEC_VALUE_INPUT:
+        case TEEC_VALUE_INOUT:
+            c.params[i].a = operation->params[i].value.a;
+            c.params[i].b = operation->params[i].value.b;
+            break;
+        case TEEC_MEMREF_TEMP_INPUT:
+        case TEEC_MEMREF_TEMP_OUTPUT:
+        case TEEC_MEMREF_TEMP_INOUT:
+            c.params[i].size = operation->params[i].tmpref.size;
+            break;
+        }
+    }
+    put_invoke_command(c, operation);
+    unsigned int ret = pull_invoke_command_result();
+
+    return ret;
 }
 
 int main(int argc, const char** argv)
@@ -163,6 +242,7 @@ int main(int argc, const char** argv)
     {
         invoke_command_t c;
         c.commandID = 42;
+        c.paramTypes = 0;
         int ret = my_TEEC_InvokeCommand(c);
         printf("result: %d\n", ret);
 
@@ -172,6 +252,12 @@ int main(int argc, const char** argv)
             loop_otrp(lao_ctx);
     }
 
+    {
+        invoke_command_t c;
+        c.commandID = 1000;
+        c.paramTypes = 0;
+        my_TEEC_InvokeCommand(c);
+    }
     enclave_thread.join();
 
     return 0;
@@ -184,31 +270,105 @@ unsigned int ocall_print_string(const char* str){
   return strlen(str);
 }
 
-int ocall_open_file(const char* fname, int flags, int perm) {}
-int ocall_close_file(int fdesc) {}
-int ocall_write_file(int fdesc, const char *buf,  unsigned int len) {}
-int ocall_invoke_command_callback_write(const char* str, const char *buf,  unsigned int len) {}
-#if !defined(EDGE_OUT_WITH_STRUCTURE)
-int ocall_read_file(int fdesc, char *buf, size_t len) {}
-int ocall_ree_time(struct ree_time_t *timep) {}
-ssize_t ocall_getrandom(char *buf, size_t len, unsigned int flags){}
-#else
-ob256_t ocall_read_file256(int fdesc) {}
-ree_time_t ocall_ree_time(void) {}
-ob16_t ocall_getrandom16(unsigned int flags) {}
-ob196_t ocall_getrandom196(unsigned int flags) {}
-invoke_command_t ocall_invoke_command_polling(void) {}
-int ocall_invoke_command_callback(invoke_command_t cb_cmd) {}
+int ocall_open_file(const char* fname, int flags, int perm)
+{
+    printf("%s\n", __func__);
 
+}
+
+int ocall_close_file(int fdesc) 
+{
+    printf("%s\n", __func__);
+
+}
+
+int ocall_write_file(int fdesc, const char *buf,  unsigned int len) 
+{
+    printf("%s\n", __func__);
+
+}
+
+#if !defined(EDGE_OUT_WITH_STRUCTURE)
+int ocall_read_file(int fdesc, char *buf, size_t len) 
+{
+    printf("%s\n", __func__);
+
+}
+
+int ocall_ree_time(struct ree_time_t *timep) 
+{
+    printf("%s\n", __func__);
+
+}
+
+ssize_t ocall_getrandom(char *buf, size_t len, unsigned int flags)
+{
+    printf("%s\n", __func__);
+
+}
+
+#else
+ob256_t ocall_read_file256(int fdesc) 
+{
+    printf("%s\n", __func__);
+
+}
+
+ree_time_t ocall_ree_time(void) 
+{
+    printf("%s\n", __func__);
+
+}
+
+ob16_t ocall_getrandom16(unsigned int flags) 
+{
+    printf("%s\n", __func__);
+
+}
+
+ob196_t ocall_getrandom196(unsigned int flags) 
+{
+    printf("%s\n", __func__);
+
+}
+
+invoke_command_t ocall_invoke_command_polling(void) 
+{
+    printf("%s\n", __func__);
+
+}
+
+int ocall_invoke_command_callback(invoke_command_t cb_cmd) 
+{
+    printf("%s\n", __func__);
+
+}
+
+int ocall_invoke_command_callback_write(const char* str, const char *buf,  unsigned int len)
+{
+    printf("%s\n", __func__);
+
+}
 
 invoke_command_t ocall_pull_invoke_command()
 {
     return pull_invoke_command();
 }
 
-void ocall_put_invoke_command_result(int result)
+param_buffer_t ocall_read_invoke_param(int index, unsigned int offset)
 {
-    return put_invoke_command_result(result);
+    return read_invoke_param(index, offset);
+}
+
+void ocall_write_invoke_param(int index, unsigned int offset, unsigned int size, const char *buf)
+{
+    //lwsl_hexdump_notice(buf, size);
+    write_invoke_param(index, offset, size, buf);
+}
+
+void ocall_put_invoke_command_result(invoke_command_t cmd, unsigned int result)
+{
+    return put_invoke_command_result(cmd, result);
 }
 
 #endif
@@ -242,13 +402,4 @@ TEEC_Result TEEC_OpenSession(TEEC_Context *context,
 void TEEC_CloseSession(TEEC_Session *session)
 {
     fprintf(stderr, "TEEC_CloseSession\n");
-}
-
-TEEC_Result TEEC_InvokeCommand(TEEC_Session *session,
-			       uint32_t commandID,
-			       TEEC_Operation *operation,
-			       uint32_t *returnOrigin)
-{
-    fprintf(stderr, "TEEC_InvokeCommand\n");
-    return TEEC_ERROR_NOT_IMPLEMENTED;
 }

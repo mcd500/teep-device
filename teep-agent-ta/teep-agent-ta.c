@@ -238,14 +238,93 @@ TA_InvokeCommandEntryPoint(void __maybe_unused *sess_ctx,
 
 void EAPP_ENTRY eapp_entry()
 {
+	lws_set_log_level(LLL_ERR | LLL_WARN | LLL_NOTICE | LLL_USER, NULL);
 	ocall_print_string("hello agent ta\n");
 	IMSG("agent ta IMSG %d\n", 42);
-	invoke_command_t c = ocall_pull_invoke_command();
-	int ret = -1;
-	if (c.commandID == 42) {
-		ret = 10080;
+	{
+		invoke_command_t c = ocall_pull_invoke_command();
+		int ret = -1;
+		if (c.commandID == 42) {
+			IMSG("command 42\n");
+			ret = 10080;
+		}
+		ocall_put_invoke_command_result(c, ret);
 	}
-	ocall_put_invoke_command_result(ret);
+	for (;;) {
+		invoke_command_t c = ocall_pull_invoke_command();
+		if (c.commandID == 1000) {
+			ocall_put_invoke_command_result(c, 0);
+			break;
+		}
+		TEE_Param params[4];
+		for (int i = 0; i < 4; i++) {
+			params[i].value.a = 0;
+			params[i].value.b = 0;
+			switch (TEE_PARAM_TYPE_GET(c.paramTypes, i)) {
+			default:
+				break;
+			case TEE_PARAM_TYPE_VALUE_INPUT:
+			case TEE_PARAM_TYPE_VALUE_INOUT:
+				params[i].value.a = c.params[i].a;
+				params[i].value.b = c.params[i].b;
+				break;
+			case TEE_PARAM_TYPE_MEMREF_INPUT:
+			case TEE_PARAM_TYPE_MEMREF_INOUT:
+				{
+					uint32_t size = c.params[i].size;
+					uint32_t offset;
+					params[i].memref.size = size;
+					params[i].memref.buffer = malloc(size); // TODO: check
+					for (offset = 0; offset < size;) {
+						param_buffer_t buf = ocall_read_invoke_param(i, offset);
+						memcpy(params[i].memref.buffer + offset, buf.buf, buf.size);
+						offset += buf.size;
+					}
+				}
+				break;
+			case TEE_PARAM_TYPE_MEMREF_OUTPUT:
+				params[i].memref.size = c.params[i].size;
+				params[i].memref.buffer = malloc(params[i].memref.size); // TODO: check
+				memset(params[i].memref.buffer, 0, c.params[i].size);
+				break;
+			}
+		}
+		TEE_Result r = TA_InvokeCommandEntryPoint(NULL, c.commandID, c.paramTypes, params);
+		for (int i = 0; i < 4; i++) {
+			c.params[i].a = 0;
+			c.params[i].b = 0;
+			switch (TEE_PARAM_TYPE_GET(c.paramTypes, i)) {
+			default:
+				break;
+			case TEE_PARAM_TYPE_VALUE_OUTPUT:
+			case TEE_PARAM_TYPE_VALUE_INOUT:
+				c.params[i].a = params[i].value.a;
+				c.params[i].b = params[i].value.b;
+				break;
+			case TEE_PARAM_TYPE_MEMREF_OUTPUT:
+			case TEE_PARAM_TYPE_MEMREF_INOUT:
+				{
+					uint32_t size = c.params[i].size;
+					uint32_t offset;
+					for (offset = 0; offset < size;) {
+						uint32_t n = size - offset;
+						if (n >= 256) n = 256;
+						ocall_write_invoke_param(i, offset, n, params[i].memref.buffer + offset);
+						offset += n;
+					}
+					free(params[i].memref.buffer);
+				}
+				break;
+			case TEE_PARAM_TYPE_MEMREF_INPUT:
+				free(params[i].memref.buffer);
+				break;
+			}
+		}
+
+		ocall_put_invoke_command_result(c, r);
+
+	}
+
 	EAPP_RETURN(0);
 }
 

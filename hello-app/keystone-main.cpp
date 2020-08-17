@@ -71,7 +71,18 @@ invoke_command_t ocall_pull_invoke_command()
 {
 }
 
-void ocall_put_invoke_command_result(int result)
+param_buffer_t ocall_read_invoke_param(int index, unsigned int offset)
+{
+    param_buffer_t ret;
+    return ret;
+}
+
+void ocall_write_invoke_param(int index, unsigned int offset, unsigned int size, const char *buf)
+{
+
+}
+
+void ocall_put_invoke_command_result(invoke_command_t cmd, unsigned int result)
 {
 }
 
