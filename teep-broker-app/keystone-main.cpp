@@ -270,10 +270,16 @@ unsigned int ocall_print_string(const char* str){
   return strlen(str);
 }
 
+#define APP_VERBOSE
+
 int ocall_open_file(const char* fname, int flags, int perm)
 {
     printf("%s\n", __func__);
-
+    int desc = open(fname, flags, perm);
+#ifdef APP_VERBOSE
+    printf("@[SE] open file %s flags %x -> %d (%d)\n",fname,flags,desc,errno);
+#endif
+    return desc;
 }
 
 int ocall_close_file(int fdesc) 

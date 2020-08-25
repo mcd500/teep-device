@@ -181,10 +181,11 @@ TA_InvokeCommandEntryPoint(void __maybe_unused *sess_ctx,
 	case TEEP_AGENT_TA_INSTALL: /* Install TA */
 		if ((TEE_PARAM_TYPE_GET(param_types, 0) != TEE_PARAM_TYPE_MEMREF_INPUT) ||
 		    (TEE_PARAM_TYPE_GET(param_types, 1) != TEE_PARAM_TYPE_VALUE_INPUT) ||
-		    (TEE_PARAM_TYPE_GET(param_types, 2) != TEE_PARAM_TYPE_NONE) ||
-		    (TEE_PARAM_TYPE_GET(param_types, 3) != TEE_PARAM_TYPE_NONE))
+		    (TEE_PARAM_TYPE_GET(param_types, 2) != TEE_PARAM_TYPE_MEMREF_INPUT) ||
+		    (TEE_PARAM_TYPE_GET(param_types, 3) != TEE_PARAM_TYPE_VALUE_INPUT))
 			return TEE_ERROR_BAD_PARAMETERS;
-		return ta_store_install(params[0].memref.buffer, params[1].value.a);
+		return ta_store_install(params[0].memref.buffer, params[1].value.a,
+				params[2].memref.buffer, params[3].value.a);
 	case TEEP_AGENT_TA_DELETE: /* Delete TA */
 		if ((TEE_PARAM_TYPE_GET(param_types, 0) != TEE_PARAM_TYPE_MEMREF_INPUT) ||
 		    (TEE_PARAM_TYPE_GET(param_types, 1) != TEE_PARAM_TYPE_VALUE_INPUT) ||

@@ -18,12 +18,16 @@ send "root\r"
 expect "assword: "
 send "sifive\r"
 
-expect "# " {
+send "PS1='#### '\r"
+expect "#### " {
     send "insmod keystone-driver.ko; sleep 2; true\r"
 }
 
-expect "# " {
+expect "#### " {
     send "cd /root/teep-device\r"
+}
+
+expect "#### " {
     send "./hello-app\r"
     expect "enclave.run\r" {} timeout {
         exit 1
@@ -33,34 +37,39 @@ expect "# " {
     }
 }
 
+expect "#### "
+
 set err 0
 send -- "./teep-broker-app --tamurl $::env(TAM_URL)/api/tam\r"
 expect {
 	-re " ERR:" { set err 1 }
 	timeout { exit 1 }
-	"# "
+	"#### "
 }
 
 send -- "./teep-broker-app --tamurl $::env(TAM_URL)/api/tam_delete  --talist 8d82573a-926d-4754-9353-32dc29997f74\r"
 expect {
 	-re " ERR:" { set err 1 }
 	timeout { exit 1 }
-	"# "
+	"#### "
 }
 
 send -- "./teep-broker-app --tamurl $::env(TAM_URL)/api/tam_jose2 --jose\r"
 expect {
 	-re " ERR:" { set err 1 }
 	timeout { exit 1 }
-	"# "
+	"#### "
 }
 
 send -- "./teep-broker-app --tamurl $::env(TAM_URL)/api/tam_jose2_delete --jose --talist 8d82573a-926d-4754-9353-32dc29997f74\r"
 expect {
 	-re " ERR:" { set err 1 }
 	timeout { exit 1 }
-	"# "
+	"#### "
 }
+
+send -- "ls -l\r"
+expect "#### "
 
 puts " done\n"
 

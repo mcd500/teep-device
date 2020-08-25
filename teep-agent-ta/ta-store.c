@@ -42,10 +42,26 @@ int string_to_uuid_octets(const char *s, uint8_t *octets16);
 
 /* install given a TA Image into secure storage using optee pta*/
 int
-ta_store_install(const char *ta_image, size_t ta_image_len)
+ta_store_install(const char *ta_image, size_t ta_image_len, const char *ta_name, size_t ta_name_len)
 {
-#if defined(PCTEST) || defined(PLAT_KEYSTONE)
+#if defined(PCTEST)
 	lwsl_user("%s: stub called ta_image_len = %zd\n", __func__, ta_image_len);
+	return 0;
+#elif defined(PLAT_KEYSTONE)
+	lwsl_user("%s: ta_image_len = %zd ta_name=%s\n", __func__, ta_image_len, ta_name);
+	TEE_Result res;
+	TEE_ObjectHandle obj;
+
+	res = TEE_CreatePersistentObject(0, ta_name, ta_name_len, TEE_DATA_FLAG_ACCESS_WRITE, 0, 0, 0, &obj);
+	lwsl_user("%s: TEE_CreatePersistentObject\n", __func__);
+	if (res != TEE_SUCCESS) {
+		lwsl_err("%s: OpenPersistentObject failed\n", __func__);
+		return -1;
+	}
+	lwsl_user("%s: write\n", __func__);
+	TEE_WriteObjectData(obj, ta_image, ta_image_len);
+	TEE_CloseObject(obj);
+
 	return 0;
 #else
 	TEE_TASessionHandle sess = TEE_HANDLE_NULL;
@@ -84,7 +100,10 @@ ta_store_install(const char *ta_image, size_t ta_image_len)
 int
 ta_store_delete(const char *uuid_string, size_t uuid_string_len)
 {
-#if defined(PCTEST) || defined(PLAT_KEYSTONE)
+#if defined(PCTEST)
+	lwsl_user("%s: stub called\n", __func__);
+	return 0;
+#elif defined(PLAT_KEYSTONE)
 	lwsl_user("%s: stub called\n", __func__);
 	return 0;
 #else 
