@@ -239,18 +239,10 @@ int main(int argc, const char** argv)
         [&]{ enclave.run(); }
     );
 
-    {
-        invoke_command_t c;
-        c.commandID = 42;
-        c.paramTypes = 0;
-        int ret = my_TEEC_InvokeCommand(c);
-        printf("result: %d\n", ret);
-
-        if (teep_ver == LIBTEEP_TEEP_VER_TEEP)
-            loop_teep(lao_ctx);
-        else if (teep_ver == LIBTEEP_TEEP_VER_OTRP)
-            loop_otrp(lao_ctx);
-    }
+    if (teep_ver == LIBTEEP_TEEP_VER_TEEP)
+        loop_teep(lao_ctx);
+    else if (teep_ver == LIBTEEP_TEEP_VER_OTRP)
+        loop_otrp(lao_ctx);
 
     {
         invoke_command_t c;

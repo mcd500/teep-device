@@ -240,17 +240,7 @@ TA_InvokeCommandEntryPoint(void __maybe_unused *sess_ctx,
 void EAPP_ENTRY eapp_entry()
 {
 	lws_set_log_level(LLL_ERR | LLL_WARN | LLL_NOTICE | LLL_USER, NULL);
-	ocall_print_string("hello agent ta\n");
-	IMSG("agent ta IMSG %d\n", 42);
-	{
-		invoke_command_t c = ocall_pull_invoke_command();
-		int ret = -1;
-		if (c.commandID == 42) {
-			IMSG("command 42\n");
-			ret = 10080;
-		}
-		ocall_put_invoke_command_result(c, ret);
-	}
+
 	for (;;) {
 		invoke_command_t c = ocall_pull_invoke_command();
 		if (c.commandID == 1000) {

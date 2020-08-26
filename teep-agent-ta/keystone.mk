@@ -35,9 +35,9 @@ LDFLAGS = \
 	-L$(BUILD)/libteep/tee/libwebsockets/lib
 
 LIBS = \
-	-ltee_api \
 	-lwebsockets \
 	-lmbedtls \
+	-ltee_api \
 	-lEnclave_t \
 	-lflatccrt \
 	-lkeystone-eapp \
