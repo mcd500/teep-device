@@ -17,17 +17,17 @@
 
 #include "tee_client_api.h"
 
-/* We hardcode these for demo purposes. */
-const char* enc_path = "hello-ta";
-const char* runtime_path = "eyrie-rt";
-
 int main(int argc, char** argv)
 {
+    if (argc != 3) {
+        printf("Usage: %s enclave-file runtime-file\n", argv[0]);
+        return 1;
+    }
     Keystone enclave;
     Params params;
     params.setFreeMemSize(1024*1024);
     params.setUntrustedMem(DEFAULT_UNTRUSTED_PTR, 1024*1024);
-    if(enclave.init(enc_path, runtime_path, params) != KEYSTONE_SUCCESS){
+    if(enclave.init(argv[1], argv[2], params) != KEYSTONE_SUCCESS){
         printf("%s: Unable to start enclave\n", argv[0]);
         exit(-1);
     }
@@ -39,7 +39,6 @@ int main(int argc, char** argv)
     edge_call_init_internals((uintptr_t)enclave.getSharedBuffer(),
                             enclave.getSharedBufferSize());
 
-    printf("enclave.run\n");
     enclave.run();
     return 0;
 }
@@ -89,7 +88,6 @@ void ocall_put_invoke_command_result(invoke_command_t cmd, unsigned int result)
 #endif
 
 EDGE_EXTERNC_END
-
 
 TEEC_Result TEEC_InitializeContext(const char *name, TEEC_Context *context)
 {

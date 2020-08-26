@@ -270,11 +270,10 @@ unsigned int ocall_print_string(const char* str){
   return strlen(str);
 }
 
-#define APP_VERBOSE
+#undef APP_VERBOSE
 
 int ocall_open_file(const char* fname, int flags, int perm)
 {
-    printf("%s\n", __func__);
     int desc = open(fname, flags, perm);
 #ifdef APP_VERBOSE
     printf("@[SE] open file %s flags %x -> %d (%d)\n",fname,flags,desc,errno);
@@ -289,8 +288,9 @@ int ocall_close_file(int fdesc)
 
 int ocall_write_file(int fdesc, const char *buf,  unsigned int len) 
 {
+#ifdef APP_VERBOSE
     printf("@[SE] write desc %d buf %x len %d\n",fdesc,buf,len);
-
+#endif
     return write(fdesc, buf, len);
 }
 
@@ -328,13 +328,16 @@ ree_time_t ocall_ree_time(void)
 
 ob16_t ocall_getrandom16(unsigned int flags) 
 {
+#ifdef APP_VERBOSE
     printf("%s\n", __func__);
-
+#endif
 }
 
 ob196_t ocall_getrandom196(unsigned int flags) 
 {
+#ifdef APP_VERBOSE
     printf("%s\n", __func__);
+#endif
 
 }
 

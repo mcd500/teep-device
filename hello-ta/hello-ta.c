@@ -43,16 +43,6 @@ TEE_Result TA_OpenSessionEntryPoint(uint32_t param_types,
 		TEE_Param __maybe_unused params[4],
 		void __maybe_unused **sess_ctx)
 {
-	uint32_t exp_param_types = TEE_PARAM_TYPES(TEE_PARAM_TYPE_NONE,
-						   TEE_PARAM_TYPE_NONE,
-						   TEE_PARAM_TYPE_NONE,
-						   TEE_PARAM_TYPE_NONE);
-	if (param_types != exp_param_types)
-		return TEE_ERROR_BAD_PARAMETERS;
-
-	(void)&params;
-	(void)&sess_ctx;
-
 	return TEE_SUCCESS;
 }
 
@@ -67,21 +57,7 @@ TEE_Result TA_InvokeCommandEntryPoint(void __maybe_unused *sess_ctx,
 			uint32_t param_types,
 			TEE_Param params[4])
 {
-	unsigned long oneway;
-
-	IMSG("\nhello-ta: Hello from TA!\n");
-
-	switch (cmd_id) {
-
-	case 1: /* Confirm the TA is installed */
-//		IMSG("%s:\n", __func__);
-		IMSG("\nhello-ta: Recived smd_id: %d\n", cmd_id);
-
-		return TEE_SUCCESS;
-
-	default:
-		return TEE_ERROR_NOT_IMPLEMENTED;
-	}
+	return TEE_ERROR_NOT_IMPLEMENTED;
 }
 
 #ifdef KEYSTONE
@@ -90,9 +66,7 @@ TEE_Result TA_InvokeCommandEntryPoint(void __maybe_unused *sess_ctx,
 
 void EAPP_ENTRY eapp_entry()
 {
-	//printf("hello ta\n");
-	ocall_print_string("hello ocall\n");
-	IMSG("hello IMSG %d\n", 42);
+	ocall_print_string("hello TA\n");
 	EAPP_RETURN(0);
 }
 
