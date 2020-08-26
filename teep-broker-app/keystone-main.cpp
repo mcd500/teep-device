@@ -284,14 +284,14 @@ int ocall_open_file(const char* fname, int flags, int perm)
 
 int ocall_close_file(int fdesc) 
 {
-    printf("%s\n", __func__);
-
+    return close(fdesc);
 }
 
 int ocall_write_file(int fdesc, const char *buf,  unsigned int len) 
 {
-    printf("%s\n", __func__);
+    printf("@[SE] write desc %d buf %x len %d\n",fdesc,buf,len);
 
+    return write(fdesc, buf, len);
 }
 
 #if !defined(EDGE_OUT_WITH_STRUCTURE)

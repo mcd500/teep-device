@@ -40,6 +40,13 @@
 int hex(char c);
 int string_to_uuid_octets(const char *s, uint8_t *octets16);
 
+#define O_RDONLY   0
+#define O_WRONLY   00001
+#define O_RDWR     00002
+#define O_CREAT	   00100
+#define O_EXCL	   00200
+#define O_TRUNC	   01000
+
 /* install given a TA Image into secure storage using optee pta*/
 int
 ta_store_install(const char *ta_image, size_t ta_image_len, const char *ta_name, size_t ta_name_len)
@@ -48,19 +55,38 @@ ta_store_install(const char *ta_image, size_t ta_image_len, const char *ta_name,
 	lwsl_user("%s: stub called ta_image_len = %zd\n", __func__, ta_image_len);
 	return 0;
 #elif defined(PLAT_KEYSTONE)
+	char filename[256];
+	snprintf(filename, 256, "%s.secstor", ta_name);
 	lwsl_user("%s: ta_image_len = %zd ta_name=%s\n", __func__, ta_image_len, ta_name);
 	TEE_Result res;
 	TEE_ObjectHandle obj;
 
-	res = TEE_CreatePersistentObject(0, ta_name, ta_name_len, TEE_DATA_FLAG_ACCESS_WRITE, 0, 0, 0, &obj);
+	res = TEE_CreatePersistentObject(0, filename, strlen(filename),
+		TEE_DATA_FLAG_ACCESS_WRITE | TEE_DATA_FLAG_OVERWRITE,
+		TEE_HANDLE_NULL, NULL, 0, &obj);
 	lwsl_user("%s: TEE_CreatePersistentObject\n", __func__);
 	if (res != TEE_SUCCESS) {
 		lwsl_err("%s: OpenPersistentObject failed\n", __func__);
 		return -1;
 	}
-	lwsl_user("%s: write\n", __func__);
-	TEE_WriteObjectData(obj, ta_image, ta_image_len);
+	TEE_WriteObjectData(obj, ta_image, ta_image_len & ~15); // XXX: need padding???
 	TEE_CloseObject(obj);
+
+	int fd = ocall_open_file(ta_name, O_CREAT | O_WRONLY, 0600);
+	int offset = 0;
+	while (offset < ta_image_len) {
+		int len = ta_image_len - offset;
+		if (len > 256) {
+			len = 256;
+		}
+		int n = ocall_write_file(fd, ta_image + offset, len);
+		if (n <= 0) {
+			ocall_close_file(fd);
+			return -1;
+		}
+		offset += n;
+	}
+	ocall_close_file(fd);
 
 	return 0;
 #else
