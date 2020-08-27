@@ -130,7 +130,13 @@ ta_store_delete(const char *uuid_string, size_t uuid_string_len)
 	lwsl_user("%s: stub called\n", __func__);
 	return 0;
 #elif defined(PLAT_KEYSTONE)
-	lwsl_user("%s: stub called\n", __func__);
+	char filename[256];
+	snprintf(filename, 256, "%s.ta.secstor", uuid_string);
+	lwsl_user("%s: ta_name=%s\n", __func__, filename);
+	ocall_unlink(filename);
+	snprintf(filename, 256, "%s.ta", uuid_string);
+	lwsl_user("%s: ta_name=%s\n", __func__, filename);
+	ocall_unlink(filename);
 	return 0;
 #else 
 	uint8_t uuid_octets[16];

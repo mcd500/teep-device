@@ -286,6 +286,21 @@ int ocall_write_file(int fdesc, const char *buf,  unsigned int len)
     return write(fdesc, buf, len);
 }
 
+int ocall_unlink(keyedge_str const char *path)
+{
+    return unlink(path);
+}
+
+int ocall_fstat_size(int fd)
+{
+    struct stat st;
+    int ret = fstat(fd, &st);
+    if (ret < 0) {
+        return ret;
+    }
+    return st.st_size;
+}
+
 #if !defined(EDGE_OUT_WITH_STRUCTURE)
 int ocall_read_file(int fdesc, char *buf, size_t len) 
 {

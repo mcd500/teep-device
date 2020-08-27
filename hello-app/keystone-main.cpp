@@ -87,6 +87,16 @@ void ocall_put_invoke_command_result(invoke_command_t cmd, unsigned int result)
 
 #endif
 
+int ocall_unlink(keyedge_str const char *path)
+{
+
+}
+
+int ocall_fstat_size(int fd)
+{
+  
+}
+
 EDGE_EXTERNC_END
 
 TEEC_Result TEEC_InitializeContext(const char *name, TEEC_Context *context)
