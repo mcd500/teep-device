@@ -69,8 +69,42 @@ ta_store_install(const char *ta_image, size_t ta_image_len, const char *ta_name,
 		lwsl_err("%s: OpenPersistentObject failed\n", __func__);
 		return -1;
 	}
-	TEE_WriteObjectData(obj, ta_image, ta_image_len & ~15); // XXX: need padding???
+	size_t ta_image_len_16 = ta_image_len & ~15;
+	size_t rest_len = ta_image_len & 15;
+	TEE_WriteObjectData(obj, ta_image, ta_image_len_16);
+	char padding[16];
+	memcpy(padding, ta_image + ta_image_len_16, rest_len);
+	memset(padding + rest_len, 16 - rest_len, 16 - rest_len);
+	TEE_WriteObjectData(obj, padding, 16);
 	TEE_CloseObject(obj);
+
+	{
+		char filename2[256];
+		snprintf(filename2, 256, "%s.secstor.plain", ta_name);
+
+		res = TEE_CreatePersistentObject(0, filename, strlen(filename),
+			TEE_DATA_FLAG_ACCESS_READ,
+			TEE_HANDLE_NULL, NULL, 0, &obj);
+		int fd = ocall_open_file(filename2, O_CREAT | O_WRONLY, 0600);
+		int offset = 0;
+		while (offset < ta_image_len) {
+			char buf[256];
+			uint32_t count;
+			TEE_ReadObjectData(obj, buf, 256, &count);
+
+			if (offset + count > ta_image_len) {
+				count = ta_image_len - offset; // ignore padding
+			}
+			int n = ocall_write_file(fd, buf, count);
+			if (n <= 0) {
+				ocall_close_file(fd);
+				return -1;
+			}
+			offset += n;
+		}
+		ocall_close_file(fd);
+	}
+
 
 	int fd = ocall_open_file(ta_name, O_CREAT | O_WRONLY, 0600);
 	int offset = 0;
@@ -132,6 +166,9 @@ ta_store_delete(const char *uuid_string, size_t uuid_string_len)
 #elif defined(PLAT_KEYSTONE)
 	char filename[256];
 	snprintf(filename, 256, "%s.ta.secstor", uuid_string);
+	lwsl_user("%s: ta_name=%s\n", __func__, filename);
+	ocall_unlink(filename);
+	snprintf(filename, 256, "%s.ta.secstor.plain", uuid_string);
 	lwsl_user("%s: ta_name=%s\n", __func__, filename);
 	ocall_unlink(filename);
 	snprintf(filename, 256, "%s.ta", uuid_string);

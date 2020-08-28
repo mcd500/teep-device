@@ -321,10 +321,16 @@ ssize_t ocall_getrandom(char *buf, size_t len, unsigned int flags)
 }
 
 #else
-ob256_t ocall_read_file256(int fdesc) 
-{
-    printf("%s\n", __func__);
 
+ob256_t ocall_read_file256(int fdesc)
+{
+  ob256_t ret;
+  int rtn = read(fdesc, ret.b, 256);
+#ifdef APP_VERBOSE
+  printf("@[SE] read desc %d buf %x len %d-> %d\n",fdesc,ret.b,256,rtn);
+#endif
+  ret.ret = rtn;
+  return ret;
 }
 
 ree_time_t ocall_ree_time(void) 
