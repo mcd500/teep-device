@@ -128,9 +128,8 @@ hello-app-keystone:
 	make -C hello-app keystone
 
 .PHONY: aist-teep
-aist-teep: $(TA_DEV_KIT_DIR)/mk/ta_dev_kit.mk $(TEEC_BIN_DIR)/tee-supplicant teep-agent-ta hello-ta
-	make -C teep-broker-app TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE)
-	make -C hello-app TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) INCLUDES="$(INCLUDES)"
+aist-teep: $(TA_DEV_KIT_DIR)/mk/ta_dev_kit.mk $(TEEC_BIN_DIR)/tee-supplicant
+	make -C platform/$(TEE) OPTEE_DIR=$(OPTEE_DIR) TEE_REF_TA_DIR=$(CURDIR)
 
 .PHONY: clean
 clean:
