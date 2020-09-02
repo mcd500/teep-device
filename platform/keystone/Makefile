@@ -17,7 +17,7 @@ export APP_CFLAGS = \
 	-I./ \
 	-I$(TEE_REF_TA_DIR)/ref-ta/profiler \
 	-I$(SOURCE)/libteep/lib \
-	-I$(SOURCE)/platform/keystone/build/libteep/ree/libwebsockets/include \
+	-I$(BUILD)/libteep/ree/libwebsockets/include \
 	-I$(SOURCE)/libteep/libwebsockets/include \
 	-I$(SOURCE)/libteep/mbedtls/include \
 	-DKEYSTONE -DPLAT_KEYSTONE -DAPP_VERBOSE -Wall
@@ -26,10 +26,10 @@ export APP_LDFLAGS = \
 	-L$(KEYSTONE_SDK_DIR)/lib \
 	-L$(KEYSTONE_SDK_DIR)/sdk/lib \
 	-L$(TEE_REF_TA_DIR)/build/lib \
-	-L$(SOURCE)/platform/keystone/build/libteep/ree/mbedtls/library \
-	-Xlinker -rpath-link -Xlinker $(SOURCE)/platform/keystone/build/libteep/ree/mbedtls/library \
-	-L$(SOURCE)/platform/keystone/build/libteep/ree/libwebsockets/lib \
-	-L$(SOURCE)/platform/keystone/build/libteep/ree/lib
+	-L$(BUILD)/libteep/ree/mbedtls/library \
+	-Xlinker -rpath-link -Xlinker $(BUILD)/libteep/ree/mbedtls/library \
+	-L$(BUILD)/libteep/ree/libwebsockets/lib \
+	-L$(BUILD)/libteep/ree/lib
 
 export APP_LIBS = \
 	-lkeystone-host -lkeystone-edge -lEnclave_u -lflatccrt -lmbedcrypto -lmbedx509 -lmbedtls -lwebsockets -lteep \

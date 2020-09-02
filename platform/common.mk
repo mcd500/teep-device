@@ -57,14 +57,16 @@ libteep-libwebsockets-tee:
 	fi
 
 libteep-libteep-ree: libteep-mbedtls-ree libteep-libwebsockets-ree
-	mkdir -p $(BUILD)/libteep/ree/lib
-	$(CROSS_COMPILE)gcc $(REE_CFLAGS) -Ilib -c $(LIBTEEP_SRC) -o $(BUILD)/libteep/ree/lib/main.o
-	$(CROSS_COMPILE)gcc $(REE_LDFLAGS) \
-		-shared -Wl,-soname,libteep.so.1 \
-		-L$(OPTEE_DIR)/out-br/target/usr/lib \
-		$(BUILD)/libteep/ree/lib/main.o -lwebsockets -lmbedx509 -lmbedtls -lmbedcrypto \
-		-o $(BUILD)/libteep/ree/lib/libteep.so.1
-	ln -sf libteep.so.1 $(BUILD)/libteep/ree/lib/libteep.so
+	if [ -z "$($@-DISABLE)" ]; then \
+		mkdir -p $(BUILD)/libteep/ree/lib && \
+		$(CROSS_COMPILE)gcc $(REE_CFLAGS) -Ilib -c $(LIBTEEP_SRC) -o $(BUILD)/libteep/ree/lib/main.o && \
+		$(CROSS_COMPILE)gcc $(REE_LDFLAGS) \
+			-shared -Wl,-soname,libteep.so.1 \
+			-L$(OPTEE_DIR)/out-br/target/usr/lib \
+			$(BUILD)/libteep/ree/lib/main.o -lwebsockets -lmbedx509 -lmbedtls -lmbedcrypto \
+			-o $(BUILD)/libteep/ree/lib/libteep.so.1 && \
+		ln -sf libteep.so.1 $(BUILD)/libteep/ree/lib/libteep.so; \
+	fi
 
 hello-ta: libteep
 	$(MAKE) -C $(SOURCE)/hello-ta -f $(PLAT).mk out-dir=$(BUILD)/hello-ta
