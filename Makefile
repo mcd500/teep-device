@@ -21,25 +21,44 @@ TEEP_KEY_SRCS := teep-agent-ta/tam_id_pubkey_jwk.h \
                 teep-agent-ta/tee_id_pubkey_jwk.h \
                 teep-agent-ta/sp_pubkey_jwk.h
 
-LIBTEEP_DIR := $(CURDIR)/libteep
-OPTEE_DIR ?= build-optee
-TEEC_BIN_DIR ?= $(OPTEE_DIR)/out-br/target/usr/sbin
+.PHONY: all all- all-optee all-keystone
+.PHONY: clean clean-optee clean-keystone
+.PHONY: test test-optee test-keystone
 
-HELLO_TA_UUID  ?= 8d82573a-926d-4754-9353-32dc29997f74
-TEE_AGENT_UUID ?= 68373894-5bb3-403c-9eec-3114a1f5d3fc
-export HELLO_TA_UUID
-export TEE_AGENT_UUID
+all: all-$(TEE)
 
-export LWS_M_BDIR = build-lws-mbed
-export MBEDTLS_BDIR = build-mbedtls
+all-:
+	@echo '$$TEE must be "optee" or "keystone"'
+	@false
 
-.PHONY: all
-ifneq ($(wildcard $(TA_DEV_KIT_DIR)/mk/ta_dev_kit.mk),)
-all: aist-teep
-else
-all:
-	@echo "$(TA_DEV_KIT_DIR)/mk/ta_dev_kit.mk does not exist. Is TA_DEV_KIT_DIR correctly defined?" && false
-endif
+all-optee: build-optee
+
+all-keystone: build-keystone
+
+clean: clean-optee clean-keystone
+
+clean-optee:
+	$(MAKE) -C platform/op-tee clean
+
+clean-keystone:
+	$(MAKE) -C platform/keystone clean
+
+.PHONY: build-optee build-keystone
+
+build-optee: jwk-headers
+	$(MAKE) -C platform/op-tee install_qemu
+
+build-keystone: jwk-headers
+	$(MAKE) -C platform/keystone image
+
+test: test-$(TEE)
+
+test-optee:
+	$(MAKE) -C platform/op-tee test
+
+test-keystone:
+	$(MAKE) -C platform/keystone test
+
 
 .PHONY: generate-jwks
 generate-jwks $(TEEP_KEYS):
@@ -80,95 +99,8 @@ jwk-headers:
 	cat $(FIXED_TEE_PRIV_JWK) | sed 's/\"/\\\"/g' | sed 's/^/\"/g' | sed 's/$$/\\\n\"\n/g' > \
                teep-agent-ta/tee_id_privkey_jwk.h
 
-.PHONY: libteep
-libteep:
-	make -C libteep TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) \
-		INCLUDES="$(INCLUDES)"
-
-OPTEE_OS ?= $(OPTEE_DIR)/optee_os
-ARM_PLAT ?= arm
-
-.PHONY: teep-agent-ta
-teep-agent-ta: $(TEEP_KEY_SRCS) #libteep
-	make -C teep-agent-ta CROSS_COMPILE_HOST=$(CROSS_COMPILE) \
-		TEE_AGENT_UUID=$(TEE_AGENT_UUID) \
-		CROSS_COMPILE_TA=aarch64-linux-gnu- \
-		TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) \
-		LIBTEEP_DIR=$(LIBTEEP_DIR) \
-		CFG_MSG_LONG_PREFIX_THRESHOLD=3 \
-		CMAKE_C_FLAGS=-Wno-deprecated-declarations \
-		OPTEE_OS=$(OPTEE_OS) \
-		LDADD="$(OPTEE_OS)/out/$(ARM_PLAT)/core-lib/libmbedtls/mbedtls/library/gcm.o -L$(TA_DEV_KIT_DIR)/lib -lutils -lutee -L../platform/op-tee/build/libteep/tee/libwebsockets/lib -lwebsockets $(OPTEE_OS)/out/$(ARM_PLAT)/core-lib/libmbedtls/libmbedtls.a " \
-		INCLUDES="$(INCLUDES)" \
-		PLAT=tee \
-		V=1 VERBOSE=1 all
-
-.PHONY: hello-ta
-hello-ta:
-	make -C hello-ta CROSS_COMPILE_HOST=$(CROSS_COMPILE) \
-		CROSS_COMPILE_TA=aarch64-linux-gnu- \
-		TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) \
-		CFG_MSG_LONG_PREFIX_THRESHOLD=3 \
-		V=0 VERBOSE=0 all
-	(cd sample-senario && npm install)
-	node ./sample-senario/sign-then-enc.js $(SP_PRIV_JWK) $(TEE_PUB_JWK)\
-		 $(CURDIR)/hello-ta/$(HELLO_TA_UUID).ta
-	cp $(CURDIR)/hello-ta/$(HELLO_TA_UUID).ta* $(CURDIR)/tiny-tam/TAs/
-
-.PHONY: hello-ta-keystone
-hello-ta-keystone:
-	make -C hello-ta -f keystone.mk all
-
-.PHONY: hello-app
-hello-app:
-	make -C hello-app TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) INCLUDES="$(INCLUDES)" TARGET=$(TARGET)
-
-.PHONY: hello-app-keystone
-hello-app-keystone:
-	make -C hello-app keystone
-
-.PHONY: aist-teep
-aist-teep: $(TA_DEV_KIT_DIR)/mk/ta_dev_kit.mk $(TEEC_BIN_DIR)/tee-supplicant teep-agent-ta hello-ta
-	make -C teep-broker-app TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE)
-	make -C hello-app TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) INCLUDES="$(INCLUDES)"
-
-.PHONY: clean
-clean:
-	make -C libteep TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) clean
-	make -C teep-broker-app TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) clean
-	make -C teep-agent-ta TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) clean
-	make -C hello-app TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) clean
-	make -C hello-ta TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) clean
-	make -C pctest clean
-	rm -f $(TEEP_KEY_SRCS)
-
-.PHONY: clean-ta
-clean-ta:
-	make -C teep-agent-ta TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) clean
-	make -C hello-ta TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) clean
-
-.PHONY: clean-hello-ta
-clean-hello-ta:
-	make -C hello-ta TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) clean
-	make -C hello-app TA_DEV_KIT_DIR=$(TA_DEV_KIT_DIR) CROSS_COMPILE=$(CROSS_COMPILE) clean
-
 .PHONY: distclean
-distclean:
+distclean: clean
 	rm -fr sample-senario/node_modules/ sample-senario/package-lock.json
 	rm -fr test-jw
-
-.PHONY: build-optee build-keystone
-
-build-optee: jwk-headers
-	make -C platform/op-tee
-
-clean-optee:
-	make -C platform/op-tee clean
-
-build-keystone: jwk-headers
-	make -C platform/keystone
-
-clean-keystone:
-	make -C platform/keystone clean
-
-
+	rm -f $(TEEP_KEY_SRCS)
