@@ -100,21 +100,8 @@ ta_store_install(const char *ta_image, size_t ta_image_len, const char *ta_name,
 		ocall_close_file(fd);
 	}
 
-
 	int fd = ocall_open_file(ta_name, O_CREAT | O_WRONLY, 0600);
-	int offset = 0;
-	while (offset < ta_image_len) {
-		int len = ta_image_len - offset;
-		if (len > 256) {
-			len = 256;
-		}
-		int n = ocall_write_file(fd, ta_image + offset, len);
-		if (n <= 0) {
-			ocall_close_file(fd);
-			return -1;
-		}
-		offset += n;
-	}
+	ocall_write_file_full(fd, ta_image, ta_image_len);
 	ocall_close_file(fd);
 
 	return 0;
