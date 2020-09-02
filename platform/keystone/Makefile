@@ -117,7 +117,7 @@ libteep-libwebsockets-tee-FLAGS = \
 	-DLWS_WITH_DIR=0 \
 	-DLWS__INCLUDE_DIRS=$(INCLUDES) \
 	-DCMAKE_BUILD_TYPE=Release \
-	-DCMAKE_C_FLAGS="-Wno-unused-variable -I$(TEE_REF_TA_DIR)/build/include -DCRYPTLIB=MBEDCRYPT -DPLAT_KEYSTONE"
+	-DCMAKE_C_FLAGS="-Wno-unused-variable -I$(TEE_REF_TA_DIR)/build/include -I$(TEE_REF_TA_DIR)/include -DCRYPTLIB=MBEDCRYPT -DPLAT_KEYSTONE"
 
 all: libteep hello teep
 
