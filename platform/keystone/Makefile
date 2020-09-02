@@ -50,7 +50,7 @@ REE_CFLAGS = -Wall -Werror -fPIC \
 REE_LDFLAGS = \
 	-L$(BUILD)/libteep/ree/libwebsockets/lib \
 	-L$(BUILD)/libteep/ree/mbedtls/library \
-	$(TEE_REF_TA_DIR)/api/libtee_api.a
+
 export CROSS_COMPILE = riscv64-unknown-linux-gnu-
 LIBTEEP_SRC = $(SOURCE)/libteep/lib/main.c
 
