@@ -14,6 +14,7 @@ export APP_CFLAGS = \
 	-I$(KEYSTONE_SDK_DIR)/lib/edge/include \
 	-I$(KEYSTONE_SDK_DIR)/lib/verifier \
 	-I$(TEE_REF_TA_DIR)/build/include \
+	-I$(TEE_REF_TA_DIR)/include \
 	-I./ \
 	-I$(TEE_REF_TA_DIR)/ref-ta/profiler \
 	-I$(SOURCE)/libteep/lib \
