@@ -257,124 +257,6 @@ int main(int argc, const char** argv)
 
 EDGE_EXTERNC_BEGIN
 
-unsigned int ocall_print_string(const char* str){
-  printf("%s",str);
-  return strlen(str);
-}
-
-#undef APP_VERBOSE
-
-int ocall_open_file(const char* fname, int flags, int perm)
-{
-    int desc = open(fname, flags, perm);
-#ifdef APP_VERBOSE
-    printf("@[SE] open file %s flags %x -> %d (%d)\n",fname,flags,desc,errno);
-#endif
-    return desc;
-}
-
-int ocall_close_file(int fdesc) 
-{
-    return close(fdesc);
-}
-
-int ocall_write_file256(int fdesc, const char *buf,  unsigned int len)
-{
-#ifdef APP_VERBOSE
-    printf("@[SE] write desc %d buf %x len %d\n",fdesc,buf,len);
-#endif
-    return write(fdesc, buf, len);
-}
-
-int ocall_unlink(keyedge_str const char *path)
-{
-    return unlink(path);
-}
-
-int ocall_fstat_size(int fd)
-{
-    struct stat st;
-    int ret = fstat(fd, &st);
-    if (ret < 0) {
-        return ret;
-    }
-    return st.st_size;
-}
-
-#if !defined(EDGE_OUT_WITH_STRUCTURE)
-int ocall_read_file(int fdesc, char *buf, size_t len) 
-{
-    printf("%s\n", __func__);
-
-}
-
-int ocall_ree_time(struct ree_time_t *timep) 
-{
-    printf("%s\n", __func__);
-
-}
-
-ssize_t ocall_getrandom(char *buf, size_t len, unsigned int flags)
-{
-    printf("%s\n", __func__);
-
-}
-
-#else
-
-ob256_t ocall_read_file256(int fdesc, unsigned int count)
-{
-  if (count > 256) {
-    count = 256;
-  }
-  ob256_t ret;
-  int rtn = read(fdesc, ret.b, count);
-#ifdef APP_VERBOSE
-  printf("@[SE] read desc %d buf %x len %d-> %d\n",fdesc,ret.b,256,rtn);
-#endif
-  ret.ret = rtn;
-  return ret;
-}
-
-ree_time_t ocall_ree_time(void) 
-{
-    printf("%s\n", __func__);
-
-}
-
-ob16_t ocall_getrandom16(unsigned int flags) 
-{
-#ifdef APP_VERBOSE
-    printf("%s\n", __func__);
-#endif
-}
-
-ob196_t ocall_getrandom196(unsigned int flags) 
-{
-#ifdef APP_VERBOSE
-    printf("%s\n", __func__);
-#endif
-
-}
-
-invoke_command_t ocall_invoke_command_polling(void) 
-{
-    printf("%s\n", __func__);
-
-}
-
-int ocall_invoke_command_callback(invoke_command_t cb_cmd) 
-{
-    printf("%s\n", __func__);
-
-}
-
-int ocall_invoke_command_callback_write(const char* str, const char *buf,  unsigned int len)
-{
-    printf("%s\n", __func__);
-
-}
-
 invoke_command_t ocall_pull_invoke_command()
 {
     return pull_invoke_command();
@@ -395,8 +277,6 @@ void ocall_put_invoke_command_result(invoke_command_t cmd, unsigned int result)
 {
     return put_invoke_command_result(cmd, result);
 }
-
-#endif
 
 EDGE_EXTERNC_END
 
