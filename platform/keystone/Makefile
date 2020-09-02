@@ -44,6 +44,7 @@ REE_CFLAGS = -Wall -Werror -fPIC \
 		  -I$(SOURCE)/libteep/libwebsockets/include \
 	      -I$(SOURCE)/libteep/mbedtls/include $(INCLUDES) \
 	      -I$(TEE_REF_TA_DIR)/build/include \
+	      -I$(TEE_REF_TA_DIR)/include \
 	      -DPLAT_KEYSTONE
 
 REE_LDFLAGS = \
