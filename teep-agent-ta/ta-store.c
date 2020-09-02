@@ -31,6 +31,8 @@
 #include <tee_internal_api_extensions.h>
 #ifndef PLAT_KEYSTONE
 #include <pta_secstor_ta_mgmt.h>
+#else
+#include <edger/Enclave_t.h>
 #endif
 #endif
 #include <libwebsockets.h>
@@ -39,13 +41,6 @@
 /* These are in other c file */
 int hex(char c);
 int string_to_uuid_octets(const char *s, uint8_t *octets16);
-
-#define O_RDONLY   0
-#define O_WRONLY   00001
-#define O_RDWR     00002
-#define O_CREAT	   00100
-#define O_EXCL	   00200
-#define O_TRUNC	   01000
 
 /* install given a TA Image into secure storage using optee pta*/
 int

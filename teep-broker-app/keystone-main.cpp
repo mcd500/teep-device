@@ -278,7 +278,7 @@ int ocall_close_file(int fdesc)
     return close(fdesc);
 }
 
-int ocall_write_file(int fdesc, const char *buf,  unsigned int len) 
+int ocall_write_file256(int fdesc, const char *buf,  unsigned int len)
 {
 #ifdef APP_VERBOSE
     printf("@[SE] write desc %d buf %x len %d\n",fdesc,buf,len);
@@ -322,10 +322,13 @@ ssize_t ocall_getrandom(char *buf, size_t len, unsigned int flags)
 
 #else
 
-ob256_t ocall_read_file256(int fdesc)
+ob256_t ocall_read_file256(int fdesc, unsigned int count)
 {
+  if (count > 256) {
+    count = 256;
+  }
   ob256_t ret;
-  int rtn = read(fdesc, ret.b, 256);
+  int rtn = read(fdesc, ret.b, count);
 #ifdef APP_VERBOSE
   printf("@[SE] read desc %d buf %x len %d-> %d\n",fdesc,ret.b,256,rtn);
 #endif

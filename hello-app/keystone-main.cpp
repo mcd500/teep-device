@@ -52,14 +52,14 @@ unsigned int ocall_print_string(const char* str){
 
 int ocall_open_file(const char* fname, int flags, int perm) {}
 int ocall_close_file(int fdesc) {}
-int ocall_write_file(int fdesc, const char *buf,  unsigned int len) {}
+int ocall_write_file256(int fdesc, const char *buf,  unsigned int len) {}
 int ocall_invoke_command_callback_write(const char* str, const char *buf,  unsigned int len) {}
 #if !defined(EDGE_OUT_WITH_STRUCTURE)
 int ocall_read_file(int fdesc, char *buf, size_t len) {}
 int ocall_ree_time(struct ree_time_t *timep) {}
 ssize_t ocall_getrandom(char *buf, size_t len, unsigned int flags){}
 #else
-ob256_t ocall_read_file256(int fdesc) {}
+ob256_t ocall_read_file256(int fdesc, unsigned int count) {}
 ree_time_t ocall_ree_time(void) {}
 ob16_t ocall_getrandom16(unsigned int flags) {}
 ob196_t ocall_getrandom196(unsigned int flags) {}
@@ -94,7 +94,7 @@ int ocall_unlink(keyedge_str const char *path)
 
 int ocall_fstat_size(int fd)
 {
-  
+
 }
 
 EDGE_EXTERNC_END
