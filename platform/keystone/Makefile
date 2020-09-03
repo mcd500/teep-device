@@ -35,6 +35,35 @@ export APP_LIBS = \
 	-lkeystone-host -lkeystone-edge -lEnclave_u -lflatccrt -lmbedcrypto -lmbedx509 -lmbedtls -lwebsockets -lteep \
 	-ltee_api
 
+export TA_CFLAGS = \
+	-Wall -fno-builtin-printf -DEDGE_IGNORE_EGDE_RESULT -DCRYPTLIB=MBEDCRYPT \
+	-I. \
+	-I$(TEE_REF_TA_DIR)/api/include \
+	-I$(TEE_REF_TA_DIR)/api/keystone \
+	-I$(TEE_REF_TA_DIR)/build/include \
+	-I$(TEE_REF_TA_DIR)/keyedge/target/include \
+	-I$(KEYSTONE_SDK_DIR)/lib/app/include \
+	-I$(KEYSTONE_SDK_DIR)/lib/edge/include \
+	-I../platform/keystone/build/libteep/tee/libwebsockets/include \
+	-DKEYSTONE \
+	-DPLAT_KEYSTONE
+
+export TA_LDFLAGS = \
+	-L$(TEE_REF_TA_DIR)/build/lib \
+	-L$(KEYSTONE_SDK_DIR)/lib \
+	-L$(BUILD)/libteep/tee/libwebsockets/lib
+
+export TA_LIBS = \
+	-lwebsockets \
+	-lmbedtls \
+	-ltee_api \
+	-lEnclave_t \
+	-lflatccrt \
+	-lkeystone-eapp
+
+
+TA_CFLAGS += -I../libteep/mbedtls/include # XXX: use ta-ref/crypto/include
+
 TOOLCHAIN-ree = $(CURDIR)/cross-riscv64.cmake
 TOOLCHAIN-tee = $(CURDIR)/cross-riscv64.cmake
 
