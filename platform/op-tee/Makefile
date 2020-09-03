@@ -9,6 +9,7 @@ export HELLO_TA_UUID  ?= 8d82573a-926d-4754-9353-32dc29997f74
 export TEE_AGENT_UUID ?= 68373894-5bb3-403c-9eec-3114a1f5d3fc
 
 export APP_CFLAGS ?= \
+	-Wall \
 	-I$(TA_DEV_KIT_DIR)/host_include \
 	-I$(SOURCE)/libteep/lib \
 	-I$(SOURCE)/libteep/libwebsockets/include \
@@ -34,6 +35,7 @@ export APP_LIBS ?= \
 
 export TA_CFLAGS = \
 	-nostdinc -DPLAT_OPTEE=1  \
+	-Wall \
 	-Wno-overlength-strings \
 	-I$(TA_DEV_KIT_DIR) \
 	-L$(TA_DEV_KIT_DIR)/lib \

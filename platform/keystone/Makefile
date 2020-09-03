@@ -10,6 +10,7 @@ export TEE_AGENT_UUID ?= 68373894-5bb3-403c-9eec-3114a1f5d3fc
 export TEE_REF_TA_DIR = $(CURDIR)/../../..
 
 export APP_CFLAGS = \
+	-Wall \
 	-I$(KEYSTONE_SDK_DIR)/lib/host/include \
 	-I$(KEYSTONE_SDK_DIR)/lib/edge/include \
 	-I$(KEYSTONE_SDK_DIR)/lib/verifier \

@@ -106,7 +106,7 @@ param_buffer_t read_invoke_param(int index, unsigned int offset)
     } else {
         unsigned int size = std::min(ref->size - offset, sizeof ret.buf);
         ret.size = size;
-        memcpy(ret.buf, ref->buffer + offset, size);
+        memcpy(ret.buf, (const char *)ref->buffer + offset, size);
     }
     //printf("%s: %u %u\n", __func__, offset, ret.size);
     return ret;
@@ -120,7 +120,7 @@ void write_invoke_param(int index, unsigned int offset, unsigned int size, const
     if (offset > ref->size) {
     } else {
         unsigned int n = std::min<size_t>(ref->size - offset, size);
-        memcpy(ref->buffer + offset, buf, n);
+        memcpy((char *)ref->buffer + offset, buf, n);
     }
 }
 

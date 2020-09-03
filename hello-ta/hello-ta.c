@@ -62,6 +62,7 @@ TEE_Result TA_InvokeCommandEntryPoint(void __maybe_unused *sess_ctx,
 
 #ifdef KEYSTONE
 #include <eapp_utils.h>
+#include <edger/Enclave_t.h>
 // TODO: should implemet in ref-ta/api???
 
 void EAPP_ENTRY eapp_entry()
