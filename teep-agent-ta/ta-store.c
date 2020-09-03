@@ -36,11 +36,8 @@
 #endif
 #endif
 #include <libwebsockets.h>
+#include "teep-agent-ta.h"
 #include "ta-store.h"
-
-/* These are in other c file */
-int hex(char c);
-int string_to_uuid_octets(const char *s, uint8_t *octets16);
 
 #ifdef PLAT_KEYSTONE
 
@@ -167,6 +164,8 @@ ta_store_install(const char *ta_image, size_t ta_image_len, const char *ta_name,
 
 	return 0;
 #else
+	(void)ta_name;
+	(void)ta_name_len;
 	TEE_TASessionHandle sess = TEE_HANDLE_NULL;
 	const TEE_UUID secstor_uuid = PTA_SECSTOR_TA_MGMT_UUID;
 	TEE_Param pars[TEE_NUM_PARAMS];
@@ -218,7 +217,8 @@ ta_store_delete(const char *uuid_string, size_t uuid_string_len)
 	ocall_unlink(filename_secstor);
 	ocall_unlink(filename_secstor_plain);
 	return 0;
-#else 
+#else
+	(void)uuid_string_len;
 	uint8_t uuid_octets[16];
 	TEE_TASessionHandle sess = TEE_HANDLE_NULL;
 	const TEE_UUID secstor_uuid = PTA_SECSTOR_TA_MGMT_UUID;
