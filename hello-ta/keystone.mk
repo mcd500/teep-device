@@ -11,4 +11,4 @@ $(out-dir)/hello-ta.o: hello-ta.c
 	$(CROSS_COMPILE)gcc $(CFLAGS) -c $< -o $@
 
 $(out-dir)/hello-ta: $(out-dir)/hello-ta.o
-	$(CROSS_COMPILE)gcc -nostdlib -o $@ -static $^ $(LDFLAGS) $(LIBS) -T Enclave.lds
+	$(CROSS_COMPILE)gcc -nostdlib -o $@ -static $^ $(LDFLAGS) $(LIBS)

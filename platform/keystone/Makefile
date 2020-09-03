@@ -51,7 +51,8 @@ export TA_CFLAGS = \
 export TA_LDFLAGS = \
 	-L$(TEE_REF_TA_DIR)/build/lib \
 	-L$(KEYSTONE_SDK_DIR)/lib \
-	-L$(BUILD)/libteep/tee/libwebsockets/lib
+	-L$(BUILD)/libteep/tee/libwebsockets/lib \
+	-T $(CURDIR)/Enclave.lds
 
 export TA_LIBS = \
 	-lwebsockets \

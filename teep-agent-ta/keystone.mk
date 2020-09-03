@@ -16,6 +16,6 @@ $(out-dir)/teep_message.o: teep_message.c
 $(out-dir)/ta-store.o: ta-store.c
 
 $(out-dir)/teep-agent-ta: $(out-dir)/teep-agent-ta.o $(out-dir)/teep_message.o $(out-dir)/ta-store.o $(out-dir)/vsnprintf.o $(out-dir)/tools.o
-	$(CROSS_COMPILE)gcc -nostdlib -o $@ -static $^ $(LDFLAGS) $(LIBS) -T Enclave.lds
+	$(CROSS_COMPILE)gcc -nostdlib -o $@ -static $^ $(LDFLAGS) $(LIBS)
 
 
