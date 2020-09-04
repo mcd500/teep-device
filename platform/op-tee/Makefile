@@ -39,7 +39,8 @@ export TA_CFLAGS = \
 	-Wno-overlength-strings \
 	-I$(TA_DEV_KIT_DIR) \
 	-L$(TA_DEV_KIT_DIR)/lib \
-	-I$(BUILD)/libteep/tee/libwebsockets/include
+	-I$(BUILD)/libteep/tee/libwebsockets/include \
+	-I$(SOURCE)/key/include
 
 export TA_LDFLAGS = \
 	-L$(BUILD)/libteep/tee/libwebsockets/lib

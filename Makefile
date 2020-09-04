@@ -45,10 +45,10 @@ clean-keystone:
 
 .PHONY: build-optee build-keystone
 
-build-optee: jwk-headers
+build-optee:
 	$(MAKE) -C platform/op-tee install_qemu
 
-build-keystone: jwk-headers
+build-keystone:
 	$(MAKE) -C platform/keystone image
 
 test: test-$(TEE)
@@ -86,17 +86,6 @@ generate-jwk-headers $(TEEP_KEY_SRCS): $(TAM_PUB_JWK) $(SP_PUB_JWK) $(TEE_PUB_JW
 	cat $(TEE_PUB_JWK) | sed 's/\"/\\\"/g' | sed 's/^/\"/g' | sed 's/$$/\\\n\"\n/g' > \
                teep-agent-ta/tee_id_pubkey_jwk.h
 	cat $(TEE_PRIV_JWK) | sed 's/\"/\\\"/g' | sed 's/^/\"/g' | sed 's/$$/\\\n\"\n/g' > \
-               teep-agent-ta/tee_id_privkey_jwk.h
-
-.PHONY: jwk-headers
-jwk-headers:
-	cat $(FIXED_TAM_PUB_JWK) | sed 's/\"/\\\"/g' | sed 's/^/\"/g' | sed 's/$$/\\\n\"\n/g' > \
-               teep-agent-ta/tam_id_pubkey_jwk.h
-	cat $(FIXED_SP_PUB_JWK) | sed 's/\"/\\\"/g' | sed 's/^/\"/g' | sed 's/$$/\\\n\"\n/g' > \
-               teep-agent-ta/sp_pubkey_jwk.h
-	cat $(FIXED_TEE_PUB_JWK) | sed 's/\"/\\\"/g' | sed 's/^/\"/g' | sed 's/$$/\\\n\"\n/g' > \
-               teep-agent-ta/tee_id_pubkey_jwk.h
-	cat $(FIXED_TEE_PRIV_JWK) | sed 's/\"/\\\"/g' | sed 's/^/\"/g' | sed 's/$$/\\\n\"\n/g' > \
                teep-agent-ta/tee_id_privkey_jwk.h
 
 .PHONY: distclean
