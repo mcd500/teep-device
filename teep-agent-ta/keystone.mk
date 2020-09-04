@@ -11,9 +11,9 @@ $(out-dir)/%.o: %.c
 	mkdir -p $(out-dir)
 	$(CROSS_COMPILE)gcc $(CFLAGS) -c $< -o $@
 
-$(out-dir)/teep-agent-ta.o: teep-agent-ta.c
-$(out-dir)/teep_message.o: teep_message.c
-$(out-dir)/ta-store.o: ta-store.c
+$(out-dir)/teep-agent-ta.o: teep-agent-ta.c teep-agent-ta.h ta-store.h teep_message.h
+$(out-dir)/teep_message.o: teep_message.c teep_message.h
+$(out-dir)/ta-store.o: ta-store.c teep-agent-ta.h ta-store.h
 
 $(out-dir)/teep-agent-ta: $(out-dir)/teep-agent-ta.o $(out-dir)/teep_message.o $(out-dir)/ta-store.o $(out-dir)/tools.o
 	$(CROSS_COMPILE)gcc -nostdlib -o $@ -static $^ $(LDFLAGS) $(LIBS)
