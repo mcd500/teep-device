@@ -9,7 +9,7 @@ export APP_CFLAGS = \
 	-I$(SOURCE)/libteep/libwebsockets/include \
 	-I$(SOURCE)/libteep/mbedtls/include \
 	-I$(CURDIR)/include \
-	-I$(SOURCE)/key/include
+	-I$(SOURCE)/key/include \
 	-DPCTEST -DPLAT_PC -DAPP_VERBOSE -Wall
 
 export APP_LDFLAGS = \

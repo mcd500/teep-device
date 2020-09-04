@@ -191,8 +191,8 @@ run-qemu:
 TAM_URL ?= http://tamproto_tam_api_1:8888
 
 test:
-	cd $(SOURCE)/sample-senario && npm install
-	node $(SOURCE)/sample-senario/sign-then-enc.js \
+	cd $(SOURCE)/scripts/keygen && npm install
+	node $(SOURCE)/scripts/keygen/sign-then-enc.js \
 		$(SOURCE)/key/test-jw_tee_sds_xbank_spaik-priv.jwk \
 		$(SOURCE)/key/test-jw_tee_identity_tee-mytee-public.jwk \
 		$(BUILD)/hello-ta/hello-ta
