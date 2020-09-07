@@ -524,7 +524,7 @@ int loop_otrp(struct libteep_ctx *lao_ctx) {
 				return n;
 			}
 			// install encrypted ta
-			n = libteep_ta_store_install(lao_ctx, teep_tmp_buf, strlen(teep_tmp_buf));
+			n = libteep_ta_store_install(lao_ctx, teep_tmp_buf, strlen(teep_tmp_buf), "TA");
 			if (n < 0) {
 				lwsl_err( "%s: libteep_ta_store_install failed: %d\n", __func__, n);
 				return n;

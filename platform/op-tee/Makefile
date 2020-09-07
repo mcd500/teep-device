@@ -9,6 +9,7 @@ export HELLO_TA_UUID  ?= 8d82573a-926d-4754-9353-32dc29997f74
 export TEE_AGENT_UUID ?= 68373894-5bb3-403c-9eec-3114a1f5d3fc
 
 export APP_CFLAGS ?= \
+	-Wall \
 	-I$(TA_DEV_KIT_DIR)/host_include \
 	-I$(SOURCE)/libteep/lib \
 	-I$(SOURCE)/libteep/libwebsockets/include \
@@ -31,6 +32,18 @@ export APP_LIBS ?= \
 	-lmbedtls \
 	-lmbedcrypto \
 	-lmbedx509
+
+export TA_CFLAGS = \
+	-nostdinc -DPLAT_OPTEE=1  \
+	-Wall \
+	-Wno-overlength-strings \
+	-I$(TA_DEV_KIT_DIR) \
+	-L$(TA_DEV_KIT_DIR)/lib \
+	-I$(BUILD)/libteep/tee/libwebsockets/include \
+	-I$(SOURCE)/key/include
+
+export TA_LDFLAGS = \
+	-L$(BUILD)/libteep/tee/libwebsockets/lib
 
 TOOLCHAIN-ree = $(CURDIR)/cross-aarch64.cmake
 TOOLCHAIN-tee = $(CURDIR)/cross-aarch64-tee.cmake
@@ -153,8 +166,8 @@ TAM_URL ?= http://tamproto_tam_api_1:8888
 
 test:
 	ln -sf $(prefix)/rootfs.cpio.gz $(OPTEE_DIR)/out/bin
-	cd $(SOURCE)/sample-senario && npm install
-	node $(SOURCE)/sample-senario/sign-then-enc.js \
+	cd $(SOURCE)/scripts/keygen && npm install
+	node $(SOURCE)/scripts/keygen/sign-then-enc.js \
 		$(SOURCE)/key/test-jw_tee_sds_xbank_spaik-priv.jwk \
 		$(SOURCE)/key/test-jw_tee_identity_tee-mytee-public.jwk \
 		$(BUILD)/hello-ta/$(HELLO_TA_UUID).ta

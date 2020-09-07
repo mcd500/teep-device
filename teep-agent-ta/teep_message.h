@@ -30,24 +30,24 @@
 #define TEEP_MESSAGE_H
 
 int
-teep_message_wrap(const char *msg, int msg_len, char *resp, size_t *resp_len);
+teep_message_wrap(const char *msg, int msg_len, char *resp, uint32_t *resp_len);
 
 int
-otrp_message_sign(const char *msg, int msg_len, char *resp, size_t *resp_len);
+otrp_message_sign(const char *msg, int msg_len, char *resp, uint32_t *resp_len);
 
 int
-otrp_message_encrypt(const char *msg, int msg_len, char *resp, size_t *resp_len);
+otrp_message_encrypt(const char *msg, int msg_len, char *resp, uint32_t *resp_len);
 
 int
-teep_message_unwrap(const char *msg, int msg_len, char *resp, size_t *resp_len);
+teep_message_unwrap(const char *msg, int msg_len, char *resp, uint32_t *resp_len);
 
 int
-otrp_message_verify(const char *msg, int msg_len, char *resp, size_t *resp_len);
+otrp_message_verify(const char *msg, int msg_len, char *resp, uint32_t *resp_len);
 
 int
-otrp_message_decrypt(const char *msg, int msg_len, char *resp, size_t *resp_len);
+otrp_message_decrypt(const char *msg, int msg_len, char *resp, uint32_t *resp_len);
 
 int
-teep_message_unwrap_ta_image(const char *msg, int msg_len, char *out, size_t *out_len);
+teep_message_unwrap_ta_image(const char *msg, int msg_len, char *out, uint32_t *out_len);
 
 #endif /* TEEP_MESSAGE_H */

@@ -106,7 +106,7 @@ param_buffer_t read_invoke_param(int index, unsigned int offset)
     } else {
         unsigned int size = std::min(ref->size - offset, sizeof ret.buf);
         ret.size = size;
-        memcpy(ret.buf, ref->buffer + offset, size);
+        memcpy(ret.buf, (const char *)ref->buffer + offset, size);
     }
     //printf("%s: %u %u\n", __func__, offset, ret.size);
     return ret;
@@ -120,7 +120,7 @@ void write_invoke_param(int index, unsigned int offset, unsigned int size, const
     if (offset > ref->size) {
     } else {
         unsigned int n = std::min<size_t>(ref->size - offset, size);
-        memcpy(ref->buffer + offset, buf, n);
+        memcpy((char *)ref->buffer + offset, buf, n);
     }
 }
 
@@ -239,18 +239,10 @@ int main(int argc, const char** argv)
         [&]{ enclave.run(); }
     );
 
-    {
-        invoke_command_t c;
-        c.commandID = 42;
-        c.paramTypes = 0;
-        int ret = my_TEEC_InvokeCommand(c);
-        printf("result: %d\n", ret);
-
-        if (teep_ver == LIBTEEP_TEEP_VER_TEEP)
-            loop_teep(lao_ctx);
-        else if (teep_ver == LIBTEEP_TEEP_VER_OTRP)
-            loop_otrp(lao_ctx);
-    }
+    if (teep_ver == LIBTEEP_TEEP_VER_TEEP)
+        loop_teep(lao_ctx);
+    else if (teep_ver == LIBTEEP_TEEP_VER_OTRP)
+        loop_otrp(lao_ctx);
 
     {
         invoke_command_t c;
@@ -264,91 +256,6 @@ int main(int argc, const char** argv)
 }
 
 EDGE_EXTERNC_BEGIN
-
-unsigned int ocall_print_string(const char* str){
-  printf("%s",str);
-  return strlen(str);
-}
-
-int ocall_open_file(const char* fname, int flags, int perm)
-{
-    printf("%s\n", __func__);
-
-}
-
-int ocall_close_file(int fdesc) 
-{
-    printf("%s\n", __func__);
-
-}
-
-int ocall_write_file(int fdesc, const char *buf,  unsigned int len) 
-{
-    printf("%s\n", __func__);
-
-}
-
-#if !defined(EDGE_OUT_WITH_STRUCTURE)
-int ocall_read_file(int fdesc, char *buf, size_t len) 
-{
-    printf("%s\n", __func__);
-
-}
-
-int ocall_ree_time(struct ree_time_t *timep) 
-{
-    printf("%s\n", __func__);
-
-}
-
-ssize_t ocall_getrandom(char *buf, size_t len, unsigned int flags)
-{
-    printf("%s\n", __func__);
-
-}
-
-#else
-ob256_t ocall_read_file256(int fdesc) 
-{
-    printf("%s\n", __func__);
-
-}
-
-ree_time_t ocall_ree_time(void) 
-{
-    printf("%s\n", __func__);
-
-}
-
-ob16_t ocall_getrandom16(unsigned int flags) 
-{
-    printf("%s\n", __func__);
-
-}
-
-ob196_t ocall_getrandom196(unsigned int flags) 
-{
-    printf("%s\n", __func__);
-
-}
-
-invoke_command_t ocall_invoke_command_polling(void) 
-{
-    printf("%s\n", __func__);
-
-}
-
-int ocall_invoke_command_callback(invoke_command_t cb_cmd) 
-{
-    printf("%s\n", __func__);
-
-}
-
-int ocall_invoke_command_callback_write(const char* str, const char *buf,  unsigned int len)
-{
-    printf("%s\n", __func__);
-
-}
 
 invoke_command_t ocall_pull_invoke_command()
 {
@@ -370,8 +277,6 @@ void ocall_put_invoke_command_result(invoke_command_t cmd, unsigned int result)
 {
     return put_invoke_command_result(cmd, result);
 }
-
-#endif
 
 EDGE_EXTERNC_END
 

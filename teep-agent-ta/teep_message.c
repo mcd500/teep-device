@@ -48,7 +48,7 @@ static const char * const sp_pubkey_jwk =
 ;
 
 int
-teep_message_wrap(const char *msg, int msg_len, char *out, size_t *out_len) {
+teep_message_wrap(const char *msg, int msg_len, char *out, uint32_t *out_len) {
 	struct lws_context_creation_info info;
 	static struct lws_context *context = NULL;
 	struct lws_jwk jwk_privkey_tee;
@@ -220,7 +220,7 @@ teep_message_wrap(const char *msg, int msg_len, char *out, size_t *out_len) {
 		goto bail1;
 	}
 	*out_len = strlen((void *)out);
-	lwsl_user("Sign Ok %lu\n", *out_len);
+	lwsl_user("Sign Ok %u\n", *out_len);
 
 	return 0;
 	
@@ -229,7 +229,7 @@ bail1:
 }
 
 int
-otrp_message_sign(const char *msg, int msg_len, char *out, size_t *out_len) {
+otrp_message_sign(const char *msg, int msg_len, char *out, uint32_t *out_len) {
 	struct lws_context_creation_info info;
 	static struct lws_context *context = NULL;
 	struct lws_jwk jwk_privkey_tee;
@@ -322,7 +322,7 @@ otrp_message_sign(const char *msg, int msg_len, char *out, size_t *out_len) {
 		goto bail1;
 	}
 	*out_len = strlen((void *)out);
-	lwsl_user("Sign Ok %lu\n", *out_len);
+	lwsl_user("Sign Ok %u\n", *out_len);
 
 	return 0;
 	
@@ -331,7 +331,7 @@ bail1:
 }
 
 int
-otrp_message_encrypt(const char *msg, int msg_len, char *out, size_t *out_len) {
+otrp_message_encrypt(const char *msg, int msg_len, char *out, uint32_t *out_len) {
 	struct lws_context_creation_info info;
 	static struct lws_context *context = NULL;
 	int temp_len = TEMP_BUF_SIZE - 1;
@@ -421,7 +421,7 @@ bail1:
 	return -1;
 }
 
-int teep_message_unwrap_ta_image(const char *msg, int msg_len, char *out, size_t *out_len) {
+int teep_message_unwrap_ta_image(const char *msg, int msg_len, char *out, uint32_t *out_len) {
 	struct lws_context_creation_info info;
 	static struct lws_context *context = NULL;
 	struct lws_jwk jwk_pubkey_sp;
@@ -483,7 +483,7 @@ int teep_message_unwrap_ta_image(const char *msg, int msg_len, char *out, size_t
 	lwsl_user("Signature OK %d %d\n", n, jws.map.len[LJWS_PYLD]);
 
 	if (jws.map.len[LJWS_PYLD] > *out_len) {
-		lwsl_err("%s: output buffer is small (in, out) = (%d, %lu)\n", __func__, jws.map.len[LJWS_PYLD], *out_len);
+		lwsl_err("%s: output buffer is small (in, out) = (%d, %u)\n", __func__, jws.map.len[LJWS_PYLD], *out_len);
 	}
 	memcpy(out, jws.map.buf[LJWS_PYLD], jws.map.len[LJWS_PYLD]);
 	*out_len = jws.map.len[LJWS_PYLD];
@@ -498,7 +498,7 @@ bail:
 }
 
 int
-teep_message_unwrap(const char *msg, int msg_len, char *out, size_t *out_len) {
+teep_message_unwrap(const char *msg, int msg_len, char *out, uint32_t *out_len) {
 	struct lws_context_creation_info info;
 	static struct lws_context *context = NULL;
 	struct lws_jwk jwk_pubkey_tam;
@@ -542,7 +542,7 @@ teep_message_unwrap(const char *msg, int msg_len, char *out, size_t *out_len) {
 	lwsl_user("Signature OK %d %d\n", n, jws.map.len[LJWS_PYLD]);
 
 	if (jws.map.len[LJWS_PYLD] > *out_len) {
-		lwsl_err("%s: output buffer is small (in, out) = (%d, %lu)\n", __func__, jws.map.len[LJWS_PYLD], *out_len);
+		lwsl_err("%s: output buffer is small (in, out) = (%d, %u)\n", __func__, jws.map.len[LJWS_PYLD], *out_len);
 	}
 
 	lwsl_user("Decrypt\n");
@@ -579,7 +579,7 @@ bail:
 }
 
 int
-otrp_message_verify(const char *msg, int msg_len, char *out, size_t *out_len) {
+otrp_message_verify(const char *msg, int msg_len, char *out, uint32_t *out_len) {
 	struct lws_context_creation_info info;
 	static struct lws_context *context = NULL;
 	struct lws_jwk jwk_pubkey_tam;
@@ -618,7 +618,7 @@ otrp_message_verify(const char *msg, int msg_len, char *out, size_t *out_len) {
 	lwsl_user("Signature OK %d %d\n", n, jws.map.len[LJWS_PYLD]);
 
 	if (jws.map.len[LJWS_PYLD] > *out_len) {
-		lwsl_err("%s: output buffer is small (in, out) = (%d, %lu)\n", __func__, jws.map.len[LJWS_PYLD], *out_len);
+		lwsl_err("%s: output buffer is small (in, out) = (%d, %u)\n", __func__, jws.map.len[LJWS_PYLD], *out_len);
 	}
 	memcpy(out, jws.map.buf[LJWS_PYLD], jws.map.len[LJWS_PYLD]);
 	*out_len = jws.map.len[LJWS_PYLD];
@@ -632,7 +632,7 @@ bail:
 }
 
 int
-otrp_message_decrypt(const char *msg, int msg_len, char *out, size_t *out_len) {
+otrp_message_decrypt(const char *msg, int msg_len, char *out, uint32_t *out_len) {
 	struct lws_context_creation_info info;
 	static struct lws_context *context = NULL;
 	int temp_len = TEMP_BUF_SIZE - 1;

@@ -27,6 +27,7 @@
  */
 #ifndef TEEP_AGENT_TA_H
 #define TEEP_AGENT_TA_H
+
 #define TEEP_AGENT_TA_WRAP_MESSAGE 1
 #define TEEP_AGENT_TA_SIGN_MESSAGE 11
 #define TEEP_AGENT_TA_ENCRYPT_MESSAGE 12
@@ -36,4 +37,9 @@
 #define TEEP_AGENT_TA_INSTALL 101
 #define TEEP_AGENT_TA_DELETE 102
 #define TEEP_AGENT_TA_UNWRAP_TA_IMAGE 301
+
+time_t time(time_t *tloc);
+int hex(char c);
+int string_to_uuid_octets(const char *s, uint8_t *octets16);
+
 #endif

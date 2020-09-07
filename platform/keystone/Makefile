@@ -10,6 +10,7 @@ export TEE_AGENT_UUID ?= 68373894-5bb3-403c-9eec-3114a1f5d3fc
 export TEE_REF_TA_DIR = $(CURDIR)/../../..
 
 export APP_CFLAGS = \
+	-Wall \
 	-I$(KEYSTONE_SDK_DIR)/lib/host/include \
 	-I$(KEYSTONE_SDK_DIR)/lib/edge/include \
 	-I$(KEYSTONE_SDK_DIR)/lib/verifier \
@@ -18,7 +19,7 @@ export APP_CFLAGS = \
 	-I./ \
 	-I$(TEE_REF_TA_DIR)/ref-ta/profiler \
 	-I$(SOURCE)/libteep/lib \
-	-I$(SOURCE)/platform/keystone/build/libteep/ree/libwebsockets/include \
+	-I$(BUILD)/libteep/ree/libwebsockets/include \
 	-I$(SOURCE)/libteep/libwebsockets/include \
 	-I$(SOURCE)/libteep/mbedtls/include \
 	-DKEYSTONE -DPLAT_KEYSTONE -DAPP_VERBOSE -Wall
@@ -27,14 +28,45 @@ export APP_LDFLAGS = \
 	-L$(KEYSTONE_SDK_DIR)/lib \
 	-L$(KEYSTONE_SDK_DIR)/sdk/lib \
 	-L$(TEE_REF_TA_DIR)/build/lib \
-	-L$(SOURCE)/platform/keystone/build/libteep/ree/mbedtls/library \
-	-Xlinker -rpath-link -Xlinker $(SOURCE)/platform/keystone/build/libteep/ree/mbedtls/library \
-	-L$(SOURCE)/platform/keystone/build/libteep/ree/libwebsockets/lib \
-	-L$(SOURCE)/platform/keystone/build/libteep/ree/lib
+	-L$(BUILD)/libteep/ree/mbedtls/library \
+	-Xlinker -rpath-link -Xlinker $(BUILD)/libteep/ree/mbedtls/library \
+	-L$(BUILD)/libteep/ree/libwebsockets/lib \
+	-L$(BUILD)/libteep/ree/lib
 
 export APP_LIBS = \
 	-lkeystone-host -lkeystone-edge -lEnclave_u -lflatccrt -lmbedcrypto -lmbedx509 -lmbedtls -lwebsockets -lteep \
 	-ltee_api
+
+export TA_CFLAGS = \
+	-Wall -fno-builtin-printf -DEDGE_IGNORE_EGDE_RESULT -DCRYPTLIB=MBEDCRYPT \
+	-I. \
+	-I$(TEE_REF_TA_DIR)/api/include \
+	-I$(TEE_REF_TA_DIR)/api/keystone \
+	-I$(TEE_REF_TA_DIR)/build/include \
+	-I$(TEE_REF_TA_DIR)/keyedge/target/include \
+	-I$(KEYSTONE_SDK_DIR)/lib/app/include \
+	-I$(KEYSTONE_SDK_DIR)/lib/edge/include \
+	-I../platform/keystone/build/libteep/tee/libwebsockets/include \
+	-I$(SOURCE)/key/include \
+	-DKEYSTONE \
+	-DPLAT_KEYSTONE
+
+export TA_LDFLAGS = \
+	-L$(TEE_REF_TA_DIR)/build/lib \
+	-L$(KEYSTONE_SDK_DIR)/lib \
+	-L$(BUILD)/libteep/tee/libwebsockets/lib \
+	-T $(CURDIR)/Enclave.lds
+
+export TA_LIBS = \
+	-lwebsockets \
+	-lmbedtls \
+	-ltee_api \
+	-lEnclave_t \
+	-lflatccrt \
+	-lkeystone-eapp
+
+
+TA_CFLAGS += -I../libteep/mbedtls/include # XXX: use ta-ref/crypto/include
 
 TOOLCHAIN-ree = $(CURDIR)/cross-riscv64.cmake
 TOOLCHAIN-tee = $(CURDIR)/cross-riscv64.cmake
@@ -161,8 +193,8 @@ run-qemu:
 TAM_URL ?= http://tamproto_tam_api_1:8888
 
 test:
-	cd $(SOURCE)/sample-senario && npm install
-	node $(SOURCE)/sample-senario/sign-then-enc.js \
+	cd $(SOURCE)/scripts/keygen && npm install
+	node $(SOURCE)/scripts/keygen/sign-then-enc.js \
 		$(SOURCE)/key/test-jw_tee_sds_xbank_spaik-priv.jwk \
 		$(SOURCE)/key/test-jw_tee_identity_tee-mytee-public.jwk \
 		$(BUILD)/hello-ta/hello-ta

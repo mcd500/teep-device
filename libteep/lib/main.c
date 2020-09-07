@@ -328,7 +328,7 @@ libteep_tam_msg(struct libteep_ctx *ctx, void *res, size_t reslen, void *req, si
 }
 
 int
-libteep_ta_store_install(struct libteep_ctx *ctx, char *ta_image, size_t ta_image_len)
+libteep_ta_store_install(struct libteep_ctx *ctx, char *ta_image, size_t ta_image_len, char *ta_name)
 {
 	TEEC_Result n;
 	TEEC_Operation op;
@@ -363,12 +363,15 @@ libteep_ta_store_install(struct libteep_ctx *ctx, char *ta_image, size_t ta_imag
 	memset(&op, 0, sizeof(TEEC_Operation));
 	op.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_TEMP_INPUT,
 					 TEEC_VALUE_INPUT,
-					 TEEC_NONE,
-					 TEEC_NONE);
+					 TEEC_MEMREF_TEMP_INPUT,
+					 TEEC_VALUE_INPUT);
 
 	op.params[0].tmpref.buffer 	= ta_image_dec;
 	op.params[0].tmpref.size	= ta_image_dec_len;
 	op.params[1].value.a		= ta_image_dec_len;
+	op.params[2].tmpref.buffer  = ta_name;
+	op.params[2].tmpref.size    = strlen(ta_name) + 1;
+	op.params[3].value.a        = strlen(ta_name) + 1;
 
 	n = TEEC_InvokeCommand(&ctx->tee_session, 101, &op, NULL);
 	if (n != TEEC_SUCCESS) {
@@ -698,5 +701,12 @@ libteep_download_and_install_ta_image(struct libteep_ctx *ctx, char *url) {
 	if (laoa->result < 0) {
 		return laoa->result;
 	}
-	return libteep_ta_store_install(ctx, io.out, io.out_len);
+
+	char *ta_name = strrchr(path, '/');
+	if (ta_name) {
+		ta_name += 1;
+	} else {
+		ta_name = path;
+	}
+	return libteep_ta_store_install(ctx, io.out, io.out_len, ta_name);
 }

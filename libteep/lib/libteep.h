@@ -190,7 +190,7 @@ int
 libteep_download_and_install_ta_image(struct libteep_ctx *ctx, char *url);
 
 int
-libteep_ta_store_install(struct libteep_ctx *ctx, char *ta_image, size_t ta_image_len);
+libteep_ta_store_install(struct libteep_ctx *ctx, char *ta_image, size_t ta_image_len, char *ta_name);
 
 int
 libteep_ta_store_delete(struct libteep_ctx *ctx, char *uuid, size_t uuid_len);

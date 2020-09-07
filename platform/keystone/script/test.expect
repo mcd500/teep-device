@@ -18,49 +18,90 @@ send "root\r"
 expect "assword: "
 send "sifive\r"
 
-expect "# " {
-    send "insmod keystone-driver.ko; sleep 2; true\r"
-}
+send "PS1='#### '\r"
+expect "#### "
 
-expect "# " {
-    send "cd /root/teep-device\r"
-    send "./hello-app\r"
-    expect "enclave.run\r" {} timeout {
-        exit 1
-    }
-    expect "hello ocall\r" {} timeout {
-        exit 1
-    }
-}
+send "insmod keystone-driver.ko; sleep 2; true\r"
+expect "#### "
+
+send "cd /root/teep-device\r"
+expect "#### "
+
+send -- "ls -l\r"
+expect "#### "
+
+send "./hello-app hello-ta eyrie-rt\r"
+expect "hello TA"
+expect "#### "
 
 set err 0
+
+send "./hello-app 8d82573a-926d-4754-9353-32dc29997f74.ta eyrie-rt\r"
+expect "file does not exist"
+expect "#### "
+
 send -- "./teep-broker-app --tamurl $::env(TAM_URL)/api/tam\r"
 expect {
 	-re " ERR:" { set err 1 }
 	timeout { exit 1 }
-	"# "
+	"#### "
+}
+
+send -- "ls -l\r"
+expect "#### "
+
+send "./hello-app 8d82573a-926d-4754-9353-32dc29997f74.ta eyrie-rt\r"
+expect "hello TA"
+expect "#### "
+
+send "cmp 8d82573a-926d-4754-9353-32dc29997f74.ta 8d82573a-926d-4754-9353-32dc29997f74.ta.secstor.plain\r"
+expect {
+	-re "differ" { set err 1 }
+	timeout { exit 1 }
+	"#### "
 }
 
 send -- "./teep-broker-app --tamurl $::env(TAM_URL)/api/tam_delete  --talist 8d82573a-926d-4754-9353-32dc29997f74\r"
 expect {
 	-re " ERR:" { set err 1 }
 	timeout { exit 1 }
-	"# "
+	"#### "
 }
+
+send -- "ls -l\r"
+expect "#### "
+
+send "./hello-app 8d82573a-926d-4754-9353-32dc29997f74.ta eyrie-rt\r"
+expect "file does not exist"
+expect "#### "
 
 send -- "./teep-broker-app --tamurl $::env(TAM_URL)/api/tam_jose2 --jose\r"
 expect {
 	-re " ERR:" { set err 1 }
 	timeout { exit 1 }
-	"# "
+	"#### "
 }
+
+send -- "ls -l\r"
+expect "#### "
+
+send "./hello-app 8d82573a-926d-4754-9353-32dc29997f74.ta eyrie-rt\r"
+expect "hello TA"
+expect "#### "
 
 send -- "./teep-broker-app --tamurl $::env(TAM_URL)/api/tam_jose2_delete --jose --talist 8d82573a-926d-4754-9353-32dc29997f74\r"
 expect {
 	-re " ERR:" { set err 1 }
 	timeout { exit 1 }
-	"# "
+	"#### "
 }
+
+send -- "ls -l\r"
+expect "#### "
+
+send "./hello-app 8d82573a-926d-4754-9353-32dc29997f74.ta eyrie-rt\r"
+expect "file does not exist"
+expect "#### "
 
 puts " done\n"
 
