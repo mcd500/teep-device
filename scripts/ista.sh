@@ -11,4 +11,4 @@ if [ ! -z "$2" ]; then
   PORT=$2
 fi
 
-teep-broker-app --tamurl http://${IP}:${PORT}/api/tam_jose --jose
+teep-broker-app --tamurl http://${IP}:${PORT}/api/tam_jose2 --jose

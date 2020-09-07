@@ -173,6 +173,16 @@ install: all
 	install $(BUILD)/libteep/ree/mbedtls/library/lib* $(prefix)/usr/lib
 	install $(BUILD)/libteep/ree/libwebsockets/lib/lib* $(prefix)/usr/lib
 	install $(BUILD)/libteep/ree/lib/lib* $(prefix)/usr/lib
+	rm -f $(prefix)/root/env.sh
+	echo 'PATH=$$PATH:/root/teep-device' >>$(prefix)/root/env.sh
+	echo 'export TAM_HOST=tamproto_tam_api_1' >>$(prefix)/root/env.sh
+	echo 'export TAM_PORT=8888' >>$(prefix)/root/env.sh
+	echo 'insmod keystone-driver.ko' >>$(prefix)/root/env.sh
+	for f in dota dsta dta iota ista ita; do \
+		install $(SOURCE)/scripts/$$f.sh $(prefix)/root/; \
+		sed -i 's/127.0.0.1/$$TAM_HOST/' $(prefix)/root/$$f.sh; \
+		sed -i 's/3000/$$TAM_PORT/' $(prefix)/root/$$f.sh; \
+	done
 
 image: install
 	make -C $(KEYSTONE_DIR) image
