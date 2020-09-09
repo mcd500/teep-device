@@ -21,8 +21,11 @@ send "sifive\r"
 send "PS1='#### '\r"
 expect "#### "
 
-send "insmod keystone-driver.ko; sleep 2; true\r"
-expect "#### "
+send "insmod keystone-driver.ko || echo 'error'\r"
+expect {
+	"error" { exit 1 }
+	"#### "
+}
 
 send "cd /root/teep-device\r"
 expect "#### "
