@@ -2,6 +2,9 @@ export BUILD ?= $(CURDIR)/build
 export SOURCE ?= $(CURDIR)/../..
 export PLAT = pc
 
+export HELLO_TA_UUID  ?= 8d82573a-926d-4754-9353-32dc29997f74
+export TEE_AGENT_UUID ?= 68373894-5bb3-403c-9eec-3114a1f5d3fc
+
 export APP_CFLAGS = \
 	-I./ \
 	-I$(SOURCE)/libteep/lib \
