@@ -2,7 +2,7 @@
 
 set timeout 360
 
-spawn sshpass -p 'sifive' ssh -p $::env(PORT) -o 'StrictHostKeyChecking no' root@trvsim
+spawn sshpass -p "sifive" ssh -p $::env(PORT) -o "StrictHostKeyChecking no" root@trvsim
 
 send "PS1='#### '\r"
 expect "#### "
