@@ -71,6 +71,6 @@ test:
 	rm -f $(BUILD)/pctest.log
 	$(BROKER) --tamurl $(TAM_URL)/api/tam 2>&1 | tee -a $(BUILD)/pctest.log
 	$(BROKER) --tamurl $(TAM_URL)/api/tam_delete  --talist 8d82573a-926d-4754-9353-32dc29997f74 2>&1 | tee -a $(BUILD)/pctest.log
-	$(BROKER) --tamurl $(TAM_URL)/api/tam_jose2 --jose 2>&1 | tee -a $(BUILD)/pctest.log
-	$(BROKER) --tamurl $(TAM_URL)/api/tam_jose2_delete --jose --talist 8d82573a-926d-4754-9353-32dc29997f74 2>&1 | tee -a $(BUILD)/pctest.log
+	$(BROKER) --tamurl $(TAM_URL)/api/tam_jose --jose 2>&1 | tee -a $(BUILD)/pctest.log
+	$(BROKER) --tamurl $(TAM_URL)/api/tam_jose_delete --jose --talist 8d82573a-926d-4754-9353-32dc29997f74 2>&1 | tee -a $(BUILD)/pctest.log
 	! fgrep 'ERR:' $(BUILD)/pctest.log
