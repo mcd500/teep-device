@@ -195,9 +195,9 @@ SHIP_LIBS=$(BUILD)/libteep/ree/mbedtls/library/lib* \
 	$(BUILD)/libteep/ree/lib/lib*
 
 ship-trvsim: all
-	sshpass -p sifive ssh -p $(SSH_PORT) -o "StrictHostKeyChecking no" mkdir -p /root/teep-device /usr/lib
-	sshpass -p sifive scp -P $(SSH_PORT) -o "StrictHostKeyChecking no" $(SHIP_BINS) root@trvsim:/root/teep-device
-	sshpass -p sifive scp -P $(SSH_PORT) -o "StrictHostKeyChecking no" $(SHIP_LIBS) root@trvsim:/usr/lib
+	sshpass -p sifive ssh -p $(PORT) -o "StrictHostKeyChecking no" mkdir -p /root/teep-device /usr/lib
+	sshpass -p sifive scp -P $(PORT) -o "StrictHostKeyChecking no" $(SHIP_BINS) root@trvsim:/root/teep-device
+	sshpass -p sifive scp -P $(PORT) -o "StrictHostKeyChecking no" $(SHIP_LIBS) root@trvsim:/usr/lib
 
 image: install
 	make -C $(KEYSTONE_DIR) image
@@ -228,7 +228,7 @@ upload_encfile_to_tamproto:
 		-F "file=@$(BUILD)/hello-ta/hello-ta.sign.enc;filename=$(HELLO_TA_UUID).ta"
 
 test-trvsim: upload_encfile_to_tamproto
-	TAM_URL=$(TAM_URL) expect ./script/test_trvsim.expect
+	PORT=$(PORT) TAM_URL=$(TAM_URL) expect ./script/test_trvsim.expect
 
 test: upload_encfile_to_tamproto
 	TAM_URL=$(TAM_URL) expect ./script/test.expect
