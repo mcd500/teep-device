@@ -230,8 +230,5 @@ upload_encfile_to_tamproto:
 test-trvsim: upload_encfile_to_tamproto
 	TAM_URL=$(TAM_URL) expect ./script/test_trvsim.expect
 
-test-qemu: upload_encfile_to_tamproto
-	TAM_URL=$(TAM_URL) expect ./script/test.expect
-
-test: test-pre
+test: upload_encfile_to_tamproto
 	TAM_URL=$(TAM_URL) expect ./script/test.expect
