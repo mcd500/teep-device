@@ -195,7 +195,7 @@ SHIP_LIBS=$(BUILD)/libteep/ree/mbedtls/library/lib* \
 	$(BUILD)/libteep/ree/lib/lib*
 
 ship-trvsim: all
-	sshpass -p sifive ssh -p $(PORT) -o "StrictHostKeyChecking no" mkdir -p /root/teep-device /usr/lib
+	sshpass -p sifive ssh -p $(PORT) -o "StrictHostKeyChecking no" root@trvsim mkdir -p /root/teep-device /usr/lib
 	sshpass -p sifive scp -P $(PORT) -o "StrictHostKeyChecking no" $(SHIP_BINS) root@trvsim:/root/teep-device
 	sshpass -p sifive scp -P $(PORT) -o "StrictHostKeyChecking no" $(SHIP_LIBS) root@trvsim:/usr/lib
 
