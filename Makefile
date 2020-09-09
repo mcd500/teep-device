@@ -49,6 +49,10 @@ build-keystone:
 build-pc:
 	$(MAKE) -C platform/pc
 
+build-keystone-trvsim:
+	$(MAKE) -C platform/keystone ship-trvsim
+
+
 test-optee:
 	$(MAKE) -C platform/op-tee test
 
@@ -57,6 +61,9 @@ test-keystone:
 
 test-pc:
 	$(MAKE) -C platform/pc test
+
+test-keystone-trvsim:
+	$(MAKE) -C platform/keystone test-trvsim
 
 qemu-optee:
 	$(MAKE) -C platform/op-tee run-qemu
