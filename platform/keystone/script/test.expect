@@ -18,10 +18,10 @@ send "root\r"
 expect "assword: "
 send "sifive\r"
 
-send "PS1='#### '\r"
+send "PS1='##''## '\r"
 expect "#### "
 
-send "insmod keystone-driver.ko || echo 'error'\r"
+send "insmod keystone-driver.ko || echo 'err''or'\r"
 expect {
 	"error" { exit 1 }
 	"#### "

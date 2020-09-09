@@ -68,9 +68,18 @@ test:
 	curl $(TAM_URL)/api/
 	curl $(TAM_URL)/panel/upload \
 		-F "file=@$(BUILD)/$(HELLO_TA_UUID).ta.sign.enc;filename=$(HELLO_TA_UUID).ta"
-	rm -f $(BUILD)/pctest.log
-	$(BROKER) --tamurl $(TAM_URL)/api/tam 2>&1 | tee -a $(BUILD)/pctest.log
-	$(BROKER) --tamurl $(TAM_URL)/api/tam_delete  --talist 8d82573a-926d-4754-9353-32dc29997f74 2>&1 | tee -a $(BUILD)/pctest.log
-	$(BROKER) --tamurl $(TAM_URL)/api/tam_jose --jose 2>&1 | tee -a $(BUILD)/pctest.log
-	$(BROKER) --tamurl $(TAM_URL)/api/tam_jose_delete --jose --talist 8d82573a-926d-4754-9353-32dc29997f74 2>&1 | tee -a $(BUILD)/pctest.log
+	$(BROKER) --tamurl $(TAM_URL)/api/tam 2>&1 | tee $(BUILD)/pctest.log
 	! fgrep 'ERR:' $(BUILD)/pctest.log
+	fgrep 'ta_store_install: stub called' $(BUILD)/pctest.log
+
+	$(BROKER) --tamurl $(TAM_URL)/api/tam_delete  --talist 8d82573a-926d-4754-9353-32dc29997f74 2>&1 | tee $(BUILD)/pctest.log
+	! fgrep 'ERR:' $(BUILD)/pctest.log
+	fgrep 'ta_store_delete: stub called' $(BUILD)/pctest.log
+
+	$(BROKER) --tamurl $(TAM_URL)/api/tam_jose --jose 2>&1 | tee $(BUILD)/pctest.log
+	! fgrep 'ERR:' $(BUILD)/pctest.log
+	fgrep 'ta_store_install: stub called' $(BUILD)/pctest.log
+
+	$(BROKER) --tamurl $(TAM_URL)/api/tam_jose_delete --jose --talist 8d82573a-926d-4754-9353-32dc29997f74 2>&1 | tee $(BUILD)/pctest.log
+	! fgrep 'ERR:' $(BUILD)/pctest.log
+	fgrep 'ta_store_delete: stub called' $(BUILD)/pctest.log
