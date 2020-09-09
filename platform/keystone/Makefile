@@ -84,7 +84,7 @@ REE_LDFLAGS = \
 	-L$(BUILD)/libteep/ree/mbedtls/library \
 
 export CROSS_COMPILE = riscv64-unknown-linux-gnu-
-LIBTEEP_SRC = $(SOURCE)/libteep/lib/main.c
+LIBTEEP_SRC = $(SOURCE)/libteep/lib/libteep.c
 
 libteep-mbedtls-host-DISABLE = y
 libteep-libwebsockets-host-DISABLE = y
