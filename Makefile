@@ -1,11 +1,11 @@
-.PHONY: all all- all-optee all-keystone
-.PHONY: clean clean-optee clean-keystone
-.PHONY: test test-optee test-keystone
+.PHONY: all all- all-optee all-keystone all-pc
+.PHONY: clean clean-optee clean-keystone clean-pc
+.PHONY: test test-optee test-keystone test-pc
 .PHONY: qemu qemu-optee qemu-keystone
 
 all: all-$(TEE)
 
-clean: clean-optee clean-keystone
+clean: clean-optee clean-keystone clean-pc
 
 test: test-$(TEE)
 
@@ -20,18 +20,23 @@ distclean: clean
 
 
 all-:
-	@echo '$$TEE must be "optee" or "keystone"'
+	@echo '$$TEE must be "optee", "keystone" or "pc"'
 	@false
 
 all-optee: build-optee
 
 all-keystone: build-keystone
 
+all-pc: build-pc
+
 clean-optee:
 	$(MAKE) -C platform/op-tee clean
 
 clean-keystone:
 	$(MAKE) -C platform/keystone clean
+
+clean-pc:
+	$(MAKE) -C platform/pc clean
 
 .PHONY: build-optee build-keystone
 
@@ -41,11 +46,17 @@ build-optee:
 build-keystone:
 	$(MAKE) -C platform/keystone image
 
+build-pc:
+	$(MAKE) -C platform/pc
+
 test-optee:
 	$(MAKE) -C platform/op-tee test
 
 test-keystone:
 	$(MAKE) -C platform/keystone test
+
+test-pc:
+	$(MAKE) -C platform/pc test
 
 qemu-optee:
 	$(MAKE) -C platform/op-tee run-qemu

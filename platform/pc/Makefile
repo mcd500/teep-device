@@ -51,3 +51,23 @@ include ../common.mk
 
 clean:
 	rm -rf $(BUILD)
+
+TAM_URL ?= http://localhost:8888
+BROKER = ./build/teep-broker-app/teep-broker-app
+
+test:
+	echo 'hello, world!' >$(BUILD)/$(HELLO_TA_UUID).ta
+	cd $(SOURCE)/scripts/keygen && npm install
+	node $(SOURCE)/scripts/keygen/sign-then-enc.js \
+		$(SOURCE)/key/test-jw_tee_sds_xbank_spaik-priv.jwk \
+		$(SOURCE)/key/test-jw_tee_identity_tee-mytee-public.jwk \
+		$(BUILD)/$(HELLO_TA_UUID).ta
+	curl $(TAM_URL)/api/
+	curl $(TAM_URL)/panel/upload \
+		-F "file=@$(BUILD)/$(HELLO_TA_UUID).ta.sign.enc;filename=$(HELLO_TA_UUID).ta"
+	rm -f $(BUILD)/pctest.log
+	$(BROKER) --tamurl $(TAM_URL)/api/tam 2>&1 | tee -a $(BUILD)/pctest.log
+	$(BROKER) --tamurl $(TAM_URL)/api/tam_delete  --talist 8d82573a-926d-4754-9353-32dc29997f74 2>&1 | tee -a $(BUILD)/pctest.log
+	$(BROKER) --tamurl $(TAM_URL)/api/tam_jose2 --jose 2>&1 | tee -a $(BUILD)/pctest.log
+	$(BROKER) --tamurl $(TAM_URL)/api/tam_jose2_delete --jose --talist 8d82573a-926d-4754-9353-32dc29997f74 2>&1 | tee -a $(BUILD)/pctest.log
+	! fgrep 'ERR:' $(BUILD)/pctest.log

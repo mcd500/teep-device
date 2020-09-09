@@ -180,8 +180,8 @@ TEEC_Result TEEC_InvokeCommand(TEEC_Session *session,
 	case TEEP_AGENT_TA_INSTALL: /* Install TA */
 		if ((TEEC_PARAM_TYPE_GET(type, 0) != TEEC_MEMREF_TEMP_INPUT) ||
 				(TEEC_PARAM_TYPE_GET(type, 1) != TEEC_VALUE_INPUT) ||
-				(TEEC_PARAM_TYPE_GET(type, 2) != TEEC_NONE) ||
-				(TEEC_PARAM_TYPE_GET(type, 3) != TEEC_NONE))
+				(TEEC_PARAM_TYPE_GET(type, 2) != TEEC_MEMREF_TEMP_INPUT) ||
+				(TEEC_PARAM_TYPE_GET(type, 3) != TEEC_VALUE_INPUT))
 			return TEEC_ERROR_BAD_PARAMETERS;
 		return ta_store_install(params[0].tmpref.buffer, params[1].value.a, "TA", 2);
 	case TEEP_AGENT_TA_DELETE: /* Delete TA */
