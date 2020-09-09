@@ -10,6 +10,9 @@ expect "#### "
 send "insmod keystone-driver.ko; sleep 2; true\r"
 expect "#### "
 
+send -- "ls -R\r"
+expect "#### "
+
 send "cd /root/teep-device\r"
 expect "#### "
 

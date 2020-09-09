@@ -184,20 +184,22 @@ install: all
 		sed -i 's/3000/$$TAM_PORT/' $(prefix)/root/$$f.sh; \
 	done
 
-SHIP_BINS=$(BUILD)/hello-ta/hello-ta \
+SHIP_BINS = \
+	$(BUILD)/hello-ta/hello-ta \
 	$(BUILD)/hello-app/hello-app \
 	$(BUILD)/teep-agent-ta/teep-agent-ta \
 	$(BUILD)/teep-broker-app/teep-broker-app \
 	$(KEYSTONE_DIR)/sdk/rts/eyrie/eyrie-rt
 
-SHIP_LIBS=$(BUILD)/libteep/ree/mbedtls/library/lib* \
+SHIP_LIBS = \
+	$(BUILD)/libteep/ree/mbedtls/library/lib* \
 	$(BUILD)/libteep/ree/libwebsockets/lib/lib* \
 	$(BUILD)/libteep/ree/lib/lib*
 
 ship-trvsim: all
 	sshpass -p sifive ssh -p $(PORT) -o "StrictHostKeyChecking no" root@trvsim mkdir -p /root/teep-device /usr/lib
-	sshpass -p sifive scp -P $(PORT) -o "StrictHostKeyChecking no" $(SHIP_BINS) root@trvsim:/root/teep-device
-	sshpass -p sifive scp -P $(PORT) -o "StrictHostKeyChecking no" $(SHIP_LIBS) root@trvsim:/usr/lib
+	sshpass -p sifive scp -P $(PORT) -o "StrictHostKeyChecking no" $(SHIP_BINS) root@trvsim:/root/teep-device/
+	sshpass -p sifive scp -P $(PORT) -o "StrictHostKeyChecking no" $(SHIP_LIBS) root@trvsim:/usr/lib/
 
 image: install
 	make -C $(KEYSTONE_DIR) image
