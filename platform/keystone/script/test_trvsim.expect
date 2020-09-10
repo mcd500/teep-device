@@ -7,16 +7,13 @@ spawn sshpass -p "sifive" ssh -p $::env(PORT) -o "StrictHostKeyChecking no" root
 send "PS1='#### '\r"
 expect "#### "
 
-send "insmod keystone-driver.ko; sleep 2; true\r"
-expect "#### "
-
 send -- "ls -R\r"
 expect "#### "
 
 send "cd /root/teep-device\r"
 expect "#### "
 
-send -- "ls -l\r"
+send "insmod keystone-driver.ko; sleep 2; true\r"
 expect "#### "
 
 send "./hello-app hello-ta eyrie-rt\r"

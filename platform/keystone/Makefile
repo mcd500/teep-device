@@ -189,7 +189,8 @@ SHIP_BINS = \
 	$(BUILD)/hello-app/hello-app \
 	$(BUILD)/teep-agent-ta/teep-agent-ta \
 	$(BUILD)/teep-broker-app/teep-broker-app \
-	$(KEYSTONE_DIR)/sdk/rts/eyrie/eyrie-rt
+	$(KEYSTONE_DIR)/sdk/rts/eyrie/eyrie-rt \
+	$(KEYSTONE_DIR)/buildroot_overlay/root/keystone-driver.ko
 
 SHIP_LIBS = \
 	$(BUILD)/libteep/ree/mbedtls/library/lib* \
