@@ -61,7 +61,7 @@ send "./hello-app 8d82573a-926d-4754-9353-32dc29997f74.ta eyrie-rt\r"
 expect "file does not exist"
 expect "#### "
 
-send -- "./teep-broker-app --tamurl $::env(TAM_URL)/api/tam_jose2 --jose\r"
+send -- "./teep-broker-app --tamurl $::env(TAM_URL)/api/tam_jose --jose\r"
 expect {
 	-re " ERR:" { set err 1 }
 	timeout { exit 1 }
@@ -75,7 +75,7 @@ send "./hello-app 8d82573a-926d-4754-9353-32dc29997f74.ta eyrie-rt\r"
 expect "hello TA"
 expect "#### "
 
-send -- "./teep-broker-app --tamurl $::env(TAM_URL)/api/tam_jose2_delete --jose --talist 8d82573a-926d-4754-9353-32dc29997f74\r"
+send -- "./teep-broker-app --tamurl $::env(TAM_URL)/api/tam_jose_delete --jose --talist 8d82573a-926d-4754-9353-32dc29997f74\r"
 expect {
 	-re " ERR:" { set err 1 }
 	timeout { exit 1 }
