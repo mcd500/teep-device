@@ -1,6 +1,6 @@
 #!/usr/bin/expect
 
-set timeout 360
+set timeout 3600
 
 spawn sshpass -p "sifive" ssh -p $::env(PORT) -o "StrictHostKeyChecking no" root@trvsim
 
