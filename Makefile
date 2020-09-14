@@ -49,6 +49,10 @@ build-keystone:
 build-pc:
 	$(MAKE) -C platform/pc
 
+build-keystone-trvsim:
+	$(MAKE) -C platform/keystone ship-trvsim PORT=$(TRVSIM_PORT)
+
+
 test-optee:
 	$(MAKE) -C platform/op-tee test
 
@@ -57,6 +61,9 @@ test-keystone:
 
 test-pc:
 	$(MAKE) -C platform/pc test
+
+test-keystone-trvsim:
+	$(MAKE) -C platform/keystone test-trvsim PORT=$(TRVSIM_PORT)
 
 qemu-optee:
 	$(MAKE) -C platform/op-tee run-qemu

@@ -184,6 +184,24 @@ install: all
 		sed -i 's/3000/$$TAM_PORT/' $(prefix)/root/$$f.sh; \
 	done
 
+SHIP_BINS = \
+	$(BUILD)/hello-ta/hello-ta \
+	$(BUILD)/hello-app/hello-app \
+	$(BUILD)/teep-agent-ta/teep-agent-ta \
+	$(BUILD)/teep-broker-app/teep-broker-app \
+	$(KEYSTONE_DIR)/sdk/rts/eyrie/eyrie-rt \
+	$(KEYSTONE_DIR)/buildroot_overlay/root/keystone-driver.ko
+
+SHIP_LIBS = \
+	$(BUILD)/libteep/ree/mbedtls/library/lib* \
+	$(BUILD)/libteep/ree/libwebsockets/lib/lib* \
+	$(BUILD)/libteep/ree/lib/lib*
+
+ship-trvsim: all
+	sshpass -p sifive ssh -p $(PORT) -o "StrictHostKeyChecking no" root@trvsim mkdir -p /root/teep-device /usr/lib
+	sshpass -p sifive scp -P $(PORT) -o "StrictHostKeyChecking no" $(SHIP_BINS) root@trvsim:/root/teep-device/
+	sshpass -p sifive scp -P $(PORT) -o "StrictHostKeyChecking no" $(SHIP_LIBS) root@trvsim:/usr/lib/
+
 image: install
 	make -C $(KEYSTONE_DIR) image
 
@@ -202,7 +220,7 @@ run-qemu:
 
 TAM_URL ?= http://tamproto_tam_api_1:8888
 
-test:
+upload_encfile_to_tamproto:
 	cd $(SOURCE)/scripts/keygen && npm install
 	node $(SOURCE)/scripts/keygen/sign-then-enc.js \
 		$(SOURCE)/key/test-jw_tee_sds_xbank_spaik-priv.jwk \
@@ -211,4 +229,9 @@ test:
 	curl $(TAM_URL)/api/
 	curl $(TAM_URL)/panel/upload \
 		-F "file=@$(BUILD)/hello-ta/hello-ta.sign.enc;filename=$(HELLO_TA_UUID).ta"
+
+test-trvsim: upload_encfile_to_tamproto
+	PORT=$(PORT) TAM_URL=$(TAM_URL) expect ./script/test_trvsim.expect
+
+test: upload_encfile_to_tamproto
 	TAM_URL=$(TAM_URL) expect ./script/test.expect
