@@ -48,7 +48,7 @@ libteep-mbedtls-tee-DISABLE = y
 libteep-libwebsockets-tee-DISABLE = y
 libteep-libteep-ree-DISABLE = y
 
-all: libteep teep-broker-app
+all: libteep teep-broker-app scripts
 
 include ../common.mk
 
@@ -57,6 +57,17 @@ clean:
 
 TAM_URL ?= http://localhost:8888
 BROKER = ./build/teep-broker-app/teep-broker-app
+
+.PHONY: scripts
+
+scripts:
+	mkdir -p $(BUILD)/scripts
+	for f in dota dsta dta iota ista ita; do \
+		install $(SOURCE)/scripts/$$f.sh $(BUILD)/scripts; \
+		sed -i 's/3000/8888/' $(BUILD)/scripts/$$f.sh; \
+		sed -i 's@teep-broker-app@$(BUILD)/teep-broker-app/teep-broker-app@' $(BUILD)/scripts/$$f.sh; \
+	done
+
 
 test:
 	echo 'hello, world!' >$(BUILD)/$(HELLO_TA_UUID).ta
