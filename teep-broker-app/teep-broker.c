@@ -346,8 +346,7 @@ int loop_teep(struct libteep_ctx *lao_ctx) {
 				while (ta_uuid) {
 					char tmp[300];
 					lws_snprintf(tmp, sizeof(tmp),
-						"{\"Vendor_ID\":\"%s\",\"Class_ID\":\"%s\",\"Device_ID\":\"%s\"},",
-						"ietf-teep-wg", ta_uuid, "teep-device");
+						"\"%s\",", ta_uuid);
 					strncat(ta_id_list, tmp, sizeof(ta_id_list) - strlen(ta_id_list));
 					ta_uuid = strtok(NULL, ",");
 				}
