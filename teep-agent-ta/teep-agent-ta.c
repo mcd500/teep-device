@@ -242,7 +242,7 @@ void EAPP_ENTRY eapp_entry()
 
 	for (;;) {
 		invoke_command_t c = ocall_pull_invoke_command();
-		if (c.commandID == 1000) {
+		if (c.commandID == TEEP_AGENT_TA_EXIT) {
 			ocall_put_invoke_command_result(c, 0);
 			break;
 		}

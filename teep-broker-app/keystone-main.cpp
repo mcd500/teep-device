@@ -24,6 +24,7 @@
 #include <libwebsockets.h>
 
 #include "teep-broker.h"
+#include "teep-command-def.h"
 
 static void
 usage(void)
@@ -246,7 +247,7 @@ int main(int argc, const char** argv)
 
     {
         invoke_command_t c;
-        c.commandID = 1000;
+        c.commandID = TEEP_AGENT_TA_EXIT;
         c.paramTypes = 0;
         my_TEEC_InvokeCommand(c);
     }

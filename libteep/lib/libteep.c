@@ -35,6 +35,7 @@
 
 #include <tee_client_api.h>
 #include "libteep.h"
+#include "teep-command-def.h"
 #include <libwebsockets.h>
 #include <pthread.h>
 
@@ -350,7 +351,7 @@ libteep_ta_store_install(struct libteep_ctx *ctx, char *ta_image, size_t ta_imag
 	op.params[2].tmpref.buffer	= ta_image_dec;
 	op.params[2].tmpref.size	= ta_image_dec_len;
 	op.params[3].value.a		= ta_image_dec_len;
-	n = TEEC_InvokeCommand(&ctx->tee_session, 301, &op, NULL);
+	n = TEEC_InvokeCommand(&ctx->tee_session, TEEP_AGENT_TA_UNWRAP_TA_IMAGE, &op, NULL);
 	if (n != TEEC_SUCCESS) {
 		lwsl_err("%s: TEEC_InvokeCommand "
 		        "failed (0x%08x)\n", __func__, n);
@@ -373,7 +374,7 @@ libteep_ta_store_install(struct libteep_ctx *ctx, char *ta_image, size_t ta_imag
 	op.params[2].tmpref.size    = strlen(ta_name) + 1;
 	op.params[3].value.a        = strlen(ta_name) + 1;
 
-	n = TEEC_InvokeCommand(&ctx->tee_session, 101, &op, NULL);
+	n = TEEC_InvokeCommand(&ctx->tee_session, TEEP_AGENT_TA_INSTALL, &op, NULL);
 	if (n != TEEC_SUCCESS) {
 		lwsl_err("%s: TEEC_InvokeCommand "
 		        "failed (0x%08x)\n", __func__, n);
@@ -397,7 +398,7 @@ libteep_ta_store_delete(struct libteep_ctx *ctx, char *uuid, size_t uuid_len) {
 	op.params[0].tmpref.size	= uuid_len;
 	op.params[1].value.a		= uuid_len;
 
-	n = TEEC_InvokeCommand(&ctx->tee_session, 102, &op, NULL);
+	n = TEEC_InvokeCommand(&ctx->tee_session, TEEP_AGENT_TA_DELETE, &op, NULL);
 	if (n != TEEC_SUCCESS) {
 		lwsl_err("%s: TEEC_InvokeCommand "
 		        "failed (0x%08x)\n", __func__, n);
@@ -531,7 +532,7 @@ libteep_msg_wrap(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, si
 		.out = out,
 		.out_len = outlen
 	};
-	int n = libteep_teep_agent_msg(ctx, 1, &io);
+	int n = libteep_teep_agent_msg(ctx, TEEP_AGENT_TA_WRAP_MESSAGE, &io);
 	if (n < 0) {
 		return n;
 	}
@@ -547,7 +548,7 @@ libteep_msg_sign(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, si
 		.out = out,
 		.out_len = outlen
 	};
-	int n = libteep_teep_agent_msg(ctx, 11, &io);
+	int n = libteep_teep_agent_msg(ctx, TEEP_AGENT_TA_SIGN_MESSAGE, &io);
 	if (n < 0) {
 		return n;
 	}
@@ -563,7 +564,7 @@ libteep_msg_encrypt(struct libteep_ctx *ctx, void *out, size_t outlen, void *in,
 		.out = out,
 		.out_len = outlen
 	};
-	int n = libteep_teep_agent_msg(ctx, 12, &io);
+	int n = libteep_teep_agent_msg(ctx, TEEP_AGENT_TA_ENCRYPT_MESSAGE, &io);
 	if (n < 0) {
 		return n;
 	}
@@ -579,7 +580,7 @@ libteep_msg_unwrap(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, 
 		.out = out,
 		.out_len = outlen
 	};
-	int n = libteep_teep_agent_msg(ctx, 2, &io);
+	int n = libteep_teep_agent_msg(ctx, TEEP_AGENT_TA_UNWRAP_MESSAGE, &io);
 	if (n < 0) {
 		return n;
 	}
@@ -595,7 +596,7 @@ libteep_msg_verify(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, 
 		.out = out,
 		.out_len = outlen
 	};
-	int n = libteep_teep_agent_msg(ctx, 21, &io);
+	int n = libteep_teep_agent_msg(ctx, TEEP_AGENT_TA_VERIFY_MESSAGE, &io);
 	if (n < 0) {
 		return n;
 	}
@@ -611,7 +612,7 @@ libteep_msg_decrypt(struct libteep_ctx *ctx, void *out, size_t outlen, void *in,
 		.out = out,
 		.out_len = outlen
 	};
-	int n = libteep_teep_agent_msg(ctx, 22, &io);
+	int n = libteep_teep_agent_msg(ctx, TEEP_AGENT_TA_DECRYPT_MESSAGE, &io);
 	if (n < 0) {
 		return n;
 	}

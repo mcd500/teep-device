@@ -47,6 +47,7 @@ export TA_CFLAGS = \
 	-I$(KEYSTONE_SDK_DIR)/lib/app/include \
 	-I$(KEYSTONE_SDK_DIR)/lib/edge/include \
 	-I../platform/keystone/build/libteep/tee/libwebsockets/include \
+	-I$(SOURCE)/libteep/lib \
 	-I$(SOURCE)/key/include \
 	-DKEYSTONE \
 	-DPLAT_KEYSTONE
