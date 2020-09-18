@@ -146,7 +146,61 @@ public:
 
 };
 
+// XXX: only one TEEC_Session is supported
 static CommandQueue queue;
+static Keystone enclave;
+static std::thread enclave_thread;
+
+TEEC_Result TEEC_InitializeContext(const char *name, TEEC_Context *context)
+{
+    fprintf(stderr, "TEEC_InitializeContext\n");
+    return TEEC_SUCCESS;
+}
+
+void TEEC_FinalizeContext(TEEC_Context *context)
+{
+    fprintf(stderr, "TEEC_FinalizeContext\n");
+}
+
+TEEC_Result TEEC_OpenSession(TEEC_Context *context,
+			     TEEC_Session *session,
+			     const TEEC_UUID *destination,
+			     uint32_t connectionMethod,
+			     const void *connectionData,
+			     TEEC_Operation *operation,
+			     uint32_t *returnOrigin)
+{
+    fprintf(stderr, "TEEC_OpenSession\n");
+
+    Params params;
+    params.setFreeMemSize(1024*1024);
+    params.setUntrustedMem(DEFAULT_UNTRUSTED_PTR, 1024*1024);
+    if(enclave.init(enc_path, runtime_path, params) != KEYSTONE_SUCCESS){
+        printf("Unable to start enclave\n");
+        return TEEC_ERROR_GENERIC;
+    }
+
+    enclave.registerOcallDispatch(incoming_call_dispatch);
+
+    register_functions();
+        
+    edge_call_init_internals((uintptr_t)enclave.getSharedBuffer(),
+                            enclave.getSharedBufferSize());
+
+    std::thread t(
+        [&]{ enclave.run(); }
+    );
+    enclave_thread.swap(t);
+
+    return TEEC_SUCCESS;
+}
+
+void TEEC_CloseSession(TEEC_Session *session)
+{
+    fprintf(stderr, "TEEC_CloseSession\n");
+    TEEC_InvokeCommand(NULL, TEEP_AGENT_TA_EXIT, NULL, NULL);
+    enclave_thread.join();
+}
 
 TEEC_Result TEEC_InvokeCommand(TEEC_Session *session,
 			       uint32_t commandID,
@@ -164,31 +218,7 @@ TEEC_Result TEEC_InvokeCommand(TEEC_Session *session,
 int main(int argc, const char** argv)
 {
 	cmdline_parse(argc, argv);
-
-    Keystone enclave;
-    Params params;
-    params.setFreeMemSize(1024*1024);
-    params.setUntrustedMem(DEFAULT_UNTRUSTED_PTR, 1024*1024);
-    if(enclave.init(enc_path, runtime_path, params) != KEYSTONE_SUCCESS){
-        printf("%s: Unable to start enclave\n", argv[0]);
-        exit(-1);
-    }
-
-    enclave.registerOcallDispatch(incoming_call_dispatch);
-
-    register_functions();
-        
-    edge_call_init_internals((uintptr_t)enclave.getSharedBuffer(),
-                            enclave.getSharedBufferSize());
-
-    std::thread enclave_thread(
-        [&]{ enclave.run(); }
-    );
-
     int ret = broker_main();
-
-    TEEC_InvokeCommand(NULL, TEEP_AGENT_TA_EXIT, NULL, NULL);
-    enclave_thread.join();
 
     return ret;
 }
@@ -218,31 +248,3 @@ void ocall_put_invoke_command_result(invoke_command_t cmd, unsigned int result)
 
 EDGE_EXTERNC_END
 
-TEEC_Result TEEC_InitializeContext(const char *name, TEEC_Context *context)
-{
-    fprintf(stderr, "TEEC_InitializeContext\n");
-    return TEEC_SUCCESS;
-}
-
-void TEEC_FinalizeContext(TEEC_Context *context)
-{
-    fprintf(stderr, "TEEC_FinalizeContext\n");
-}
-
-TEEC_Result TEEC_OpenSession(TEEC_Context *context,
-			     TEEC_Session *session,
-			     const TEEC_UUID *destination,
-			     uint32_t connectionMethod,
-			     const void *connectionData,
-			     TEEC_Operation *operation,
-			     uint32_t *returnOrigin)
-{
-    fprintf(stderr, "TEEC_OpenSession\n");
-    return TEEC_SUCCESS;
-
-}
-
-void TEEC_CloseSession(TEEC_Session *session)
-{
-    fprintf(stderr, "TEEC_CloseSession\n");
-}
