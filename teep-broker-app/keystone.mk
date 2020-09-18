@@ -3,10 +3,10 @@ out-dir ?= .
 
 all: $(out-dir)/teep-broker-app
 
-$(out-dir)/keystone-main.o: keystone-main.cpp
+$(out-dir)/teec-keystone.o: teec-keystone.cpp
 $(out-dir)/teep-broker.o: teep-broker.c
 
-$(out-dir)/teep-broker-app: $(out-dir)/keystone-main.o $(out-dir)/teep-broker.o
+$(out-dir)/teep-broker-app: $(out-dir)/teec-keystone.o $(out-dir)/teep-broker.o
 	mkdir -p $(out-dir)
 	$(CROSS_COMPILE)g++  $(APP_CFLAGS) $(APP_LDFLAGS) $^ -o $@ $(APP_LIBS) -pthread
 
@@ -21,4 +21,4 @@ $(out-dir)/%.o: %.cpp
 
 clean:
 	rm -f $(out-dir)/teep-broker-app
-	rm -f $(out-dir)/teep-broker.o
+	rm -f $(out-dir)/*.o

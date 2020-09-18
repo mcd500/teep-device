@@ -15,3 +15,4 @@ $(out-dir)/%.o: %.c
 
 clean:
 	rm -f $(out-dir)/teep-broker-app
+	rm -f $(out-dir)/*.o
