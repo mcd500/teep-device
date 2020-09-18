@@ -7,14 +7,9 @@
 extern "C" {
 #endif
 
-// XXX
-extern const char *uri;
-extern enum libteep_teep_ver teep_ver;
-extern const char *talist;
-extern bool jose;
+void cmdline_parse(int argc, const char *argv[]);
 
-int loop_teep(struct libteep_ctx *lao_ctx);
-int loop_otrp(struct libteep_ctx *lao_ctx);
+int broker_main(void);
 
 #ifdef __cplusplus
 }
