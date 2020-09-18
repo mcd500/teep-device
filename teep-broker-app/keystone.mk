@@ -3,8 +3,8 @@ out-dir ?= .
 
 all: $(out-dir)/teep-broker-app
 
-$(out-dir)/keystone-main.o: keystone-main.cpp teep-broker.h
-$(out-dir)/teep-broker.o: teep-broker.c teep-broker.h
+$(out-dir)/keystone-main.o: keystone-main.cpp
+$(out-dir)/teep-broker.o: teep-broker.c
 
 $(out-dir)/teep-broker-app: $(out-dir)/keystone-main.o $(out-dir)/teep-broker.o
 	mkdir -p $(out-dir)

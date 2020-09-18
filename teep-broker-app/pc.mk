@@ -5,8 +5,8 @@ all: $(out-dir)/teep-broker-app
 
 CFLAGS = $(APP_CFLAGS) -I../teep-agent-ta
 
-$(out-dir)/pc-main.o: pc-main.c teep-broker.h
-$(out-dir)/teep-broker.o: teep-broker.c teep-broker.h
+$(out-dir)/pc-main.o: pc-main.c
+$(out-dir)/teep-broker.o: teep-broker.c
 $(out-dir)/libteep.o: ../libteep/lib/libteep.c
 $(out-dir)/ta-store.o: ../teep-agent-ta/ta-store.c ../teep-agent-ta/ta-store.h ../teep-agent-ta/teep-agent-ta.h
 $(out-dir)/teep_message.o: ../teep-agent-ta/teep_message.c ../teep-agent-ta/teep_message.h ../teep-agent-ta/teep-agent-ta.h

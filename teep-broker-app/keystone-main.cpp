@@ -23,7 +23,6 @@
 #include <libteep.h>
 #include <libwebsockets.h>
 
-#include "teep-broker.h"
 #include "teep-command-def.h"
 
 
@@ -211,14 +210,6 @@ TEEC_Result TEEC_InvokeCommand(TEEC_Session *session,
 
     queue.put_invoke_command(commandID, operation);
     unsigned int ret = queue.pull_invoke_command_result();
-
-    return ret;
-}
-
-int main(int argc, const char** argv)
-{
-	cmdline_parse(argc, argv);
-    int ret = broker_main();
 
     return ret;
 }

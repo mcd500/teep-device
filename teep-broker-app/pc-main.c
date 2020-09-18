@@ -32,8 +32,6 @@
 #include "ta-store.h"
 #include "teep-agent-ta.h"
 
-#include "teep-broker.h"
-
 /* TEEC Stub */
 
 TEEC_Result TEEC_InitializeContext(const char *name, TEEC_Context *context)
@@ -174,11 +172,4 @@ void TEEC_ReleaseSharedMemory(TEEC_SharedMemory *sharedMemory)
 void TEEC_RequestCancellation(TEEC_Operation *operation)
 {
 	lwsl_user("%s: stub called\n", __func__);
-}
-
-int
-main(int argc, const char *argv[])
-{
-	cmdline_parse(argc, argv);
-	return broker_main();
 }

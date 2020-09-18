@@ -710,3 +710,9 @@ int broker_main()
 	libteep_destroy(&lao_ctx);
 	return 0;
 }
+
+int main(int argc, const char** argv)
+{
+	cmdline_parse(argc, argv);
+	return broker_main();
+}
