@@ -68,8 +68,7 @@ scripts:
 		sed -i 's@teep-broker-app@$(BUILD)/teep-broker-app/teep-broker-app@' $(BUILD)/scripts/$$f.sh; \
 	done
 
-
-test:
+upload_encfile_to_tamproto:
 	echo 'hello, world!' >$(BUILD)/$(HELLO_TA_UUID).ta
 	cd $(SOURCE)/scripts/keygen && npm install
 	node $(SOURCE)/scripts/keygen/sign-then-enc.js \
@@ -79,6 +78,8 @@ test:
 	curl $(TAM_URL)/api/
 	curl $(TAM_URL)/panel/upload \
 		-F "file=@$(BUILD)/$(HELLO_TA_UUID).ta.sign.enc;filename=$(HELLO_TA_UUID).ta"
+
+test: upload_encfile_to_tamproto
 	$(BROKER) --tamurl $(TAM_URL)/api/tam 2>&1 | tee $(BUILD)/pctest.log
 	! fgrep 'ERR:' $(BUILD)/pctest.log
 	fgrep 'ta_store_install: stub called' $(BUILD)/pctest.log
