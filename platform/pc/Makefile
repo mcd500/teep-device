@@ -70,8 +70,8 @@ scripts:
 	mkdir -p $(BUILD)/scripts
 	for f in dota dsta dta iota ista ita; do \
 		install $(SOURCE)/scripts/$$f.sh $(BUILD)/scripts; \
-		sed -i 's/3000/8888/' $(BUILD)/scripts/$$f.sh; \
-		sed -i 's@teep-broker-app@$(BUILD)/teep-broker-app/teep-broker-app@' $(BUILD)/scripts/$$f.sh; \
+		sed -i'' -e 's/3000/8888/' $(BUILD)/scripts/$$f.sh; \
+		sed -i'' -e 's@teep-broker-app@$(BUILD)/teep-broker-app/teep-broker-app@' $(BUILD)/scripts/$$f.sh; \
 	done
 
 upload_encfile_to_tamproto:
