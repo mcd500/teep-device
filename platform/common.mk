@@ -3,6 +3,7 @@
 libteep: libteep-host libteep-ree libteep-tee
 hello: hello-ta hello-app
 teep: teep-agent-ta teep-broker-app
+export CFLAGS=-Wno-enum-conversion
 
 libteep-host: libteep-mbedtls-host libteep-libwebsockets-host
 libteep-ree: libteep-mbedtls-ree libteep-libwebsockets-ree libteep-libteep-ree

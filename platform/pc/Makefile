@@ -22,10 +22,15 @@ export APP_LDFLAGS = \
 export APP_LIBS = \
 	 -lwebsockets -lmbedtls -lmbedx509 -lmbedcrypto -lcap
 
+export CMAKE_C_FLAGS = -Wno-enum-conversion
+export CMAKE_C_FLAGS_DEBUG = -Wno-enum-conversion
+export CMAKE_C_FLAGS_RELEASE = -Wno-enum-conversion
+
 libteep-mbedtls-host-FLAGS = \
 	-DCMAKE_BUILD_TYPE=RELEASE \
 	-DUSE_STATIC_MBEDTLS_LIBRARY=1 \
-	-DUSE_SAHTED_MBEDTLS_LIBRARY=0
+	-DUSE_SAHTED_MBEDTLS_LIBRARY=0 \
+        -DCFLAGS='-Wno-enum-conversion maki'
 
 libteep-libwebsockets-host-FLAGS = \
 	-DLWS_WITH_SSL=1 \
@@ -41,6 +46,7 @@ libteep-libwebsockets-host-FLAGS = \
 	-DLWS_WITH_STATIC=1 \
 	-DLWS_WITHOUT_SERVER=1 \
 	-DCMAKE_BUILD_TYPE=Debug \
+        -DCFLAGS='-Wno-enum-conversion laki'
 
 libteep-mbedtls-ree-DISABLE = y
 libteep-libwebsockets-ree-DISABLE = y
