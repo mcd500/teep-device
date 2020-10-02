@@ -89,7 +89,8 @@ callback_teep(struct lws *wsi, enum lws_callback_reasons reason, void *user,
 	char buffer[1024 + LWS_PRE];
 	char *px = buffer + LWS_PRE;
 	int lenx = sizeof(buffer) - LWS_PRE;
-	lwsl_info("callback %d\n", reason);
+
+	lwsl_debug("%s: reason=%d\n", __func__, reason);
 	switch (reason) {
 	case LWS_CALLBACK_CLIENT_CONNECTION_ERROR:
 		lwsl_err("%s: CONNECTION_ERROR: %d\n", __func__, TR_FAIL_CONN_ERR);
@@ -180,7 +181,8 @@ callback_download_ta_image(struct lws *wsi, enum lws_callback_reasons reason, vo
 	char buffer[1024 + LWS_PRE];
 	char *px = buffer + LWS_PRE;
 	int lenx = sizeof(buffer) - LWS_PRE;
-	lwsl_info("callback %d\n", reason);
+
+	lwsl_debug("%s: reason=%d\n", __func__, reason);
 	switch (reason) {
 	case LWS_CALLBACK_CLIENT_CONNECTION_ERROR:
 		lwsl_err("%s: CONNECTION_ERROR: %d\n", __func__, TR_FAIL_CONN_ERR);

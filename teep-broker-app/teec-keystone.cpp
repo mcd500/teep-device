@@ -152,13 +152,13 @@ static std::thread enclave_thread;
 
 TEEC_Result TEEC_InitializeContext(const char *name, TEEC_Context *context)
 {
-    fprintf(stderr, "TEEC_InitializeContext\n");
+    lwsl_info("TEEC_InitializeContext\n");
     return TEEC_SUCCESS;
 }
 
 void TEEC_FinalizeContext(TEEC_Context *context)
 {
-    fprintf(stderr, "TEEC_FinalizeContext\n");
+    lwsl_info("TEEC_FinalizeContext\n");
 }
 
 TEEC_Result TEEC_OpenSession(TEEC_Context *context,
@@ -169,13 +169,13 @@ TEEC_Result TEEC_OpenSession(TEEC_Context *context,
 			     TEEC_Operation *operation,
 			     uint32_t *returnOrigin)
 {
-    fprintf(stderr, "TEEC_OpenSession\n");
+    lwsl_info("TEEC_OpenSession\n");
 
     Params params;
     params.setFreeMemSize(1024*1024);
     params.setUntrustedMem(DEFAULT_UNTRUSTED_PTR, 1024*1024);
     if(enclave.init(enc_path, runtime_path, params) != KEYSTONE_SUCCESS){
-        printf("Unable to start enclave\n");
+        lwsl_err("Unable to start enclave\n");
         return TEEC_ERROR_GENERIC;
     }
 
@@ -196,7 +196,7 @@ TEEC_Result TEEC_OpenSession(TEEC_Context *context,
 
 void TEEC_CloseSession(TEEC_Session *session)
 {
-    fprintf(stderr, "TEEC_CloseSession\n");
+    lwsl_info("TEEC_CloseSession\n");
     TEEC_InvokeCommand(NULL, TEEP_AGENT_TA_EXIT, NULL, NULL);
     enclave_thread.join();
 }
@@ -206,7 +206,7 @@ TEEC_Result TEEC_InvokeCommand(TEEC_Session *session,
 			       TEEC_Operation *operation,
 			       uint32_t *returnOrigin)
 {
-    fprintf(stderr, "TEEC_InvokeCommand\n");
+    lwsl_info("TEEC_InvokeCommand\n");
 
     queue.put_invoke_command(commandID, operation);
     unsigned int ret = queue.pull_invoke_command_result();
