@@ -116,7 +116,14 @@ string_to_uuid_octets(const char *s, uint8_t *octets16)
 
 TEE_Result TA_CreateEntryPoint(void)
 {
-	lws_set_log_level(LLL_USER | LLL_ERR | LLL_WARN | LLL_INFO | LLL_NOTICE, NULL);
+	lws_set_log_level(0
+		| LLL_USER
+		| LLL_ERR
+		| LLL_WARN
+		| LLL_INFO
+		| LLL_NOTICE
+//		| LLL_DEBUG
+		, NULL);
 	return TEE_SUCCESS;
 }
 
@@ -238,7 +245,7 @@ TA_InvokeCommandEntryPoint(void __maybe_unused *sess_ctx,
 
 void EAPP_ENTRY eapp_entry()
 {
-	lws_set_log_level(LLL_ERR | LLL_WARN | LLL_NOTICE | LLL_USER, NULL);
+	TA_CreateEntryPoint();
 
 	for (;;) {
 		invoke_command_t c = ocall_pull_invoke_command();

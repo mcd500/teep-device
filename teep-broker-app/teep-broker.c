@@ -713,6 +713,15 @@ int broker_main()
 
 int main(int argc, const char** argv)
 {
+	lws_set_log_level(0
+		| LLL_USER
+		| LLL_ERR
+		| LLL_WARN
+		| LLL_INFO
+		| LLL_NOTICE
+//		| LLL_DEBUG
+		, NULL);
+
 	cmdline_parse(argc, argv);
 	return broker_main();
 }
