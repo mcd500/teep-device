@@ -28,7 +28,6 @@
 
 #ifndef PCTEST
 #include <tee_internal_api.h>
-#include <tee_internal_api_extensions.h>
 #ifndef PLAT_KEYSTONE
 #include <pta_secstor_ta_mgmt.h>
 #else

@@ -28,7 +28,6 @@
 
 #define STR_TRACE_USER_TA "AIST_OTrP"
 #include <tee_internal_api.h>
-#include <tee_internal_api_extensions.h>
 #include <libwebsockets.h>
 #include "teep-agent-ta.h"
 #include "teep_message.h"
