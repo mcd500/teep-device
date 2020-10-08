@@ -28,7 +28,10 @@
 
 #include <libwebsockets.h>
 #include "teep_message.h"
+#include "ta-store.h"
 #define TEMP_BUF_SIZE (800 * 1024)
+
+char *strncat(char *dest, const char *src, size_t n);
 
 static char temp_buf[TEMP_BUF_SIZE];
 
@@ -682,4 +685,295 @@ otrp_message_decrypt(const char *msg, int msg_len, char *out, uint32_t *out_len)
 bail:
 	lws_jwe_destroy(&jwe);
 	return n;
+}
+
+static char teep_req_buf[5 * 1024];
+static char teep_res_buf[5 * 1024];
+static char ta_list_buf[256];
+
+struct teep_mesg {
+	int type;
+	char *token;
+	size_t token_max_len;
+};
+
+struct otrp_mesg {
+	int type;
+	char *mes;
+};
+
+struct ta_list {
+	size_t len;
+	char uuid[10][37];
+};
+
+struct manifest_list {
+	size_t len;
+	char url[10][256];
+};
+
+static signed char
+parse_ta_list(struct lejp_ctx *ctx, char reason)
+{
+	struct ta_list *l = (void *)ctx->user;
+	if (!strcmp(ctx->path, "TA_LIST[]")) {
+		size_t i = *ctx->i;
+		if (i >= 10) {
+			lwsl_err("TA_LIST is too long\n");
+			return 0;
+		}
+		if (reason == LEJPCB_VAL_STR_START) {
+			l->len = i+1;
+			strncpy(l->uuid[i], ctx->buf, 36);
+			return 0;
+		}
+		if (reason == LEJPCB_VAL_STR_CHUNK) {
+			strncat(l->uuid[i], ctx->buf, 36 - strlen(l->uuid[i]));
+			return 0;
+		}
+		if (reason == LEJPCB_VAL_STR_END) {
+			strncat(l->uuid[i], ctx->buf, 36 - strlen(l->uuid[i]));
+			lwsl_user("uuid[i]: %s\n", l->uuid[i]);
+			return 0;
+		}
+	}
+	return 0;
+}
+
+static signed char
+parse_manifest_list(struct lejp_ctx *ctx, char reason)
+{
+	struct manifest_list *l = (void *)ctx->user;
+	if (!strcmp(ctx->path, "MANIFEST_LIST[]")) {
+		size_t i = *ctx->i;
+		if (reason == LEJPCB_VAL_STR_START) {
+			l->len = i+1;
+			strncpy(l->url[i], ctx->buf, 255);
+			return 0;
+		}
+		if (reason == LEJPCB_VAL_STR_CHUNK) {
+			strncat(l->url[i], ctx->buf, 255 - strlen(l->url[i]));
+			return 0;
+		}
+		if (reason == LEJPCB_VAL_STR_END) {
+			strncat(l->url[i], ctx->buf, 255 - strlen(l->url[i]));
+			lwsl_user("url[i]: %s\n", l->url[i]);
+			return 0;
+		}
+	}
+	return 0;
+}
+
+static signed char
+parse_type_token_cb(struct lejp_ctx *ctx, char reason)
+{
+	struct teep_mesg *m = (void *)ctx->user;
+	if (!strcmp(ctx->path, "TYPE") && reason == LEJPCB_VAL_NUM_INT) {
+		m->type = atoi(ctx->buf);
+		lwsl_user("TYPE: %d\n", m->type);
+		return 0;
+	}
+
+	if (!strcmp(ctx->path, "TOKEN")) {
+		if (reason == LEJPCB_VAL_STR_START) {
+			lws_snprintf(m->token, m->token_max_len, "%s", ctx->buf);
+			return 0;
+		}
+		if (reason == LEJPCB_VAL_STR_CHUNK) {
+			lws_snprintf(m->token, m->token_max_len, "%s%s", m->token, ctx->buf);
+			return 0;
+		}
+		if (reason == LEJPCB_VAL_STR_END) {
+			lws_snprintf(m->token, m->token_max_len, "%s%s", m->token, ctx->buf);
+			lwsl_user("TOKEN: %s\n", m->token);
+			return 0;
+		}
+	}
+	return 0;
+}
+
+enum teep_message_type {
+	QUERY_REQUEST = 1,
+	QUERY_RESPONSE = 2,
+	TRUSTED_APP_INSTALL = 3,
+	TRUSTED_APP_DELETE = 4,
+	SUCCESS = 5,
+	ERROR = 6
+};
+
+int
+teep_agent_message(int jose, const char *msg, int msg_len, char *out, uint32_t *out_len, char *ta_url_list, uint32_t *ta_url_list_len)
+{
+	lwsl_notice("teep_agent_message\n");
+	int n;
+	if (jose) {
+		uint32_t len = sizeof (teep_req_buf);
+		n = teep_message_unwrap(msg, msg_len, teep_req_buf, &len);
+		if (n >= 0) n = len;
+	} else {
+		if (sizeof (teep_req_buf) < msg_len) {
+			n = -1;
+		} else {
+			memmove(teep_req_buf, msg, msg_len);
+			n = msg_len;
+		}
+	}
+	if (n < 0) {
+		lwsl_err("%s: unwrap_teep_request: fail %d\n", __func__, n);
+		return n;
+	}
+	if (n == 0) {
+		lwsl_notice("%s: received encrypted empty body\n", __func__);
+		*out_len = 0;
+		return 0;
+	}
+	lwsl_notice("%s: received message: %*s\n", __func__, n, (char *)teep_req_buf);
+
+	static struct manifest_list manifests = {.len = 0};
+	static struct ta_list tas = {.len = 0};
+	struct lejp_ctx jp_ctx;
+	static char token[100] = "";
+	struct teep_mesg m = {
+		.type = -1,
+		.token = token,
+		.token_max_len = 99
+	};
+
+	lejp_construct(&jp_ctx, parse_type_token_cb, &m, NULL, 0);
+	lejp_parse(&jp_ctx, (void *)teep_req_buf, n);
+	lejp_destruct(&jp_ctx);
+
+	switch (m.type) {
+	case QUERY_REQUEST:
+		lwsl_notice("detect QUERY_REQUEST\n");
+		/* TODO: check entries in REQUEST */
+
+		lwsl_notice("send QUERY_RESPONSE\n");
+		{
+			static char ta_id_list[1000] = "";
+			char *p = ta_list_buf;
+			while (*p) {
+				static char tmp[300];
+				lws_snprintf(tmp, sizeof(tmp),
+					"\"%s\",", p);
+				strncat(ta_id_list, tmp, sizeof(ta_id_list) - strlen(ta_id_list));
+				p += strlen(p) + 1;
+			}
+			ta_id_list[strlen(ta_id_list) - 1] = '\0';
+			lws_snprintf(teep_res_buf, sizeof(teep_res_buf), 
+				"{\"TYPE\":%d,\"TOKEN\":\"%s\",\"TA_LIST\":[%s]}", QUERY_RESPONSE, m.token, ta_id_list);
+		}
+		lwsl_notice("json: %s, len: %zd\n", teep_res_buf, strlen(teep_res_buf));
+
+		if (jose) {
+			n = teep_message_wrap(teep_res_buf, strlen(teep_res_buf), out, out_len);
+		} else {
+			if (*out_len < strlen(teep_res_buf)) {
+				n = -1;
+			} else {
+				memmove(out, teep_res_buf, strlen(teep_res_buf));
+				*out_len = strlen(teep_res_buf);
+				n = *out_len;
+			}
+		}
+		if (n < 0) {
+			lwsl_err("%s: wrap_teep_response failed %d\n", __func__, n);
+			return n;
+		}
+		lwsl_notice("body: %s, len: %zd\n", out, (size_t)*out_len);
+		break;
+	case TRUSTED_APP_INSTALL:
+		lwsl_notice("detect TRUSTED_APP_INSTALL\n");
+		lejp_construct(&jp_ctx, parse_manifest_list, &manifests, NULL, 0);
+		lejp_parse(&jp_ctx, (void *)teep_req_buf, n);
+		lejp_destruct(&jp_ctx);
+
+		lwsl_notice("send SUCCESS\n");
+		lws_snprintf(teep_res_buf, sizeof(teep_res_buf), 
+			"{\"TYPE\":%d,\"TOKEN\":\"%s\"}", SUCCESS, m.token);
+		lwsl_notice("json: %s, len: %zd\n", teep_res_buf, strlen(teep_res_buf));
+
+		if (jose) {
+			n = teep_message_wrap(teep_res_buf, strlen(teep_res_buf), out, out_len);
+		} else {
+			if (*out_len < strlen(teep_res_buf)) {
+				n = -1;
+			} else {
+				memmove(out, teep_res_buf, strlen(teep_res_buf));
+				*out_len = strlen(teep_res_buf);
+				n = *out_len;
+			}
+		}
+		if (n < 0) {
+			lwsl_err("%s: wrap_teep_response failed, %d", __func__, n);
+			return n;
+		}
+		break;
+	case TRUSTED_APP_DELETE:
+		lwsl_notice("detect TRUSTED_APP_DELETE\n");
+		lejp_construct(&jp_ctx, parse_ta_list, &tas, NULL, 0);
+		lejp_parse(&jp_ctx, (void *)teep_req_buf, n);
+		lejp_destruct(&jp_ctx);
+		for (int i = 0; i < tas.len; i++) {
+			ta_store_delete(tas.uuid[i], strlen(tas.uuid[i]));
+		}
+		lwsl_notice("send SUCCESS\n");
+		lws_snprintf(teep_res_buf, sizeof(teep_res_buf),
+			"{\"TYPE\":%d,\"TOKEN\":\"%s\"}", SUCCESS, m.token);
+		lwsl_notice("json: %s, len: %zd\n", teep_res_buf, strlen(teep_res_buf));
+		if (jose) {
+			n = teep_message_wrap(teep_res_buf, strlen(teep_res_buf), out, out_len);
+		} else {
+			if (*out_len < strlen(teep_res_buf)) {
+				n = -1;
+			} else {
+				memmove(out, teep_res_buf, strlen(teep_res_buf));
+				*out_len = strlen(teep_res_buf);
+				n = *out_len;
+			}
+		}
+		if (n < 0) {
+			lwsl_err("%s: wrap_teep_response failed, %d", __func__, n);
+			return n;
+		}
+		*out_len = n;
+		break;
+	default:
+		lwsl_err("%s: requested message type is invalid %d\n", __func__, m.type);
+		return -1;
+	}
+
+	uint32_t ofs = 0;
+	for (int i = 0; i < manifests.len; i++) {
+		uint32_t len = strlen(manifests.url[i]) + 1;
+		if (*ta_url_list_len < ofs + len) return -1;
+		strcpy(ta_url_list + ofs, manifests.url[i]);
+		ofs += len + 1;
+	}
+	if (*ta_url_list_len < ofs + 1) return -1;
+	strcpy(ta_url_list + ofs, "");
+	ofs += 1;
+	*ta_url_list_len = ofs;
+
+	return 0;
+}
+
+int
+teep_agent_set_ta_list(const char *ta_list, int ta_list_len)
+{
+	if (ta_list_len == 0) {
+		ta_list_buf[0] = '\0';
+	} else {
+		if (ta_list[ta_list_len - 1] != 0) {
+			return -1;
+		}
+		if (ta_list_len > 1 && ta_list[ta_list_len - 2] != 0) {
+			return -1;
+		}
+		if (sizeof (ta_list_buf) < ta_list_len) {
+			return -1;
+		}
+		memcpy(ta_list_buf, ta_list, ta_list_len);
+	}
+	return 0;
 }

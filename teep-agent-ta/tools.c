@@ -1,6 +1,8 @@
 #include <stddef.h>
 #include <stdarg.h>
 #include <stdio.h> // vsnprintf, BUFSIZ
+#include <stdlib.h>
+#include <string.h>
 #include <tee_internal_api.h>
 #include <tee_internal_api_extensions.h>
 
@@ -32,11 +34,34 @@ char *strncpy(char *dst, const char *src, size_t n)
   return dst;
 }
 
+char *strncat(char *dest, const char *src, size_t n)
+{
+  size_t dest_len = strlen(dest);
+  size_t i;
+
+  for (i = 0 ; i < n && src[i] != '\0' ; i++)
+    dest[dest_len + i] = src[i];
+  dest[dest_len + i] = '\0';
+
+  return dest;
+}
+
+char *strdup(const char *s)
+{
+  size_t len = strlen(s);
+  char *p = malloc(len + 1);
+  if (p) {
+    memcpy(p, s, len + 1);
+  }
+  return p;
+}
+
 char *strchr(const char *s, int c)
 {
   return __builtin_strchr(s, c);
 }
 
+#ifdef KEYSTONE
 // Compiler may replace simple printf to puts and putchar
 int puts(const char *s)
 {
@@ -76,4 +101,15 @@ int printf(const char* fmt, ...)
 #else
   return 0;
 #endif
+}
+#endif
+
+int atoi(const char *s)
+{
+  int n = 0;
+  while ('0' <= *s && *s <= '9') {
+    n = n * 10 + (*s - '0');
+    s++;
+  }
+  return n;
 }

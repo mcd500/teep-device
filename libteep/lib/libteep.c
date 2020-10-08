@@ -713,3 +713,76 @@ libteep_download_and_install_ta_image(struct libteep_ctx *ctx, char *url) {
 	}
 	return libteep_ta_store_install(ctx, io.out, io.out_len, ta_name);
 }
+
+int libteep_agent_msg(struct libteep_ctx *ctx, int jose,
+		void *out, size_t *out_len, char *ta_url_list, size_t ta_url_list_len,
+		const void *in, size_t in_len)
+{
+	TEEC_Result n;
+	TEEC_Operation op;
+
+	memset(&op, 0, sizeof(TEEC_Operation));
+	op.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_TEMP_INPUT,
+					 TEEC_MEMREF_TEMP_OUTPUT,
+					 TEEC_MEMREF_TEMP_OUTPUT,
+					 TEEC_NONE);
+
+	op.params[0].tmpref.buffer 	= (void *)in;
+	op.params[0].tmpref.size	= in_len;
+	op.params[1].tmpref.buffer	= out;
+	op.params[1].tmpref.size	= *out_len;
+	op.params[2].tmpref.buffer 	= ta_url_list;
+	op.params[2].tmpref.size	= ta_url_list_len;
+
+	int cmd = jose ?  TEEP_AGENT_TA_MESSAGE_JOSE : TEEP_AGENT_TA_MESSAGE;
+	n = TEEC_InvokeCommand(&ctx->tee_session, cmd, &op, NULL);
+	if (n != TEEC_SUCCESS) {
+		lwsl_err("%s: TEEC_InvokeCommand "
+		        "failed (0x%08x)\n", __func__, n);
+		return (int)n;
+	}
+
+	size_t len = op.params[2].tmpref.size;
+	if (len == 0) return -1;
+	if (ta_url_list[len - 1] != 0) return -1;
+	if (len > 1 && ta_url_list[len - 2] != 0) return -1;
+
+	*out_len = op.params[1].tmpref.size;
+	lwsl_hexdump_notice(out, (*out_len > 2048) ? 2048 : *out_len);
+	return n;
+}
+
+int libteep_set_ta_list(struct libteep_ctx *ctx, const char *ta_list)
+{
+	TEEC_Result n;
+	TEEC_Operation op;
+
+	memset(&op, 0, sizeof(TEEC_Operation));
+	op.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_TEMP_INPUT,
+					 TEEC_NONE,
+					 TEEC_NONE,
+					 TEEC_NONE);
+
+	char *buffer = malloc(strlen(ta_list) + 2);
+	if (!buffer) return -1;
+
+	memcpy(buffer, ta_list, strlen(ta_list) + 1);
+	size_t i;
+	for (i = 0; buffer[i]; i++) {
+		if (buffer[i] == ',') {
+			buffer[i] = '\0';
+		}
+	}
+	buffer[i + 1] = '\0';
+	op.params[0].tmpref.buffer 	= buffer;
+	op.params[0].tmpref.size	= i + 2;
+
+	n = TEEC_InvokeCommand(&ctx->tee_session, TEEP_AGENT_SET_TA_LIST, &op, NULL);
+	free(buffer);
+	if (n != TEEC_SUCCESS) {
+		lwsl_err("%s: TEEC_InvokeCommand "
+		        "failed (0x%08x)\n", __func__, n);
+		return (int)n;
+	}
+	return n;
+}

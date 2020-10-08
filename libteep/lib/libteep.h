@@ -195,6 +195,9 @@ libteep_ta_store_install(struct libteep_ctx *ctx, char *ta_image, size_t ta_imag
 int
 libteep_ta_store_delete(struct libteep_ctx *ctx, char *uuid, size_t uuid_len);
 
+int
+libteep_agent_msg(struct libteep_ctx *lao_ctx, int jose, void *out, size_t *out_len, char *ta_url_list, size_t ta_url_list_len, const void *in, size_t in_len);
+
 #ifdef __cplusplus
 }
 #endif

@@ -50,4 +50,10 @@ otrp_message_decrypt(const char *msg, int msg_len, char *resp, uint32_t *resp_le
 int
 teep_message_unwrap_ta_image(const char *msg, int msg_len, char *out, uint32_t *out_len);
 
+int
+teep_agent_message(int jose, const char *msg, int msg_len, char *out, uint32_t *out_len, char *ta_url_list, uint32_t *ta_url_list_len);
+
+int
+teep_agent_set_ta_list(const char *ta_list, int ta_list_len);
+
 #endif /* TEEP_MESSAGE_H */
