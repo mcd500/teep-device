@@ -10,13 +10,15 @@ $(out-dir)/teep-broker.o: teep-broker.c
 $(out-dir)/libteep.o: ../libteep/lib/libteep.c
 $(out-dir)/ta-store.o: ../teep-agent-ta/ta-store.c ../teep-agent-ta/ta-store.h ../teep-agent-ta/teep-agent-ta.h
 $(out-dir)/teep_message.o: ../teep-agent-ta/teep_message.c ../teep-agent-ta/teep_message.h ../teep-agent-ta/teep-agent-ta.h
+$(out-dir)/teep-agent-ta.o: ../teep-agent-ta/teep-agent-ta.c ../teep-agent-ta/ta-store.h ../teep-agent-ta/teep_message.h ../teep-agent-ta/teep-agent-ta.h
 
 OBJ = \
 	$(out-dir)/teec-pc.o \
 	$(out-dir)/teep-broker.o \
 	$(out-dir)/libteep.o \
 	$(out-dir)/ta-store.o \
-	$(out-dir)/teep_message.o
+	$(out-dir)/teep_message.o \
+	$(out-dir)/teep-agent-ta.o
 
 $(out-dir)/teep-broker-app: $(OBJ)
 	mkdir -p $(out-dir)

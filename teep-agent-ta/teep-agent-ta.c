@@ -34,6 +34,7 @@
 #include "ta-store.h"
 
 /* in a real system this'd come from the encrypted packet */
+#ifndef PCTEST
 
 time_t time(time_t *tloc)
 {
@@ -61,6 +62,8 @@ int gettimeofday(struct timeval *tv, struct timezone *tz)
 
 	return 0;
 }
+
+#endif
 
 int hex(char c)
 {

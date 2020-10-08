@@ -28,6 +28,7 @@
 
 #include <libwebsockets.h>
 #include <tee_client_api.h>
+#include <tee_internal_api.h>
 #include "teep_message.h"
 #include "ta-store.h"
 #include "teep-agent-ta.h"
@@ -68,83 +69,88 @@ TEEC_Result TEEC_InvokeCommand(TEEC_Session *session,
 		uint32_t *returnOrigin)
 {
 	lwsl_user("%s: stub called\n", __func__);
-	uint32_t type = operation->paramTypes;
-	TEEC_Parameter *params = operation->params;
-	switch (commandID) {
-	case TEEP_AGENT_TA_WRAP_MESSAGE: /* wrap TEEP message*/
-		if ((TEEC_PARAM_TYPE_GET(type, 0) != TEEC_MEMREF_TEMP_INPUT) ||
-				(TEEC_PARAM_TYPE_GET(type, 1) != TEEC_VALUE_INPUT) ||
-				(TEEC_PARAM_TYPE_GET(type, 2) != TEEC_MEMREF_TEMP_OUTPUT) ||
-				(TEEC_PARAM_TYPE_GET(type, 3) != TEEC_VALUE_INOUT))
-			return TEEC_ERROR_BAD_PARAMETERS;
-		return teep_message_wrap(params[0].tmpref.buffer, params[1].value.a,
-				params[2].tmpref.buffer, (size_t *)&params[3].value.a);
-	case TEEP_AGENT_TA_SIGN_MESSAGE: /* sign(wrap) OTrP message*/
-		if ((TEEC_PARAM_TYPE_GET(type, 0) != TEEC_MEMREF_TEMP_INPUT) ||
-				(TEEC_PARAM_TYPE_GET(type, 1) != TEEC_VALUE_INPUT) ||
-				(TEEC_PARAM_TYPE_GET(type, 2) != TEEC_MEMREF_TEMP_OUTPUT) ||
-				(TEEC_PARAM_TYPE_GET(type, 3) != TEEC_VALUE_INOUT))
-			return TEEC_ERROR_BAD_PARAMETERS;
-		return otrp_message_sign(params[0].tmpref.buffer, params[1].value.a,
-				params[2].tmpref.buffer, (size_t *)&params[3].value.a);
-	case TEEP_AGENT_TA_ENCRYPT_MESSAGE: /* encrypt(wrap) OTrP message*/
-		if ((TEEC_PARAM_TYPE_GET(type, 0) != TEEC_MEMREF_TEMP_INPUT) ||
-				(TEEC_PARAM_TYPE_GET(type, 1) != TEEC_VALUE_INPUT) ||
-				(TEEC_PARAM_TYPE_GET(type, 2) != TEEC_MEMREF_TEMP_OUTPUT) ||
-				(TEEC_PARAM_TYPE_GET(type, 3) != TEEC_VALUE_INOUT))
-			return TEEC_ERROR_BAD_PARAMETERS;
-		return otrp_message_encrypt(params[0].tmpref.buffer, params[1].value.a,
-				params[2].tmpref.buffer, (size_t *)&params[3].value.a);
-	case TEEP_AGENT_TA_UNWRAP_MESSAGE: /* unwrap TEEP message*/
-		if ((TEEC_PARAM_TYPE_GET(type, 0) != TEEC_MEMREF_TEMP_INPUT) ||
-				(TEEC_PARAM_TYPE_GET(type, 1) != TEEC_VALUE_INPUT) ||
-				(TEEC_PARAM_TYPE_GET(type, 2) != TEEC_MEMREF_TEMP_OUTPUT) ||
-				(TEEC_PARAM_TYPE_GET(type, 3) != TEEC_VALUE_INOUT))
-			return TEEC_ERROR_BAD_PARAMETERS;
-		return teep_message_unwrap(params[0].tmpref.buffer, params[1].value.a,
-				params[2].tmpref.buffer, (size_t *)&params[3].value.a);
-	case TEEP_AGENT_TA_VERIFY_MESSAGE: /* verify(unwrap) OTrP message*/
-		if ((TEEC_PARAM_TYPE_GET(type, 0) != TEEC_MEMREF_TEMP_INPUT) ||
-				(TEEC_PARAM_TYPE_GET(type, 1) != TEEC_VALUE_INPUT) ||
-				(TEEC_PARAM_TYPE_GET(type, 2) != TEEC_MEMREF_TEMP_OUTPUT) ||
-				(TEEC_PARAM_TYPE_GET(type, 3) != TEEC_VALUE_INOUT))
-			return TEEC_ERROR_BAD_PARAMETERS;
-		return otrp_message_verify(params[0].tmpref.buffer, params[1].value.a,
-				params[2].tmpref.buffer, (size_t *)&params[3].value.a);
-	case TEEP_AGENT_TA_DECRYPT_MESSAGE: /* decrypt(unwrap) OTrP message*/
-		if ((TEEC_PARAM_TYPE_GET(type, 0) != TEEC_MEMREF_TEMP_INPUT) ||
-				(TEEC_PARAM_TYPE_GET(type, 1) != TEEC_VALUE_INPUT) ||
-				(TEEC_PARAM_TYPE_GET(type, 2) != TEEC_MEMREF_TEMP_OUTPUT) ||
-				(TEEC_PARAM_TYPE_GET(type, 3) != TEEC_VALUE_INOUT))
-			return TEEC_ERROR_BAD_PARAMETERS;
-		return otrp_message_decrypt(params[0].tmpref.buffer, params[1].value.a,
-				params[2].tmpref.buffer, (size_t *)&params[3].value.a);
-	case TEEP_AGENT_TA_INSTALL: /* Install TA */
-		if ((TEEC_PARAM_TYPE_GET(type, 0) != TEEC_MEMREF_TEMP_INPUT) ||
-				(TEEC_PARAM_TYPE_GET(type, 1) != TEEC_VALUE_INPUT) ||
-				(TEEC_PARAM_TYPE_GET(type, 2) != TEEC_MEMREF_TEMP_INPUT) ||
-				(TEEC_PARAM_TYPE_GET(type, 3) != TEEC_VALUE_INPUT))
-			return TEEC_ERROR_BAD_PARAMETERS;
-		return ta_store_install(params[0].tmpref.buffer, params[1].value.a, "TA", 2);
-	case TEEP_AGENT_TA_DELETE: /* Delete TA */
-		if ((TEEC_PARAM_TYPE_GET(type, 0) != TEEC_MEMREF_TEMP_INPUT) ||
-				(TEEC_PARAM_TYPE_GET(type, 1) != TEEC_VALUE_INPUT) ||
-				(TEEC_PARAM_TYPE_GET(type, 2) != TEEC_NONE) ||
-				(TEEC_PARAM_TYPE_GET(type, 3) != TEEC_NONE))
-			return TEEC_ERROR_BAD_PARAMETERS;
-		return ta_store_delete(params[0].tmpref.buffer, params[1].value.a);
-	case TEEP_AGENT_TA_UNWRAP_TA_IMAGE: /* unwrap TEEP message*/
-		if ((TEEC_PARAM_TYPE_GET(type, 0) != TEEC_MEMREF_TEMP_INPUT) ||
-				(TEEC_PARAM_TYPE_GET(type, 1) != TEEC_VALUE_INPUT) ||
-				(TEEC_PARAM_TYPE_GET(type, 2) != TEEC_MEMREF_TEMP_OUTPUT) ||
-				(TEEC_PARAM_TYPE_GET(type, 3) != TEEC_VALUE_INOUT))
-			return TEEC_ERROR_BAD_PARAMETERS;
-		return teep_message_unwrap_ta_image(params[0].tmpref.buffer, params[1].value.a,
-				params[2].tmpref.buffer, (size_t *)&params[3].value.a);
-
-	default:
-		return TEEC_ERROR_NOT_IMPLEMENTED;
+	int type[4];
+	for (int i = 0; i < 4; i++) {
+		switch (TEEC_PARAM_TYPE_GET(operation->paramTypes, i)) {
+		default:
+			type[i] = TEE_PARAM_TYPE_NONE;
+			break;
+		case TEEC_VALUE_INPUT:
+			type[i] = TEE_PARAM_TYPE_VALUE_INPUT;
+			break;
+		case TEEC_VALUE_OUTPUT:
+			type[i] = TEE_PARAM_TYPE_VALUE_OUTPUT;
+			break;
+		case TEEC_VALUE_INOUT:
+			type[i] = TEE_PARAM_TYPE_VALUE_INOUT;
+			break;
+		case TEEC_MEMREF_TEMP_INPUT:
+			type[i] = TEE_PARAM_TYPE_MEMREF_INPUT;
+			break;
+		case TEEC_MEMREF_TEMP_OUTPUT:
+			type[i] = TEE_PARAM_TYPE_MEMREF_OUTPUT;
+			break;
+		case TEEC_MEMREF_TEMP_INOUT:
+			type[i] = TEE_PARAM_TYPE_MEMREF_INOUT;
+			break;
+		}
 	}
+	uint32_t types = TEE_PARAM_TYPES(type[0], type[1], type[2], type[3]);
+
+	TEE_Param params[4];
+	for (int i = 0; i < 4; i++) {
+		params[i].value.a = 0;
+		params[i].value.b = 0;
+		switch (TEE_PARAM_TYPE_GET(types, i)) {
+		default:
+			break;
+		case TEE_PARAM_TYPE_VALUE_INPUT:
+		case TEE_PARAM_TYPE_VALUE_INOUT:
+			params[i].value.a = operation->params[i].value.a;
+			params[i].value.b = operation->params[i].value.b;
+			break;
+		case TEE_PARAM_TYPE_MEMREF_INPUT:
+		case TEE_PARAM_TYPE_MEMREF_INOUT:
+			{
+				size_t size = operation->params[i].tmpref.size;
+				params[i].memref.size = size;
+				params[i].memref.buffer = malloc(size); // TODO: check
+				memcpy(params[i].memref.buffer, operation->params[i].tmpref.buffer, size);
+			}
+			break;
+		case TEE_PARAM_TYPE_MEMREF_OUTPUT:
+			params[i].memref.size = operation->params[i].tmpref.size;
+			params[i].memref.buffer = malloc(params[i].memref.size); // TODO: check
+			memset(params[i].memref.buffer, 0, params[i].memref.size);
+			break;
+		}
+	}
+	TEE_Result r = TA_InvokeCommandEntryPoint(NULL, commandID, types, params);
+	for (int i = 0; i < 4; i++) {
+		switch (TEE_PARAM_TYPE_GET(types, i)) {
+		default:
+			break;
+		case TEE_PARAM_TYPE_VALUE_OUTPUT:
+		case TEE_PARAM_TYPE_VALUE_INOUT:
+			operation->params[i].value.a = params[i].value.a;
+			operation->params[i].value.b = params[i].value.b;
+			break;
+		case TEE_PARAM_TYPE_MEMREF_OUTPUT:
+		case TEE_PARAM_TYPE_MEMREF_INOUT:
+			{
+				uint32_t size = params[i].memref.size;
+				uint32_t offset;
+				operation->params[i].tmpref.size = size;
+				memcpy(operation->params[i].tmpref.buffer, params[i].memref.buffer, size);
+				free(params[i].memref.buffer);
+			}
+			break;
+		case TEE_PARAM_TYPE_MEMREF_INPUT:
+			free(params[i].memref.buffer);
+			break;
+		}
+	}
+	return r;
 }
 
 TEEC_Result TEEC_RegisterSharedMemory(TEEC_Context *context,
