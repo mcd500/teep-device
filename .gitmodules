@@ -4,3 +4,9 @@
 [submodule "libaistotrp/mbedtls"]
 	path = libteep/mbedtls
 	url = https://192.168.100.100/rinkai/mbedtls
+[submodule "libteep/QCBOR"]
+	path = libteep/QCBOR
+	url = https://github.com/laurencelundblade/QCBOR.git
+[submodule "libteep/t_cose"]
+	path = libteep/t_cose
+	url = https://github.com/laurencelundblade/t_cose.git
