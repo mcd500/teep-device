@@ -89,6 +89,9 @@ LIBTEEP_SRC = $(SOURCE)/libteep/lib/libteep.c
 
 libteep-mbedtls-host-DISABLE = y
 libteep-libwebsockets-host-DISABLE = y
+libteep-QCBOR-host-DISABLE = y
+
+libteep-QCBOR-ree-DISABLE = y
 
 #libteep-mbedtls-tee-DISABLE = y
 
@@ -151,6 +154,8 @@ libteep-libwebsockets-tee-FLAGS = \
 	-DLWS__INCLUDE_DIRS=$(INCLUDES) \
 	-DCMAKE_BUILD_TYPE=Release \
 	-DCMAKE_C_FLAGS="-Wno-unused-variable -I$(TEE_REF_TA_DIR)/build/include -I$(TEE_REF_TA_DIR)/include -DCRYPTLIB=MBEDCRYPT -DPLAT_KEYSTONE"
+
+libteep-QCBOR-tee-FLAGS = CC=$(CROSS_COMPILE)gcc
 
 all: libteep hello teep
 

@@ -4,9 +4,9 @@ libteep: libteep-host libteep-ree libteep-tee
 hello: hello-ta hello-app
 teep: teep-agent-ta teep-broker-app
 
-libteep-host: libteep-mbedtls-host libteep-libwebsockets-host
-libteep-ree: libteep-mbedtls-ree libteep-libwebsockets-ree libteep-libteep-ree
-libteep-tee: libteep-mbedtls-tee libteep-libwebsockets-tee
+libteep-host: libteep-mbedtls-host libteep-libwebsockets-host libteep-QCBOR-host
+libteep-ree: libteep-mbedtls-ree libteep-libwebsockets-ree libteep-QCBOR-ree libteep-libteep-ree
+libteep-tee: libteep-mbedtls-tee libteep-libwebsockets-tee libteep-QCBOR-tee
 
 libteep-mbedtls-host:
 	if [ -z "$($@-DISABLE)" ]; then \
@@ -54,6 +54,30 @@ libteep-libwebsockets-tee:
 		cd $(BUILD)/libteep/tee/libwebsockets && \
 		cmake $($@-FLAGS) $(SOURCE)/libteep/libwebsockets && \
 		make -j `nproc`; \
+	fi
+
+libteep-QCBOR-host:
+	if [ -z "$($@-DISABLE)" ]; then \
+		mkdir -p $(BUILD)/libteep/host && \
+		rm -rf $(BUILD)/libteep/host/QCBOR && \
+		cp -rs $(SOURCE)/libteep/QCBOR $(BUILD)/libteep/host && \
+		make -C $(BUILD)/libteep/host/QCBOR $($@-FLAGS); \
+	fi
+
+libteep-QCBOR-ree:
+	if [ -z "$($@-DISABLE)" ]; then \
+		mkdir -p $(BUILD)/libteep/ree && \
+		rm -rf $(BUILD)/libteep/ree/QCBOR && \
+		cp -rs $(SOURCE)/libteep/QCBOR $(BUILD)/libteep/ree; \
+		make -C $(BUILD)/libteep/ree/QCBOR $($@-FLAGS); \
+	fi
+
+libteep-QCBOR-tee:
+	if [ -z "$($@-DISABLE)" ]; then \
+		mkdir -p $(BUILD)/libteep/tee && \
+		rm -rf $(BUILD)/libteep/tee/QCBOR && \
+		cp -rs $(SOURCE)/libteep/QCBOR $(BUILD)/libteep/tee; \
+		make -C $(BUILD)/libteep/tee/QCBOR $($@-FLAGS); \
 	fi
 
 libteep-libteep-ree: libteep-mbedtls-ree libteep-libwebsockets-ree
