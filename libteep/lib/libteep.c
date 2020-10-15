@@ -743,9 +743,12 @@ int libteep_agent_msg(struct libteep_ctx *ctx, int jose,
 	}
 
 	size_t len = op.params[2].tmpref.size;
-	if (len == 0) return -1;
-	if (ta_url_list[len - 1] != 0) return -1;
-	if (len > 1 && ta_url_list[len - 2] != 0) return -1;
+	if (len == 0) {
+		ta_url_list[0] = 0;
+	} else {
+		if (ta_url_list[len - 1] != 0) return -1;
+		if (len > 1 && ta_url_list[len - 2] != 0) return -1;
+	}
 
 	*out_len = op.params[1].tmpref.size;
 	lwsl_hexdump_notice(out, (*out_len > 2048) ? 2048 : *out_len);
