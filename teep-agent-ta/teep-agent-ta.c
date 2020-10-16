@@ -122,7 +122,7 @@ TEE_Result TA_CreateEntryPoint(void)
 		| LLL_USER
 		| LLL_ERR
 		| LLL_WARN
-		| LLL_INFO
+//		| LLL_INFO
 		| LLL_NOTICE
 //		| LLL_DEBUG
 		, NULL);
@@ -187,47 +187,6 @@ TA_InvokeCommandEntryPoint(void __maybe_unused *sess_ctx,
 		    (TEE_PARAM_TYPE_GET(param_types, 3) != TEE_PARAM_TYPE_NONE))
 			return TEE_ERROR_BAD_PARAMETERS;
 		return ta_store_delete(params[0].memref.buffer, params[1].value.a);
-	case TEEP_AGENT_TA_UNWRAP_TA_IMAGE:
-		if ((TEE_PARAM_TYPE_GET(param_types, 0) != TEE_PARAM_TYPE_MEMREF_INPUT) ||
-		    (TEE_PARAM_TYPE_GET(param_types, 1) != TEE_PARAM_TYPE_VALUE_INPUT) ||
-		    (TEE_PARAM_TYPE_GET(param_types, 2) != TEE_PARAM_TYPE_MEMREF_OUTPUT) ||
-		    (TEE_PARAM_TYPE_GET(param_types, 3) != TEE_PARAM_TYPE_VALUE_INOUT))
-			return TEE_ERROR_BAD_PARAMETERS;
-		return teep_message_unwrap_ta_image(params[0].memref.buffer, params[1].value.a,
-				params[2].memref.buffer, &params[3].value.a);
-
-	case TEEP_AGENT_TA_VERIFY_MESSAGE: /* verify OTrP message */
-		if ((TEE_PARAM_TYPE_GET(param_types, 0) != TEE_PARAM_TYPE_MEMREF_INPUT) ||
-				(TEE_PARAM_TYPE_GET(param_types, 1) != TEE_PARAM_TYPE_VALUE_INPUT) ||
-				(TEE_PARAM_TYPE_GET(param_types, 2) != TEE_PARAM_TYPE_MEMREF_OUTPUT) ||
-				(TEE_PARAM_TYPE_GET(param_types, 3) != TEE_PARAM_TYPE_VALUE_INOUT))
-			return TEE_ERROR_BAD_PARAMETERS;
-		return otrp_message_verify(params[0].memref.buffer, params[1].value.a,
-				params[2].memref.buffer, &params[3].value.a);
-	case TEEP_AGENT_TA_SIGN_MESSAGE: /* sign(wrap) OTrP message*/
-		if ((TEE_PARAM_TYPE_GET(param_types, 0) != TEE_PARAM_TYPE_MEMREF_INPUT) ||
-				(TEE_PARAM_TYPE_GET(param_types, 1) != TEE_PARAM_TYPE_VALUE_INPUT) ||
-				(TEE_PARAM_TYPE_GET(param_types, 2) != TEE_PARAM_TYPE_MEMREF_OUTPUT) ||
-				(TEE_PARAM_TYPE_GET(param_types, 3) != TEE_PARAM_TYPE_VALUE_INOUT))
-			return TEE_ERROR_BAD_PARAMETERS;
-		return otrp_message_sign(params[0].memref.buffer, params[1].value.a,
-				params[2].memref.buffer, &params[3].value.a);
-	case TEEP_AGENT_TA_ENCRYPT_MESSAGE: /* encrypt(wrap) OTrP message*/
-		if ((TEE_PARAM_TYPE_GET(param_types, 0) != TEE_PARAM_TYPE_MEMREF_INPUT) ||
-				(TEE_PARAM_TYPE_GET(param_types, 1) != TEE_PARAM_TYPE_VALUE_INPUT) ||
-				(TEE_PARAM_TYPE_GET(param_types, 2) != TEE_PARAM_TYPE_MEMREF_OUTPUT) ||
-				(TEE_PARAM_TYPE_GET(param_types, 3) != TEE_PARAM_TYPE_VALUE_INOUT))
-			return TEE_ERROR_BAD_PARAMETERS;
-		return otrp_message_encrypt(params[0].memref.buffer, params[1].value.a,
-				params[2].memref.buffer, &params[3].value.a);
-	case TEEP_AGENT_TA_DECRYPT_MESSAGE: /* decrypt(unwrap) OTrP message*/
-		if ((TEE_PARAM_TYPE_GET(param_types, 0) != TEE_PARAM_TYPE_MEMREF_INPUT) ||
-				(TEE_PARAM_TYPE_GET(param_types, 1) != TEE_PARAM_TYPE_VALUE_INPUT) ||
-				(TEE_PARAM_TYPE_GET(param_types, 2) != TEE_PARAM_TYPE_MEMREF_OUTPUT) ||
-				(TEE_PARAM_TYPE_GET(param_types, 3) != TEE_PARAM_TYPE_VALUE_INOUT))
-			return TEE_ERROR_BAD_PARAMETERS;
-		return otrp_message_decrypt(params[0].memref.buffer, params[1].value.a,
-				params[2].memref.buffer, &params[3].value.a);
 
 	case TEEP_AGENT_SET_TA_LIST:
 		if (param_types != TEE_PARAM_TYPES(TEE_PARAM_TYPE_MEMREF_INPUT, TEE_PARAM_TYPE_NONE,

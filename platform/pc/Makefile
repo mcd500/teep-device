@@ -11,16 +11,18 @@ export APP_CFLAGS = -g \
 	-I$(BUILD)/libteep/host/libwebsockets/include \
 	-I$(SOURCE)/libteep/libwebsockets/include \
 	-I$(SOURCE)/libteep/mbedtls/include \
+	-I$(BUILD)/libteep/host/QCBOR/inc \
 	-I$(CURDIR)/include \
 	-I$(SOURCE)/key/include \
 	-DPCTEST -DPLAT_PC -DAPP_VERBOSE -Wall
 
 export APP_LDFLAGS = \
 	-L$(BUILD)/libteep/host/mbedtls/library \
-	-L$(BUILD)/libteep/host/libwebsockets/lib
+	-L$(BUILD)/libteep/host/libwebsockets/lib \
+	-L$(BUILD)/libteep/host/QCBOR
 
 export APP_LIBS = \
-	 -lwebsockets -lmbedtls -lmbedx509 -lmbedcrypto
+	 -lwebsockets -lmbedtls -lmbedx509 -lmbedcrypto -lqcbor
 
 ifeq ($(shell uname),Linux)
 APP_LIBS += -lcap
@@ -104,3 +106,9 @@ test: upload_encfile_to_tamproto
 	$(BROKER) --tamurl $(TAM_URL)/api/tam_jose_delete --jose --talist 8d82573a-926d-4754-9353-32dc29997f74 2>&1 | tee $(BUILD)/pctest.log
 	! fgrep 'ERR:' $(BUILD)/pctest.log
 	fgrep 'ta_store_delete: stub called' $(BUILD)/pctest.log
+
+test-cbor: upload_encfile_to_tamproto
+	$(BROKER) --tamurl $(TAM_URL)/api/tam_cbor 2>&1 | tee $(BUILD)/pctest.log
+	! fgrep 'ERR:' $(BUILD)/pctest.log
+	fgrep 'ta_store_install: stub called' $(BUILD)/pctest.log
+

@@ -38,6 +38,102 @@
 #include "teep-agent-ta.h"
 #include "ta-store.h"
 
+#define TEMP_BUF_SIZE (800 * 1024)
+static char temp_buf[TEMP_BUF_SIZE];
+
+/* the TEE private key as a JWK */
+static const char * const tee_id_privkey_jwk =
+#include "tee_id_privkey_jwk.h"
+;
+
+/* SP public key as a JWK */
+static const char * const sp_pubkey_jwk =
+#include "sp_pubkey_jwk.h"
+;
+
+
+static struct lws_context *get_lws_context()
+{
+	static struct lws_context *context = NULL;
+#ifdef PCTEST
+	// calling lws_create_context on tee environment causes a lot of link error
+	// lws_create_context must be called in pc environment to avoid SEGV on decrypt
+	if (!context) {
+		struct lws_context_creation_info info;
+		memset(&info, 0, sizeof(info));
+		info.port = CONTEXT_PORT_NO_LISTEN;
+		info.options = 0;
+		context = lws_create_context(&info);
+		if (!context) {
+			lwsl_err("lws_create_context failed\n");
+		}
+	}
+#endif
+	return context;
+}
+
+static int teep_message_unwrap_ta_image(const char *msg, int msg_len, char *out, uint32_t *out_len) {
+	struct lws_jwk jwk_pubkey_sp;
+	int temp_len = TEMP_BUF_SIZE - 1;
+	struct lws_jws jws;
+	struct lws_jwe jwe;
+	int n = 0;
+
+	lwsl_user("%s: msg len %d\n", __func__, msg_len);
+	*temp_buf = '0';
+
+	lws_jws_init(&jws, &jwk_pubkey_sp, get_lws_context());
+	lws_jwe_init(&jwe, get_lws_context());
+
+	lwsl_user("Decrypt\n");
+
+	n = lws_jwe_json_parse(&jwe, (void *)msg,
+				msg_len,
+				lws_concat_temp(temp_buf, temp_len), &temp_len);
+	if (n < 0) {
+		lwsl_err("%s: lws_jwe_json_parse failed\n", __func__);
+		goto bail;
+	}
+	n = lws_jwk_import(&jwe.jwk, NULL, NULL, tee_id_privkey_jwk, strlen(tee_id_privkey_jwk));
+	if (n < 0) {
+		lwsl_err("%s: unable to import tee jwk\n", __func__);
+		goto bail;
+	}
+	n = lws_jwe_auth_and_decrypt(&jwe, lws_concat_temp(temp_buf, temp_len), &temp_len);
+	if (n < 0) {
+		lwsl_err("%s: lws_jwe_auth_and_decrypt failed\n", __func__);
+		goto bail;
+	}
+	lwsl_user("Decrypt OK: length %d\n", n);
+
+	lwsl_user("Verify\n");
+	n = lws_jwk_import(&jwk_pubkey_sp, NULL, NULL, sp_pubkey_jwk, strlen(sp_pubkey_jwk));
+	if (n < 0) {
+		lwsl_err("%s: unable to import tam jwk\n", __func__);
+		goto bail;
+	}
+	n = lws_jws_sig_confirm_json(jwe.jws.map.buf[LJWE_CTXT], jwe.jws.map.len[LJWE_CTXT], &jws, &jwk_pubkey_sp, get_lws_context(), temp_buf, &temp_len);
+	if (n < 0) {
+		lwsl_err("%s: confirm rsa sig failed\n", __func__);
+		goto bail1;
+	}
+	lwsl_user("Signature OK %d %d\n", n, jws.map.len[LJWS_PYLD]);
+
+	if (jws.map.len[LJWS_PYLD] > *out_len) {
+		lwsl_err("%s: output buffer is small (in, out) = (%d, %u)\n", __func__, jws.map.len[LJWS_PYLD], *out_len);
+	}
+	memcpy(out, jws.map.buf[LJWS_PYLD], jws.map.len[LJWS_PYLD]);
+	*out_len = jws.map.len[LJWS_PYLD];
+	n = 0;
+bail1:
+	lws_jwk_destroy(&jwk_pubkey_sp);
+bail:
+	lws_jws_destroy(&jws);
+	lws_jwe_destroy(&jwe);
+	return n;
+
+}
+
 #ifdef PLAT_KEYSTONE
 
 static int install_plain(const char *filename, const char *ta_image, size_t ta_image_len)
@@ -140,10 +236,17 @@ bail_1:
 
 #endif
 
+static ta_image_buf[TEMP_BUF_SIZE];
+
 /* install given a TA Image into secure storage using optee pta*/
 int
-ta_store_install(const char *ta_image, size_t ta_image_len, const char *ta_name, size_t ta_name_len)
+ta_store_install(const char *ta_image_ciphertext, size_t ta_image_ciphertext_len, const char *ta_name, size_t ta_name_len)
 {
+	size_t ta_image_len = TEMP_BUF_SIZE;
+	if (teep_message_unwrap_ta_image(ta_image_ciphertext, ta_image_ciphertext_len, ta_image_buf, &ta_image_len) < 0) {
+		lwsl_err("%s: TA verification failed\n", __func__);
+		return -1;
+	}
 #if defined(PCTEST)
 	lwsl_user("%s: stub called ta_image_len = %zd\n", __func__, ta_image_len);
 	return 0;
