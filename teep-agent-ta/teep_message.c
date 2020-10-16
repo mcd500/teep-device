@@ -50,10 +50,28 @@ static const char * const sp_pubkey_jwk =
 #include "sp_pubkey_jwk.h"
 ;
 
+static struct lws_context *get_lws_context()
+{
+	static struct lws_context *context = NULL;
+#ifdef PCTEST
+	// calling lws_create_context on tee environment causes a lot of link error
+	// lws_create_context must be called in pc environment to avoid SEGV on decrypt
+	if (!context) {
+		struct lws_context_creation_info info;
+		memset(&info, 0, sizeof(info));
+		info.port = CONTEXT_PORT_NO_LISTEN;
+		info.options = 0;
+		context = lws_create_context(&info);
+		if (!context) {
+			lwsl_err("lws_create_context failed\n");
+		}
+	}
+#endif
+	return context;
+}
+
 static int
 teep_message_jose_wrap(const char *msg, int msg_len, char *out, uint32_t *out_len) {
-	struct lws_context_creation_info info;
-	static struct lws_context *context = NULL;
 	struct lws_jwk jwk_privkey_tee;
 	int temp_len = TEMP_BUF_SIZE - 1;
 	struct lws_jws jws;
@@ -67,22 +85,10 @@ teep_message_jose_wrap(const char *msg, int msg_len, char *out, uint32_t *out_le
 
 	lwsl_user("%s: msg len %d\n", __func__, msg_len);
 	*temp_buf = '0';
-	memset(&info, 0, sizeof(info));
-	info.port = CONTEXT_PORT_NO_LISTEN;
-	info.options = 0;
-#ifdef PCTEST
-	// calling lws_create_context on tee environment causes a lot of link error
-	// lws_create_context must be called in pc environment to avoid SEGV on decrypt
-	context = lws_create_context(&info);
-	if (!context) {
-		lwsl_err("lws init failed\n");
-		return -1;
-	}
-#endif
 
 	lws_jose_init(&jose);
-	lws_jws_init(&jws, &jwk_privkey_tee, context);
-	lws_jwe_init(&jwe, context);
+	lws_jws_init(&jws, &jwk_privkey_tee, get_lws_context());
+	lws_jwe_init(&jwe, get_lws_context());
 	n = lws_jwk_import(&jwe.jwk, NULL, NULL, tam_id_pubkey_jwk, strlen(tam_id_pubkey_jwk));
 	if (n) {
 		lwsl_err("lws init failed\n");
@@ -130,7 +136,7 @@ teep_message_jose_wrap(const char *msg, int msg_len, char *out, uint32_t *out_le
 	jwe.jws.map.buf[LJWE_CTXT] = (void *)msgbuf;
 	jwe.jws.map.len[LJWE_CTXT] = msg_len;
 	n = lws_gencrypto_bits_to_bytes(jwe.jose.enc_alg->keybits_fixed);
-	if (lws_jws_randomize_element(context, &jwe.jws.map, LJWE_EKEY,
+	if (lws_jws_randomize_element(get_lws_context(), &jwe.jws.map, LJWE_EKEY,
 			lws_concat_temp(temp_buf, temp_len),
 			&temp_len, n,
 			LWS_JWE_LIMIT_KEY_ELEMENT_BYTES)) {
@@ -233,8 +239,6 @@ bail1:
 
 int
 otrp_message_sign(const char *msg, int msg_len, char *out, uint32_t *out_len) {
-	struct lws_context_creation_info info;
-	static struct lws_context *context = NULL;
 	struct lws_jwk jwk_privkey_tee;
 	int temp_len = TEMP_BUF_SIZE - 1;
 	struct lws_jws jws;
@@ -243,21 +247,9 @@ otrp_message_sign(const char *msg, int msg_len, char *out, uint32_t *out_len) {
 
 	lwsl_user("%s: msg len %d\n", __func__, msg_len);
 	*temp_buf = '0';
-	memset(&info, 0, sizeof(info));
-	info.port = CONTEXT_PORT_NO_LISTEN;
-	info.options = 0;
-#ifdef PCTEST
-	// calling lws_create_context on tee environment causes a lot of link error
-	// lws_create_context must be called in pc environment to avoid SEGV on decrypt
-	context = lws_create_context(&info);
-	if (!context) {
-		lwsl_err("lws init failed\n");
-		return -1;
-	}
-#endif
 
 	lws_jose_init(&jose);
-	lws_jws_init(&jws, &jwk_privkey_tee, context);
+	lws_jws_init(&jws, &jwk_privkey_tee, get_lws_context());
 
 	lwsl_user("Sign\n");
 	static const char *sign_alg = "RS256";
@@ -335,8 +327,6 @@ bail1:
 
 int
 otrp_message_encrypt(const char *msg, int msg_len, char *out, uint32_t *out_len) {
-	struct lws_context_creation_info info;
-	static struct lws_context *context = NULL;
 	int temp_len = TEMP_BUF_SIZE - 1;
 	struct lws_jwe jwe;
 	struct lws_jose jose;
@@ -344,21 +334,9 @@ otrp_message_encrypt(const char *msg, int msg_len, char *out, uint32_t *out_len)
 
 	lwsl_user("%s: msg len %d\n", __func__, msg_len);
 	*temp_buf = '0';
-	memset(&info, 0, sizeof(info));
-	info.port = CONTEXT_PORT_NO_LISTEN;
-	info.options = 0;
-#ifdef PCTEST
-	// calling lws_create_context on tee environment causes a lot of link error
-	// lws_create_context must be called in pc environment to avoid SEGV on decrypt
-	context = lws_create_context(&info);
-	if (!context) {
-		lwsl_err("lws init failed\n");
-		return -1;
-	}
-#endif
 
 	lws_jose_init(&jose);
-	lws_jwe_init(&jwe, context);
+	lws_jwe_init(&jwe, get_lws_context());
 	n = lws_jwk_import(&jwe.jwk, NULL, NULL, tam_id_pubkey_jwk, strlen(tam_id_pubkey_jwk));
 	if (n) {
 		lwsl_err("lws init failed\n");
@@ -398,7 +376,7 @@ otrp_message_encrypt(const char *msg, int msg_len, char *out, uint32_t *out_len)
 	jwe.jws.map.buf[LJWE_CTXT] = (void *)msg;
 	jwe.jws.map.len[LJWE_CTXT] = msg_len;
 	n = lws_gencrypto_bits_to_bytes(jwe.jose.enc_alg->keybits_fixed);
-	if (lws_jws_randomize_element(context, &jwe.jws.map, LJWE_EKEY,
+	if (lws_jws_randomize_element(get_lws_context(), &jwe.jws.map, LJWE_EKEY,
 			lws_concat_temp(temp_buf, temp_len),
 			&temp_len, n,
 			LWS_JWE_LIMIT_KEY_ELEMENT_BYTES)) {
@@ -425,8 +403,6 @@ bail1:
 }
 
 int teep_message_unwrap_ta_image(const char *msg, int msg_len, char *out, uint32_t *out_len) {
-	struct lws_context_creation_info info;
-	static struct lws_context *context = NULL;
 	struct lws_jwk jwk_pubkey_sp;
 	int temp_len = TEMP_BUF_SIZE - 1;
 	struct lws_jws jws;
@@ -435,21 +411,9 @@ int teep_message_unwrap_ta_image(const char *msg, int msg_len, char *out, uint32
 
 	lwsl_user("%s: msg len %d\n", __func__, msg_len);
 	*temp_buf = '0';
-	memset(&info, 0, sizeof(info));
-	info.port = CONTEXT_PORT_NO_LISTEN;
-	info.options = 0;
-#ifdef PCTEST
-	// calling lws_create_context on tee environment causes a lot of link error
-	// lws_create_context must be called in pc environment to avoid SEGV on decrypt
-	context = lws_create_context(&info);
-	if (!context) {
-		lwsl_err("lws init failed\n");
-		return -1;
-	}
-#endif
 
-	lws_jws_init(&jws, &jwk_pubkey_sp, context);
-	lws_jwe_init(&jwe, context);
+	lws_jws_init(&jws, &jwk_pubkey_sp, get_lws_context());
+	lws_jwe_init(&jwe, get_lws_context());
 
 	lwsl_user("Decrypt\n");
 
@@ -478,7 +442,7 @@ int teep_message_unwrap_ta_image(const char *msg, int msg_len, char *out, uint32
 		lwsl_err("%s: unable to import tam jwk\n", __func__);
 		goto bail;
 	}
-	n = lws_jws_sig_confirm_json(jwe.jws.map.buf[LJWE_CTXT], jwe.jws.map.len[LJWE_CTXT], &jws, &jwk_pubkey_sp, context, temp_buf, &temp_len);
+	n = lws_jws_sig_confirm_json(jwe.jws.map.buf[LJWE_CTXT], jwe.jws.map.len[LJWE_CTXT], &jws, &jwk_pubkey_sp, get_lws_context(), temp_buf, &temp_len);
 	if (n < 0) {
 		lwsl_err("%s: confirm rsa sig failed\n", __func__);
 		goto bail1;
@@ -502,8 +466,6 @@ bail:
 
 static int
 teep_message_jose_unwrap(const char *msg, int msg_len, char *out, uint32_t *out_len) {
-	struct lws_context_creation_info info;
-	static struct lws_context *context = NULL;
 	struct lws_jwk jwk_pubkey_tam;
 	int temp_len = TEMP_BUF_SIZE - 1;
 	struct lws_jws jws;
@@ -512,21 +474,9 @@ teep_message_jose_unwrap(const char *msg, int msg_len, char *out, uint32_t *out_
 
 	lwsl_user("%s: msg len %d\n", __func__, msg_len);
 	*temp_buf = '0';
-	memset(&info, 0, sizeof(info));
-	info.port = CONTEXT_PORT_NO_LISTEN;
-	info.options = 0;
-#ifdef PCTEST
-	// calling lws_create_context on tee environment causes a lot of link error
-	// lws_create_context must be called in pc environment to avoid SEGV on decrypt
-	context = lws_create_context(&info);
-	if (!context) {
-		lwsl_err("lws init failed\n");
-		return -1;
-	}
-#endif
 
-	lws_jws_init(&jws, &jwk_pubkey_tam, context);
-	lws_jwe_init(&jwe, context);
+	lws_jws_init(&jws, &jwk_pubkey_tam, get_lws_context());
+	lws_jwe_init(&jwe, get_lws_context());
 
 	lwsl_user("Verify\n");
 	n = lws_jwk_import(&jwk_pubkey_tam, NULL, NULL, tam_id_pubkey_jwk, strlen(tam_id_pubkey_jwk));
@@ -537,7 +487,7 @@ teep_message_jose_unwrap(const char *msg, int msg_len, char *out, uint32_t *out_
 	lwsl_user("msg=%s len=%d\n", msg, msg_len);
 	lwsl_user("len=%d\n", msg_len);
 	lwsl_user("temp=%s len=%d\n", temp_buf, temp_len);
-	n = lws_jws_sig_confirm_json(msg, msg_len, &jws, &jwk_pubkey_tam, context, temp_buf, &temp_len);
+	n = lws_jws_sig_confirm_json(msg, msg_len, &jws, &jwk_pubkey_tam, get_lws_context(), temp_buf, &temp_len);
 	if (n < 0) {
 		lwsl_err("%s: confirm rsa sig failed\n", __func__);
 		goto bail1;
@@ -583,8 +533,6 @@ bail:
 
 int
 otrp_message_verify(const char *msg, int msg_len, char *out, uint32_t *out_len) {
-	struct lws_context_creation_info info;
-	static struct lws_context *context = NULL;
 	struct lws_jwk jwk_pubkey_tam;
 	int temp_len = TEMP_BUF_SIZE - 1;
 	struct lws_jws jws;
@@ -592,20 +540,8 @@ otrp_message_verify(const char *msg, int msg_len, char *out, uint32_t *out_len) 
 
 	lwsl_user("%s: msg len %d\n", __func__, msg_len);
 	*temp_buf = '0';
-	memset(&info, 0, sizeof(info));
-	info.port = CONTEXT_PORT_NO_LISTEN;
-	info.options = 0;
-#ifdef PCTEST
-	// calling lws_create_context on tee environment causes a lot of link error
-	// lws_create_context must be called in pc environment to avoid SEGV on decrypt
-	context = lws_create_context(&info);
-	if (!context) {
-		lwsl_err("lws init failed\n");
-		return -1;
-	}
-#endif
 
-	lws_jws_init(&jws, &jwk_pubkey_tam, context);
+	lws_jws_init(&jws, &jwk_pubkey_tam, get_lws_context());
 
 	lwsl_user("Verify\n");
 	n = lws_jwk_import(&jwk_pubkey_tam, NULL, NULL, tam_id_pubkey_jwk, strlen(tam_id_pubkey_jwk));
@@ -613,7 +549,7 @@ otrp_message_verify(const char *msg, int msg_len, char *out, uint32_t *out_len) 
 		lwsl_err("%s: unable to import tam jwk\n", __func__);
 		goto bail;
 	}
-	n = lws_jws_sig_confirm_json((void *)msg,	msg_len, &jws, &jwk_pubkey_tam, context, temp_buf, &temp_len);
+	n = lws_jws_sig_confirm_json((void *)msg,	msg_len, &jws, &jwk_pubkey_tam, get_lws_context(), temp_buf, &temp_len);
 	if (n < 0) {
 		lwsl_err("%s: confirm rsa sig failed\n", __func__);
 		goto bail1;
@@ -636,28 +572,14 @@ bail:
 
 int
 otrp_message_decrypt(const char *msg, int msg_len, char *out, uint32_t *out_len) {
-	struct lws_context_creation_info info;
-	static struct lws_context *context = NULL;
 	int temp_len = TEMP_BUF_SIZE - 1;
 	struct lws_jwe jwe;
 	int n = 0;
 
 	lwsl_user("%s: msg len %d\n", __func__, msg_len);
 	*temp_buf = '0';
-	memset(&info, 0, sizeof(info));
-	info.port = CONTEXT_PORT_NO_LISTEN;
-	info.options = 0;
-#ifdef PCTEST
-	// calling lws_create_context on tee environment causes a lot of link error
-	// lws_create_context must be called in pc environment to avoid SEGV on decrypt
-	context = lws_create_context(&info);
-	if (!context) {
-		lwsl_err("lws init failed\n");
-		return -1;
-	}
-#endif
 
-	lws_jwe_init(&jwe, context);
+	lws_jwe_init(&jwe, get_lws_context());
 
 	lwsl_user("Decrypt\n");
 
