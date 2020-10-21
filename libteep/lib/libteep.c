@@ -55,6 +55,13 @@ struct libteep_ctx {
 	char	 		*tam_url;
 };
 
+struct lao_rpc_io {
+       void    *in;
+       size_t  in_len;
+       void    *out;
+       size_t  out_len;
+};
+
 /* This is the user-opaque internal representation of an ongoing TAM message */
 
 //static unsigned int rrlen;
@@ -241,8 +248,6 @@ static const struct lws_protocols protocols[] = {
 
 static char ta_image_buf[4 * 1024 * 1024];
 
-
-
 int
 libteep_tam_msg(struct libteep_ctx *ctx, void *res, size_t reslen, void *req, size_t reqlen)
 {
@@ -360,62 +365,6 @@ libteep_ta_store_install(struct libteep_ctx *ctx, char *ta_image, size_t ta_imag
 }
 
 int
-libteep_ta_store_delete(struct libteep_ctx *ctx, char *uuid, size_t uuid_len) {
-	TEEC_Result n;
-	TEEC_Operation op;
-
-	memset(&op, 0, sizeof(TEEC_Operation));
-	op.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_TEMP_INPUT,
-					 TEEC_VALUE_INPUT,
-					 TEEC_NONE,
-					 TEEC_NONE);
-
-	op.params[0].tmpref.buffer 	= uuid;
-	op.params[0].tmpref.size	= uuid_len;
-	op.params[1].value.a		= uuid_len;
-
-	n = TEEC_InvokeCommand(&ctx->tee_session, TEEP_AGENT_TA_DELETE, &op, NULL);
-	if (n != TEEC_SUCCESS) {
-		lwsl_err("%s: TEEC_InvokeCommand "
-		        "failed (0x%08x)\n", __func__, n);
-		return (int)n;
-	}
-	return n;
-}
-
-int
-libteep_teep_agent_msg(struct libteep_ctx *ctx, uint32_t cmd,
-		    struct lao_rpc_io *io)
-{
-	TEEC_Result n;
-	TEEC_Operation op;
-
-	memset(&op, 0, sizeof(TEEC_Operation));
-	op.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_TEMP_INPUT,
-					 TEEC_VALUE_INPUT,
-					 TEEC_MEMREF_TEMP_OUTPUT,
-					 TEEC_VALUE_INOUT);
-
-	op.params[0].tmpref.buffer 	= io->in;
-	op.params[0].tmpref.size	= io->in_len;
-	op.params[1].value.a		= io->in_len;
-	op.params[2].tmpref.buffer	= io->out;
-	op.params[2].tmpref.size	= io->out_len;
-	op.params[3].value.a		= io->out_len;
-
-	n = TEEC_InvokeCommand(&ctx->tee_session, cmd, &op, NULL);
-	if (n != TEEC_SUCCESS) {
-		lwsl_err("%s: TEEC_InvokeCommand "
-		        "failed (0x%08x)\n", __func__, n);
-		return (int)n;
-	}
-
-	io->out_len = op.params[3].value.a;
-	lwsl_hexdump_notice(io->out, (io->out_len > 2048) ? 2048 : io->out_len);
-	return n;
-}
-
-int
 libteep_init(struct libteep_ctx **ctx, enum libteep_teep_ver ver, const char *tam_url)
 {
 	struct lws_context_creation_info info;
@@ -499,101 +448,6 @@ libteep_destroy(struct libteep_ctx **ctx)
 	*ctx = NULL;
 }
 
-int
-libteep_msg_wrap(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, size_t inlen)
-{
-	struct lao_rpc_io io = {
-		.in = in,
-		.in_len = inlen,
-		.out = out,
-		.out_len = outlen
-	};
-	int n = libteep_teep_agent_msg(ctx, TEEP_AGENT_TA_WRAP_MESSAGE, &io);
-	if (n < 0) {
-		return n;
-	}
-	return io.out_len;
-}
-
-int
-libteep_msg_sign(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, size_t inlen)
-{
-	struct lao_rpc_io io = {
-		.in = in,
-		.in_len = inlen,
-		.out = out,
-		.out_len = outlen
-	};
-	int n = libteep_teep_agent_msg(ctx, TEEP_AGENT_TA_SIGN_MESSAGE, &io);
-	if (n < 0) {
-		return n;
-	}
-	return io.out_len;
-}
-
-int
-libteep_msg_encrypt(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, size_t inlen)
-{
-	struct lao_rpc_io io = {
-		.in = in,
-		.in_len = inlen,
-		.out = out,
-		.out_len = outlen
-	};
-	int n = libteep_teep_agent_msg(ctx, TEEP_AGENT_TA_ENCRYPT_MESSAGE, &io);
-	if (n < 0) {
-		return n;
-	}
-	return io.out_len;
-}
-
-int
-libteep_msg_unwrap(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, size_t inlen)
-{
-	struct lao_rpc_io io = {
-		.in = in,
-		.in_len = inlen,
-		.out = out,
-		.out_len = outlen
-	};
-	int n = libteep_teep_agent_msg(ctx, TEEP_AGENT_TA_UNWRAP_MESSAGE, &io);
-	if (n < 0) {
-		return n;
-	}
-	return io.out_len;
-}
-
-int
-libteep_msg_verify(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, size_t inlen)
-{
-	struct lao_rpc_io io = {
-		.in = in,
-		.in_len = inlen,
-		.out = out,
-		.out_len = outlen
-	};
-	int n = libteep_teep_agent_msg(ctx, TEEP_AGENT_TA_VERIFY_MESSAGE, &io);
-	if (n < 0) {
-		return n;
-	}
-	return io.out_len;
-}
-
-int
-libteep_msg_decrypt(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, size_t inlen)
-{
-	struct lao_rpc_io io = {
-		.in = in,
-		.in_len = inlen,
-		.out = out,
-		.out_len = outlen
-	};
-	int n = libteep_teep_agent_msg(ctx, TEEP_AGENT_TA_DECRYPT_MESSAGE, &io);
-	if (n < 0) {
-		return n;
-	}
-	return io.out_len;
-}
 
 int
 libteep_download_and_install_ta_image(struct libteep_ctx *ctx, char *url) {

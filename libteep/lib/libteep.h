@@ -56,13 +56,6 @@ enum libteep_teep_ver {
 	LIBTEEP_TEEP_VER_TEEP,		/*!< teep */
 };
 
-struct lao_rpc_io {
-	void	*in;
-	size_t	in_len;
-	void	*out;
-	size_t	out_len;
-};
-
 /**
  * libteep_init() - Initialize a libteep context
  *
@@ -94,43 +87,6 @@ libteep_init(struct libteep_ctx **ctx, enum libteep_teep_ver ver, const char *ta
  */
 void
 libteep_destroy(struct libteep_ctx **ctx);
-
-/**
- * libteep_teep_agent_msg() - Send a message to the TEEP Agent
- *
- * \param ctx: pointer to your lao
- * \param cmd: Message cmd index to send to TA Agent
- * \param io: pointer to struct pointing to in and out buffers and lengths.  On
- * 		entry, \p io.out_len must be set to the maximum length that can
- * 		be written to \p io.out.  On exit, it has been set to the number
- * 		of bytes actually used at \p io.out.
- *
- * Communication to the TEE is blocking by design.
- *
- * Returns 0 if the communication went OK, else error.
- */
-int
-libteep_teep_agent_msg(struct libteep_ctx *ctx, uint32_t cmd,
-		    struct lao_rpc_io *io);
-
-/**
- * libteep_pta_msg() - Send a message to the TEE OTrP PTA and get the result
- *
- * \param ctx: pointer to your lao
- * \param cmd: Message cmd index to send to PTA
- * \param io: pointer to struct pointing to in and out buffers and lengths.  On
- * 		entry, \p io.out_len must be set to the maximum length that can
- * 		be written to \p io.out.  On exit, it has been set to the number
- * 		of bytes actually used at \p io.out.
- *
- * Communication to the TEE is blocking by design.
- *
- * Returns 0 if the communication went OK, else error.
- */
-int
-libteep_pta_msg(struct libteep_ctx *ctx, uint32_t cmd,
-		    struct lao_rpc_io *io);
-
 
 typedef enum tam_result {
 	TR_ONGOING		=  1,
@@ -166,34 +122,7 @@ int
 libteep_tam_msg(struct libteep_ctx *ctx, void *res, size_t reslen, void *req, size_t reqlen);
 
 int
-libteep_msg_unwrap(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, size_t inlen);
-
-int
-libteep_msg_verify(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, size_t inlen);
-
-int
-libteep_msg_decrypt(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, size_t inlen);
-
-int
-libteep_msg_wrap(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, size_t inlen);
-
-int
-libteep_msg_sign(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, size_t inlen);
-
-int
-libteep_msg_encrypt(struct libteep_ctx *ctx, void *out, size_t outlen, void *in, size_t inlen);
-
-int
-libteep_ta_image_unwrap(struct libteep_ctx *ctx, struct lao_rpc_io *io);
-
-int
 libteep_download_and_install_ta_image(struct libteep_ctx *ctx, char *url);
-
-int
-libteep_ta_store_install(struct libteep_ctx *ctx, char *ta_image, size_t ta_image_len, char *ta_name);
-
-int
-libteep_ta_store_delete(struct libteep_ctx *ctx, char *uuid, size_t uuid_len);
 
 int
 libteep_agent_msg(struct libteep_ctx *lao_ctx, int jose, void *out, size_t *out_len, char *ta_url_list, size_t ta_url_list_len, const void *in, size_t in_len);
