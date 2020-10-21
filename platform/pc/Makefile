@@ -91,23 +91,6 @@ upload_encfile_to_tamproto:
 		-F "file=@$(BUILD)/$(HELLO_TA_UUID).ta.sign.enc;filename=$(HELLO_TA_UUID).ta"
 
 test: upload_encfile_to_tamproto
-	$(BROKER) --tamurl $(TAM_URL)/api/tam 2>&1 | tee $(BUILD)/pctest.log
-	! fgrep 'ERR:' $(BUILD)/pctest.log
-	fgrep 'ta_store_install: stub called' $(BUILD)/pctest.log
-
-	$(BROKER) --tamurl $(TAM_URL)/api/tam_delete  --talist 8d82573a-926d-4754-9353-32dc29997f74 2>&1 | tee $(BUILD)/pctest.log
-	! fgrep 'ERR:' $(BUILD)/pctest.log
-	fgrep 'ta_store_delete: stub called' $(BUILD)/pctest.log
-
-	$(BROKER) --tamurl $(TAM_URL)/api/tam_jose --jose 2>&1 | tee $(BUILD)/pctest.log
-	! fgrep 'ERR:' $(BUILD)/pctest.log
-	fgrep 'ta_store_install: stub called' $(BUILD)/pctest.log
-
-	$(BROKER) --tamurl $(TAM_URL)/api/tam_jose_delete --jose --talist 8d82573a-926d-4754-9353-32dc29997f74 2>&1 | tee $(BUILD)/pctest.log
-	! fgrep 'ERR:' $(BUILD)/pctest.log
-	fgrep 'ta_store_delete: stub called' $(BUILD)/pctest.log
-
-test-cbor: upload_encfile_to_tamproto
 	$(BROKER) --tamurl $(TAM_URL)/api/tam_cbor 2>&1 | tee $(BUILD)/pctest.log
 	! fgrep 'ERR:' $(BUILD)/pctest.log
 	fgrep 'ta_store_install: stub called' $(BUILD)/pctest.log
