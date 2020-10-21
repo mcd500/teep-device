@@ -260,8 +260,8 @@ ta_store_install(const char *ta_image_ciphertext, size_t ta_image_ciphertext_len
 	snprintf(filename_secstor, 256, "%s.secstor", ta_name);
 	snprintf(filename_secstor_plain, 256, "%s.secstor.plain", ta_name);
 
-	install_plain(filename_ta, ta_image, ta_image_len);
-	install_secstor(filename_secstor, ta_image, ta_image_len);
+	install_plain(filename_ta, ta_image_buf, ta_image_len);
+	install_secstor(filename_secstor, ta_image_buf, ta_image_len);
 	install_secstor_plain(filename_secstor_plain, filename_secstor, ta_image_len);
 
 	return 0;
@@ -280,7 +280,7 @@ ta_store_install(const char *ta_image_ciphertext, size_t ta_image_ciphertext_len
 	}
 
 	memset(pars, 0, sizeof(pars));
-	pars[0].memref.buffer = (void *)ta_image;
+	pars[0].memref.buffer = (void *)ta_image_buf;
 	pars[0].memref.size = ta_image_len;
 	res = TEE_InvokeTACommand(sess, 0,
 			PTA_SECSTOR_TA_MGMT_BOOTSTRAP,

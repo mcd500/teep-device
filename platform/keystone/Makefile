@@ -46,7 +46,8 @@ export TA_CFLAGS = \
 	-I$(TEE_REF_TA_DIR)/keyedge/target/include \
 	-I$(KEYSTONE_SDK_DIR)/lib/app/include \
 	-I$(KEYSTONE_SDK_DIR)/lib/edge/include \
-	-I../platform/keystone/build/libteep/tee/libwebsockets/include \
+	-I$(BUILD)/libteep/tee/libwebsockets/include \
+	-I$(BUILD)/libteep/tee/QCBOR/inc \
 	-I$(SOURCE)/libteep/lib \
 	-I$(SOURCE)/key/include \
 	-DKEYSTONE \
@@ -56,6 +57,7 @@ export TA_LDFLAGS = \
 	-L$(TEE_REF_TA_DIR)/build/lib \
 	-L$(KEYSTONE_SDK_DIR)/lib \
 	-L$(BUILD)/libteep/tee/libwebsockets/lib \
+	-L$(BUILD)/libteep/tee/QCBOR \
 	-T $(CURDIR)/Enclave.lds
 
 export TA_LIBS = \
@@ -64,6 +66,7 @@ export TA_LIBS = \
 	-ltee_api \
 	-lEnclave_t \
 	-lflatccrt \
+	-lqcbor \
 	-lkeystone-eapp
 
 
