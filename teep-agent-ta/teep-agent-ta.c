@@ -540,6 +540,10 @@ void EAPP_ENTRY eapp_entry()
 {
 	TA_CreateEntryPoint();
 
+	void *session_ctx;
+
+	TA_OpenSessionEntryPoint(0, NULL, &session_ctx);
+
 	for (;;) {
 		invoke_command_t c = ocall_pull_invoke_command();
 		if (c.commandID == TEEP_AGENT_TA_EXIT) {
@@ -579,7 +583,7 @@ void EAPP_ENTRY eapp_entry()
 				break;
 			}
 		}
-		TEE_Result r = TA_InvokeCommandEntryPoint(NULL, c.commandID, c.paramTypes, params);
+		TEE_Result r = TA_InvokeCommandEntryPoint(session_ctx, c.commandID, c.paramTypes, params);
 		for (int i = 0; i < 4; i++) {
 			c.params[i].a = 0;
 			c.params[i].b = 0;
@@ -615,6 +619,8 @@ void EAPP_ENTRY eapp_entry()
 		ocall_put_invoke_command_result(c, r);
 
 	}
+
+	TA_CloseSessionEntryPoint(session_ctx);
 
 	EAPP_RETURN(0);
 }

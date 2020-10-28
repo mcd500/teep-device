@@ -58,7 +58,7 @@ libteep-mbedtls-tee-DISABLE = y
 libteep-libwebsockets-tee-DISABLE = y
 libteep-QCBOR-tee-DISABLE = y
 
-libteep-libteep-ree-DISABLE = y
+libteep-libteep-tee-DISABLE = y
 
 all: libteep teep-broker-app scripts
 

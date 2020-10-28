@@ -4,6 +4,8 @@
 #define TEEP_AGENT_QUERY_NEXT_BROKER_TASK 2
 #define TEEP_AGENT_SET_DEV_OPTION 3
 
+#define TEEP_AGENT_TA_EXIT 1000
+
 enum broker_command
 {
     BROKER_HTTP_POST,

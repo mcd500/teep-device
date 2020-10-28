@@ -61,6 +61,18 @@ char *strchr(const char *s, int c)
   return __builtin_strchr(s, c);
 }
 
+char *strrchr(const char *s, int c)
+{
+  const char *p = NULL;
+  while (*s) {
+    if (*s == c) {
+      p = s;
+    }
+    s++;
+  }
+  return (char *)p;
+}
+
 #ifdef KEYSTONE
 // Compiler may replace simple printf to puts and putchar
 int puts(const char *s)

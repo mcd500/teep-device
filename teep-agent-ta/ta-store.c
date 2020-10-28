@@ -305,9 +305,9 @@ ta_store_install(const char *ta_image_ciphertext, size_t ta_image_ciphertext_len
 	char filename_ta[256];
 	char filename_secstor[256];
 	char filename_secstor_plain[256];
-	snprintf(filename_ta, 256, "%s", ta_name);
-	snprintf(filename_secstor, 256, "%s.secstor", ta_name);
-	snprintf(filename_secstor_plain, 256, "%s.secstor.plain", ta_name);
+	snprintf(filename_ta, 256, "%s.ta", ta_name);
+	snprintf(filename_secstor, 256, "%s.ta.secstor", ta_name);
+	snprintf(filename_secstor_plain, 256, "%s.ta.secstor.plain", ta_name);
 
 	install_plain(filename_ta, ta_image_buf, ta_image_len);
 	install_secstor(filename_secstor, ta_image_buf, ta_image_len);

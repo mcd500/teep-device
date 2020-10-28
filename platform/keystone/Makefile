@@ -11,6 +11,7 @@ export TEE_REF_TA_DIR = $(CURDIR)/../../..
 
 export APP_CFLAGS = \
 	-Wall \
+	-I$(SOURCE)/include \
 	-I$(KEYSTONE_SDK_DIR)/lib/host/include \
 	-I$(KEYSTONE_SDK_DIR)/lib/edge/include \
 	-I$(KEYSTONE_SDK_DIR)/lib/verifier \
@@ -22,6 +23,7 @@ export APP_CFLAGS = \
 	-I$(BUILD)/libteep/ree/libwebsockets/include \
 	-I$(SOURCE)/libteep/libwebsockets/include \
 	-I$(SOURCE)/libteep/mbedtls/include \
+	-I$(BUILD)/libteep/ree/QCBOR/inc \
 	-DKEYSTONE -DPLAT_KEYSTONE -DAPP_VERBOSE -Wall
 
 export APP_LDFLAGS = \
@@ -34,12 +36,16 @@ export APP_LDFLAGS = \
 	-L$(BUILD)/libteep/ree/lib
 
 export APP_LIBS = \
-	-lkeystone-host -lkeystone-edge -lEnclave_u -lflatccrt -lmbedcrypto -lmbedx509 -lmbedtls -lwebsockets -lteep \
+	-lkeystone-host -lkeystone-edge -lEnclave_u -lflatccrt -lmbedcrypto -lmbedx509 -lmbedtls -lwebsockets \
 	-ltee_api
+
+export TEE_CFLAGS = \
+	-I$(BUILD)/libteep/tee/QCBOR/inc
 
 export TA_CFLAGS = \
 	-Wall -fno-builtin-printf -DEDGE_IGNORE_EGDE_RESULT -DCRYPTLIB=MBEDCRYPT \
 	-I. \
+	-I$(SOURCE)/include \
 	-I$(TEE_REF_TA_DIR)/api/include \
 	-I$(TEE_REF_TA_DIR)/api/keystone \
 	-I$(TEE_REF_TA_DIR)/build/include \
@@ -58,6 +64,7 @@ export TA_LDFLAGS = \
 	-L$(KEYSTONE_SDK_DIR)/lib \
 	-L$(BUILD)/libteep/tee/libwebsockets/lib \
 	-L$(BUILD)/libteep/tee/QCBOR \
+	-L$(BUILD)/libteep/tee/lib \
 	-T $(CURDIR)/Enclave.lds
 
 export TA_LIBS = \
@@ -66,6 +73,7 @@ export TA_LIBS = \
 	-ltee_api \
 	-lEnclave_t \
 	-lflatccrt \
+	-lteep \
 	-lqcbor \
 	-lkeystone-eapp
 
@@ -94,7 +102,7 @@ libteep-mbedtls-host-DISABLE = y
 libteep-libwebsockets-host-DISABLE = y
 libteep-QCBOR-host-DISABLE = y
 
-libteep-QCBOR-ree-DISABLE = y
+libteep-QCBOR-ree-FLAGS = CC=$(CROSS_COMPILE)gcc
 
 #libteep-mbedtls-tee-DISABLE = y
 
@@ -181,7 +189,6 @@ install: all
 	mkdir -p $(prefix)/usr/lib
 	install $(BUILD)/libteep/ree/mbedtls/library/lib* $(prefix)/usr/lib
 	install $(BUILD)/libteep/ree/libwebsockets/lib/lib* $(prefix)/usr/lib
-	install $(BUILD)/libteep/ree/lib/lib* $(prefix)/usr/lib
 	rm -f $(prefix)/root/env.sh
 	echo 'PATH=$$PATH:/root/teep-device' >>$(prefix)/root/env.sh
 	echo 'export TAM_HOST=tamproto_tam_api_1' >>$(prefix)/root/env.sh
@@ -203,8 +210,7 @@ SHIP_BINS = \
 
 SHIP_LIBS = \
 	$(BUILD)/libteep/ree/mbedtls/library/lib* \
-	$(BUILD)/libteep/ree/libwebsockets/lib/lib* \
-	$(BUILD)/libteep/ree/lib/lib*
+	$(BUILD)/libteep/ree/libwebsockets/lib/lib*
 
 ship-trvsim: all
 	sshpass -p sifive ssh -p $(PORT) -o "StrictHostKeyChecking no" root@trvsim mkdir -p /root/teep-device /usr/lib

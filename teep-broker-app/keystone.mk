@@ -5,8 +5,9 @@ all: $(out-dir)/teep-broker-app
 
 $(out-dir)/teec-keystone.o: teec-keystone.cpp
 $(out-dir)/teep-broker.o: teep-broker.c
+$(out-dir)/http-lws.o: http-lws.c http.h
 
-$(out-dir)/teep-broker-app: $(out-dir)/teec-keystone.o $(out-dir)/teep-broker.o
+$(out-dir)/teep-broker-app: $(out-dir)/teec-keystone.o $(out-dir)/teep-broker.o $(out-dir)/http-lws.o
 	mkdir -p $(out-dir)
 	$(CROSS_COMPILE)g++  $(APP_CFLAGS) $(APP_LDFLAGS) $^ -o $@ $(APP_LIBS) -pthread
 

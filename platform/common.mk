@@ -5,8 +5,8 @@ hello: hello-ta hello-app
 teep: teep-agent-ta teep-broker-app
 
 libteep-host: libteep-mbedtls-host libteep-libwebsockets-host libteep-QCBOR-host
-libteep-ree: libteep-mbedtls-ree libteep-libwebsockets-ree libteep-QCBOR-ree libteep-libteep-ree
-libteep-tee: libteep-mbedtls-tee libteep-libwebsockets-tee libteep-QCBOR-tee
+libteep-ree: libteep-mbedtls-ree libteep-libwebsockets-ree libteep-QCBOR-ree
+libteep-tee: libteep-mbedtls-tee libteep-libwebsockets-tee libteep-QCBOR-tee libteep-libteep-tee
 
 libteep-mbedtls-host:
 	if [ -z "$($@-DISABLE)" ]; then \
@@ -80,16 +80,11 @@ libteep-QCBOR-tee:
 		make -C $(BUILD)/libteep/tee/QCBOR $($@-FLAGS); \
 	fi
 
-libteep-libteep-ree: libteep-mbedtls-ree libteep-libwebsockets-ree
+libteep-libteep-tee: libteep-mbedtls-tee libteep-libwebsockets-tee
 	if [ -z "$($@-DISABLE)" ]; then \
-		mkdir -p $(BUILD)/libteep/ree/lib && \
-		$(CROSS_COMPILE)gcc $(REE_CFLAGS) -Ilib -c $(LIBTEEP_SRC) -o $(BUILD)/libteep/ree/lib/main.o && \
-		$(CROSS_COMPILE)gcc $(REE_LDFLAGS) \
-			-shared -Wl,-soname,libteep.so.1 \
-			-L$(OPTEE_DIR)/out-br/target/usr/lib \
-			$(BUILD)/libteep/ree/lib/main.o -lwebsockets -lmbedx509 -lmbedtls -lmbedcrypto \
-			-o $(BUILD)/libteep/ree/lib/libteep.so.1 && \
-		ln -sf libteep.so.1 $(BUILD)/libteep/ree/lib/libteep.so; \
+		mkdir -p $(BUILD)/libteep/tee/lib && \
+		$(CROSS_COMPILE)gcc $(TEE_CFLAGS) -Ilib -c $(LIBTEEP_SRC) -o $(BUILD)/libteep/tee/lib/libteep.o && \
+		$(CROSS_COMPILE)ar cr $(BUILD)/libteep/tee/lib/libteep.a $(BUILD)/libteep/tee/lib/libteep.o; \
 	fi
 
 hello-ta: libteep
