@@ -25,21 +25,143 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *
- * This is a REE test application to test operation of libteep.
  */
 #include <libteep.h>
 #include <libwebsockets.h>
+#include <tee_client_api.h>
+#include "http.h"
+#include "ta-interface.h"
+
+static const TEEC_UUID uuid_aist_otrp_ta =
+        { 0x68373894, 0x5bb3, 0x403c,
+                { 0x9e, 0xec, 0x31, 0x14, 0xa1, 0xf5, 0xd3, 0xfc } };
 
 static uint8_t http_res_buf[6 * 1024 * 1024];
-static char teep_req_buf[5 * 1024];
-static char teep_res_buf[5 * 1024];
-static char teep_tmp_buf[800 * 1024];
-static uint8_t http_req_buf[5 * 1024];
-static char ta_url_list_buf[1024];
 
 const char *uri = "http://127.0.0.1:3000/api/tam"; // TAM server uri
 const char *talist = ""; // installed TA list
 bool cose = false;
+
+struct broker_ctx {
+	TEEC_Context		tee_context;
+	TEEC_Session		tee_session;
+
+};
+
+static int broker_ctx_init(struct broker_ctx *ctx)
+{
+	TEEC_Result r;
+
+	r = TEEC_InitializeContext(NULL, &ctx->tee_context);
+	if (r != TEEC_SUCCESS) {
+		fprintf(stderr, "%s: tee_context init failed 0x%x\n",
+			__func__, r);
+		goto bail1;
+	}
+
+	TEEC_Operation op;
+	memset(&op, 0, sizeof op);
+	r = TEEC_OpenSession(&ctx->tee_context, &ctx->tee_session,
+			     &uuid_aist_otrp_ta, TEEC_LOGIN_PUBLIC,
+			     NULL, &op, NULL);
+	if (r != TEEC_SUCCESS) {
+		fprintf(stderr, "%s: tee open session failed 0x%x\n",
+			__func__, r);
+		goto bail2;
+	}
+
+	return 0;
+bail2:
+	TEEC_FinalizeContext(&ctx->tee_context);
+bail1:
+	return -1;
+}
+
+static void broker_ctx_destroy(struct broker_ctx *ctx)
+{
+	TEEC_FinalizeContext(&ctx->tee_context);
+}
+
+static int set_agent_dev_option(struct broker_ctx *ctx, enum agent_dev_option option, const char *value)
+{
+	TEEC_Result n;
+	TEEC_Operation op;
+
+	memset(&op, 0, sizeof(TEEC_Operation));
+	op.paramTypes = TEEC_PARAM_TYPES(TEEC_VALUE_INPUT,
+					 TEEC_MEMREF_TEMP_INPUT,
+					 TEEC_NONE,
+					 TEEC_NONE);
+
+	op.params[0].value.a    	= option;
+	op.params[0].value.b		= 0;
+	op.params[1].tmpref.buffer 	= (void *)value;
+	op.params[1].tmpref.size	= strlen(value) + 1;
+
+	n = TEEC_InvokeCommand(&ctx->tee_session, TEEP_AGENT_SET_DEV_OPTION, &op, NULL);
+	if (n != TEEC_SUCCESS) {
+		lwsl_err("%s: TEEC_InvokeCommand "
+		        "failed (0x%08x)\n", __func__, n);
+		return (int)n;
+	}
+	return n;
+}
+
+static int broker_task_done(struct broker_ctx *ctx, const void *in, size_t in_len)
+{
+	TEEC_Result n;
+	TEEC_Operation op;
+
+	memset(&op, 0, sizeof(TEEC_Operation));
+	op.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_TEMP_INPUT,
+					 TEEC_NONE,
+					 TEEC_NONE,
+					 TEEC_NONE);
+
+	op.params[0].tmpref.buffer 	= (void *)in;
+	op.params[0].tmpref.size	= in_len;
+
+	n = TEEC_InvokeCommand(&ctx->tee_session, TEEP_AGENT_BROKER_TASK_DONE, &op, NULL);
+	if (n != TEEC_SUCCESS) {
+		lwsl_err("%s: TEEC_InvokeCommand "
+		        "failed (0x%08x)\n", __func__, n);
+		return (int)n;
+	}
+	return n;
+}
+
+static int agent_query_next_broker_task(struct broker_ctx *ctx, struct broker_task *task)
+{
+	TEEC_Result n;
+	TEEC_Operation op;
+
+	memset(&op, 0, sizeof(TEEC_Operation));
+	op.paramTypes = TEEC_PARAM_TYPES(TEEC_VALUE_OUTPUT,
+					 TEEC_MEMREF_TEMP_OUTPUT,
+					 TEEC_MEMREF_TEMP_OUTPUT,
+					 TEEC_NONE);
+
+	op.params[1].tmpref.buffer 	= task->uri;
+	op.params[1].tmpref.size	= sizeof (task->uri);
+	op.params[2].tmpref.buffer 	= task->post_data;
+	op.params[2].tmpref.size	= sizeof (task->post_data);
+
+	n = TEEC_InvokeCommand(&ctx->tee_session, TEEP_AGENT_QUERY_NEXT_BROKER_TASK, &op, NULL);
+	if (n != TEEC_SUCCESS) {
+		lwsl_err("%s: TEEC_InvokeCommand "
+		        "failed (0x%08x)\n", __func__, n);
+		return (int)n;
+	}
+
+	task->command = op.params[0].value.a;
+	size_t uri_len = op.params[1].tmpref.size;
+	if (task->uri[uri_len - 1] != 0) {
+		return -1;
+	}
+	task->post_data_len = op.params[2].tmpref.size;
+
+	return n;
+}
 
 static void
 usage(void)
@@ -52,7 +174,7 @@ usage(void)
 	exit(1);
 }
 
-void
+static void
 cmdline_parse(int argc, const char *argv[])
 {
 	const char *tmp;
@@ -80,46 +202,68 @@ cmdline_parse(int argc, const char *argv[])
 	fprintf(stderr, "uri = %s, cose=%d, talist=%s\n", uri, cose, talist);
 }
 
-int loop_teep(struct libteep_ctx *lao_ctx)
+static int broker_http_post(struct broker_ctx *ctx, const struct broker_task *task)
 {
-	libteep_set_ta_list(lao_ctx, talist);
-	size_t tam_request_len = 0;
-	do {
-		int n = libteep_tam_msg(lao_ctx, http_res_buf, sizeof (http_res_buf), http_req_buf, tam_request_len);
-		if (n <= 0) break;
-		size_t tam_response_len = n;
-		tam_request_len = sizeof (http_req_buf);
-		if (libteep_agent_msg(lao_ctx, cose, http_req_buf, &tam_request_len, ta_url_list_buf, sizeof (ta_url_list_buf), http_res_buf, tam_response_len) < 0) {
+	lwsl_notice("POST: %s\n", task->uri);
+	lwsl_hexdump_notice(task->post_data, task->post_data_len);
+	size_t len = sizeof (http_res_buf);
+	int n = http_post(task->uri, task->post_data, task->post_data_len, http_res_buf, &len);
+	if (n < 0) {
+		return -1;
+	}
+	lwsl_hexdump_notice(http_res_buf, len);
+	return broker_task_done(ctx, http_res_buf, len);
+}
+
+static int broker_http_get(struct broker_ctx *ctx, const struct broker_task *task)
+{
+	lwsl_notice("GET: %s\n", task->uri);
+	size_t len = sizeof (http_res_buf);
+	int n = http_get(task->uri, http_res_buf, &len);
+	if (n < 0) {
+		return -1;
+	}
+	return broker_task_done(ctx, http_res_buf, len);
+}
+
+static int loop_teep(struct broker_ctx *ctx)
+{
+	set_agent_dev_option(ctx, AGENT_OPTION_SET_TAM_URI, uri);
+	set_agent_dev_option(ctx, AGENT_OPTION_SET_CURRENT_TA_LIST, talist);
+	for (;;) {
+		struct broker_task task;
+		if (agent_query_next_broker_task(ctx, &task) < 0) {
+			return -1;
+		}
+		if (task.command == BROKER_FINISH) {
 			break;
+		} else if (task.command == BROKER_HTTP_POST) {
+			if (broker_http_post(ctx, &task) < 0) {
+				return -1;
+			}
+		} else if (task.command == BROKER_HTTP_GET) {
+			if (broker_http_get(ctx, &task) < 0) {
+				return -1;
+			}
+		} else {
+			return -1;
 		}
-		char *p = ta_url_list_buf;
-		for (;;) {
-			size_t len = strlen(p);
-			if (len == 0) break;
-			libteep_download_and_install_ta_image(lao_ctx, p);
-			p += len + 1;
-		}
-	} while (tam_request_len > 0);
-	lwsl_notice("receive empty body to finish teep protocol\n");
+	}
 	return 0;
 }
 
 int broker_main()
 {
-	struct libteep_ctx *lao_ctx = NULL;
-
-	int res = libteep_init(&lao_ctx, LIBTEEP_TEEP_VER_TEEP, uri);
-	if (res != TR_OKAY) {
-		fprintf(stderr, "%s: Unable to create lao\n", __func__);
-		return 1;
+	struct broker_ctx ctx;
+	if (broker_ctx_init(&ctx) < 0) {
+		return -1;
 	}
 
-	loop_teep(lao_ctx);
+	//set_ta_list(&ctx, talist);
 
-	/* ask the TAM to give us an encrypted, signed TA... we can't
-	 * decrypt it because it's encrypted using the TEE's pubkey */
+	loop_teep(&ctx);
 
-	libteep_destroy(&lao_ctx);
+	broker_ctx_destroy(&ctx);
 	return 0;
 }
 

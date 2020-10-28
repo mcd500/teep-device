@@ -25,107 +25,97 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *
- * This is the user api for the libteep (lao) REE userland library.
- *
- * It provides services for REE Applications to communicate with a remote TAM,
- * and the OTrP PTA in the Secure World.
- *
- * The return convention is 0 means all is OK.  Nonzero indicates an error.
  */
 
-#if !defined(__LIBAISTOTRP__)
-#define __LIBAISTOTRP__
+#if !defined(__LIBAISTTEEP__)
+#define __LIBAISTTEEP__
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <signal.h>
-#include <unistd.h>
+#include <qcbor/qcbor.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-struct libteep_ctx;
-
-/*! teep protocol version */
-enum libteep_teep_ver {
-	LIBTEEP_TEEP_VER_OTRP,		/*!< otrp */
-	LIBTEEP_TEEP_VER_TEEP,		/*!< teep */
+enum teep_message_type {
+	QUERY_REQUEST = 1,
+	QUERY_RESPONSE = 2,
+	TRUSTED_APP_INSTALL = 3,
+	TRUSTED_APP_DELETE = 4,
+	SUCCESS = 5,
+	ERROR = 6
 };
 
-/**
- * libteep_init() - Initialize a libteep context
- *
- * \param ctx: pointer to a pointer to your lao
- * \param tam_url_base: the DNS name a url path preamble to use to connect to
- *			the remote TAM over http, eg,
- *			"https://tam.mydomain.com:445/mytamapp".  A copy is made
- *			of this string before returning.
- *
- * Allocates an opaque structure containing the context for communications with
- * both the OTrP PTA in TEE-side and network communications to the TAM.
- *
- * The other apis of the library require a context created by this to operate.
- *
- * *ctx points to the allocated context on successful return.
- *
- * Returns 0 if created OK, else error and nothing was allocated.
- */
-int
-libteep_init(struct libteep_ctx **ctx, enum libteep_teep_ver ver, const char *tam_url);
+enum teep_suite {
+	TEEP_AES_CCM_16_64_128_HMAC256_256_X25519_EdDSA = 1,
+	TEEP_AES_CCM_16_64_128_HMAC256_256_P_256_ES256  = 2,
+};
 
-/**
- * libteep_destroy() - Destroy a libteep context
- *
- * \param ctx: pointer to a pointer to your lao
- *
- * Destroys the context created by libteep_init().  *ctx is set to NULL
- * on return.
- */
-void
-libteep_destroy(struct libteep_ctx **ctx);
+struct teep_message {
+	enum teep_message_type type;
+	uint64_t token;
+	union {
+		struct {
+			enum teep_suite supported_cipher_suit;
+			unsigned char nonce[64];
+			size_t nonce_len;
+			uint32_t version;
+			UsefulBufC ocsp_data;
+			int64_t data_item_requested;
+		} query_request;
+		struct {
+			enum teep_suite selected_cipher_suit;
+			uint32_t selected_version;
+			UsefulBufC eat;
+			UsefulBufC ta_list[10];
+			size_t ta_list_len;
+			UsefulBufC ext_list[10];
+			size_t ext_list_len;
+		} query_response;
+		struct {
+			UsefulBufC *manifest_list;
+			size_t manifest_list_len;
+		} trusted_app_install;
+		struct {
+			UsefulBufC *ta_list;
+			size_t ta_list_len;
+		} trusted_app_delete;
+		struct {
+			UsefulBufC err_msg;
+			enum teep_suite cipher_suit;
+			uint32_t version;
+			uint64_t err_code;
+		} error;
+		struct {
+			UsefulBufC msg;
+		} success;
+	};
+};
 
-typedef enum tam_result {
-	TR_ONGOING		=  1,
-	TR_OKAY			=  0,
-	TR_FAIL_START		= -1,
-	TR_FAIL_CONN_ERR	= -2,
-	TR_FAIL_REFUSED		= -3,
-	TR_FAIL_OVERSIZE	= -4,
-	TR_FAIL_CLOSED		= -5,
-} tam_result;
+// TODO: cose support
+struct teep_message *parse_teep_message(UsefulBufC cbor);
+void free_teep_message(struct teep_message *message);
 
-/**
- * libteep_tam_msg() - Send a network message to the TAM and get the result
- *
- * \param ctx:    pointer to your lao
- * \param urlinfo: right-hand side of URL, added to the left-hand size given
- *		   at context-creation time to form the GET URL given to the TAM
- * \param io:     pointer to struct pointing to in and out buffers and lengths.
- *		  On entry, \p io.out_len must be set to the maximum length that
- *		  can be written to \p io.out.  On exit, it has been set to the
- *		  number of bytes actually used at \p io.out.
- *
- * This blocks until communication with the TAM was either successful, failed,
- * or timed out.
- *
- * \p io itself and its \p io.in and \p io.out buffers must be reserved after a
- * successful return from libteep_tam_msg(), until the completion callback
- * is called one way or the other.
- *
- * Returns 0 if the communication was started OK, else error.
- */
-int
-libteep_tam_msg(struct libteep_ctx *ctx, void *res, size_t reslen, void *req, size_t reqlen);
+struct teep_message_encoder
+{
+	QCBOREncodeContext EC;
+};
 
-int
-libteep_download_and_install_ta_image(struct libteep_ctx *ctx, char *url);
+void teep_message_encoder_init(struct teep_message_encoder *encoder, UsefulBuf buffer);
+void teep_message_encoder_add_header(struct teep_message_encoder *encoder,
+	enum teep_message_type type,
+	uint64_t token);
 
-int
-libteep_agent_msg(struct libteep_ctx *lao_ctx, int jose, void *out, size_t *out_len, char *ta_url_list, size_t ta_url_list_len, const void *in, size_t in_len);
+void teep_message_encoder_open_options(struct teep_message_encoder *encoder);
+void teep_message_encoder_open_ta_list(struct teep_message_encoder *encoder);
+void teep_message_encoder_add_ta_to_ta_list(struct teep_message_encoder *encoder, const char *ta);
+void teep_message_encoder_close_ta_list(struct teep_message_encoder *encoder);
+void teep_message_encoder_close_options(struct teep_message_encoder *encoder);
+
+void teep_message_encoder_add_err_code(struct teep_message_encoder *encoder, uint64_t err_code);
+
+QCBORError teep_message_encoder_finish(struct teep_message_encoder *encoder, UsefulBufC *encoded);
 
 #ifdef __cplusplus
 }

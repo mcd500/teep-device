@@ -51,6 +51,55 @@ static const char * const sp_pubkey_jwk =
 #include "sp_pubkey_jwk.h"
 ;
 
+int hex(char c)
+{
+	if (c >= 'A' && c <= 'F')
+		return 10 + (c - 'A');
+
+	if (c >= 'a' && c <= 'f')
+		return 10 + (c - 'a');
+
+	if (c >= '0' && c <= '9')
+		return c - '0';
+
+	return -1;
+}
+
+/*
+ * input should be like this
+ *
+ * 8d82573a-926d-4754-9353-32dc29997f74.ta
+ *
+ * return will be 0, 16 bytes of octets16 will be filled.
+ *
+ * On error, return is -1.
+ */
+
+int
+string_to_uuid_octets(const char *s, uint8_t *octets16)
+{
+	const char *end = s + 36;
+	uint8_t b, flip = 0;
+	int a;
+
+	while (s < end) {
+		if (*s != '-') {
+			a = hex(*s);
+			if (a < 0)
+				return -1;
+			if (flip)
+				*(octets16++) = (b << 4) | a;
+			else
+				b = a;
+
+			flip ^= 1;
+		}
+
+		s++;
+	}
+
+	return 0;
+}
 
 static struct lws_context *get_lws_context()
 {

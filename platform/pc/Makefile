@@ -7,6 +7,7 @@ export TEE_AGENT_UUID ?= 68373894-5bb3-403c-9eec-3114a1f5d3fc
 
 export APP_CFLAGS = -g \
 	-I./ \
+	-I$(SOURCE)/include \
 	-I$(SOURCE)/libteep/lib \
 	-I$(BUILD)/libteep/host/libwebsockets/include \
 	-I$(SOURCE)/libteep/libwebsockets/include \

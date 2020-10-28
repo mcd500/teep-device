@@ -29,46 +29,16 @@
 #include <libwebsockets.h>
 #include <tee_client_api.h>
 #include <tee_internal_api.h>
-#include "teep_message.h"
 #include "ta-store.h"
 #include "teep-agent-ta.h"
 
 /* TEEC Stub */
 
-TEEC_Result TEEC_InitializeContext(const char *name, TEEC_Context *context)
+static void prepare_params(
+	TEEC_Operation *operation,
+	uint32_t *types,
+	TEE_Param params[4])
 {
-	lwsl_user("%s: stub called\n", __func__);
-	return TEEC_SUCCESS;
-}
-
-void TEEC_FinalizeContext(TEEC_Context *context)
-{
-	lwsl_user("%s: stub called\n", __func__);
-}
-
-TEEC_Result TEEC_OpenSession(TEEC_Context *context,
-		TEEC_Session *session,
-		const TEEC_UUID *destination,
-		uint32_t connectionMethod,
-		const void *connectionData,
-		TEEC_Operation *operation,
-		uint32_t *returnOrigin)
-{
-	lwsl_user("%s: stub called\n", __func__);
-	return TEEC_SUCCESS;
-}
-
-void TEEC_CloseSession(TEEC_Session *session)
-{
-	lwsl_user("%s: stub called\n", __func__);
-}
-
-TEEC_Result TEEC_InvokeCommand(TEEC_Session *session,
-		uint32_t commandID,
-		TEEC_Operation *operation,
-		uint32_t *returnOrigin)
-{
-	lwsl_user("%s: stub called\n", __func__);
 	int type[4];
 	for (int i = 0; i < 4; i++) {
 		switch (TEEC_PARAM_TYPE_GET(operation->paramTypes, i)) {
@@ -95,13 +65,12 @@ TEEC_Result TEEC_InvokeCommand(TEEC_Session *session,
 			break;
 		}
 	}
-	uint32_t types = TEE_PARAM_TYPES(type[0], type[1], type[2], type[3]);
+	*types = TEE_PARAM_TYPES(type[0], type[1], type[2], type[3]);
 
-	TEE_Param params[4];
 	for (int i = 0; i < 4; i++) {
 		params[i].value.a = 0;
 		params[i].value.b = 0;
-		switch (TEE_PARAM_TYPE_GET(types, i)) {
+		switch (TEE_PARAM_TYPE_GET(*types, i)) {
 		default:
 			break;
 		case TEE_PARAM_TYPE_VALUE_INPUT:
@@ -125,7 +94,13 @@ TEEC_Result TEEC_InvokeCommand(TEEC_Session *session,
 			break;
 		}
 	}
-	TEE_Result r = TA_InvokeCommandEntryPoint(NULL, commandID, types, params);
+}
+
+static void writeback_params(
+	TEEC_Operation *operation,
+	uint32_t types,
+	TEE_Param params[4])
+{
 	for (int i = 0; i < 4; i++) {
 		switch (TEE_PARAM_TYPE_GET(types, i)) {
 		default:
@@ -149,6 +124,59 @@ TEEC_Result TEEC_InvokeCommand(TEEC_Session *session,
 			free(params[i].memref.buffer);
 			break;
 		}
+	}
+}
+
+TEEC_Result TEEC_InitializeContext(const char *name, TEEC_Context *context)
+{
+	lwsl_user("%s: stub called\n", __func__);
+	return TEEC_SUCCESS;
+}
+
+void TEEC_FinalizeContext(TEEC_Context *context)
+{
+	lwsl_user("%s: stub called\n", __func__);
+}
+
+// NOTE: onky single session supported
+static void *session_ctx;
+
+TEEC_Result TEEC_OpenSession(TEEC_Context *context,
+		TEEC_Session *session,
+		const TEEC_UUID *destination,
+		uint32_t connectionMethod,
+		const void *connectionData,
+		TEEC_Operation *operation,
+		uint32_t *returnOrigin)
+{
+	uint32_t types;
+	TEE_Param params[4];
+
+	prepare_params(operation, &types, params);
+	TEE_Result r = TA_OpenSessionEntryPoint(types, params, &session_ctx);
+	if (r == TEE_SUCCESS) {
+		writeback_params(operation, types, params);
+	}
+	return r;
+}
+
+void TEEC_CloseSession(TEEC_Session *session)
+{
+	TA_CloseSessionEntryPoint(session_ctx);
+}
+
+TEEC_Result TEEC_InvokeCommand(TEEC_Session *session,
+		uint32_t commandID,
+		TEEC_Operation *operation,
+		uint32_t *returnOrigin)
+{
+	uint32_t types;
+	TEE_Param params[4];
+
+	prepare_params(operation, &types, params);
+	TEE_Result r = TA_InvokeCommandEntryPoint(session_ctx, commandID, types, params);
+	if (r == TEE_SUCCESS) {
+		writeback_params(operation, types, params);
 	}
 	return r;
 }

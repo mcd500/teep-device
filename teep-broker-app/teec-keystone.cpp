@@ -23,7 +23,7 @@
 #include <libteep.h>
 #include <libwebsockets.h>
 
-#include "teep-command-def.h"
+#include "ta-interface.h"
 
 
 /* We hardcode these for demo purposes. */

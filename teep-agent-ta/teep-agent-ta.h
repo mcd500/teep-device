@@ -28,10 +28,4 @@
 #ifndef TEEP_AGENT_TA_H
 #define TEEP_AGENT_TA_H
 
-#include "teep-command-def.h"
-
-time_t time(time_t *tloc);
-int hex(char c);
-int string_to_uuid_octets(const char *s, uint8_t *octets16);
-
 #endif

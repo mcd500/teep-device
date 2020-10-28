@@ -113,3 +113,30 @@ int atoi(const char *s)
   }
   return n;
 }
+
+time_t time(time_t *tloc)
+{
+	TEE_Time t;
+
+	TEE_GetREETime(&t);
+
+	if (tloc)
+		*tloc = t.seconds;
+
+	return t.seconds;
+}
+
+
+int gettimeofday(struct timeval *tv, struct timezone *tz)
+{
+	TEE_Time t;
+
+	(void)tz;
+
+	TEE_GetREETime(&t);
+
+	tv->tv_sec = t.seconds;
+	tv->tv_usec = t.millis * 1000;
+
+	return 0;
+}
