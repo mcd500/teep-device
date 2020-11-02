@@ -201,12 +201,12 @@ handle_tam_message(struct teep_agent_session *session, const void *buffer, size_
 		return;
 	}
 	switch (m->type) {
-	case QUERY_RESPONSE:
-	case SUCCESS:
-	case ERROR:
+	case TEEP_QUERY_RESPONSE:
+	case TEEP_SUCCESS:
+	case TEEP_ERROR:
 		teep_error(session, "invalid teep message type");
 		goto err;
-	case QUERY_REQUEST:
+	case TEEP_QUERY_REQUEST:
 		if (session->state != AGENT_POSTING_INITIAL_REQUEST) {
 			teep_error(session, "invalid teep message type");
 			goto err;
@@ -215,42 +215,47 @@ handle_tam_message(struct teep_agent_session *session, const void *buffer, size_
 		session->token = m->token;
 		session->data_item_requested = m->query_request.data_item_requested;
 		break;
-	case TRUSTED_APP_INSTALL:
-		if (session->state != AGENT_POSTING_QUERY_RESPONSE) {
-			teep_error(session, "invalid teep message type");
-			goto err;
-		}
-		free(session->manifests);
-		size_t len = m->trusted_app_install.manifest_list_len;
-		// TODO: handle error
-		session->manifests = malloc(len * sizeof (struct ta_manifest));
-		session->manifests_len = len;
-		for (size_t i = 0; i < len; i++) {
-			if (!set_manifest_from_uri(&session->manifests[i], m->trusted_app_install.manifest_list[i])) {
-				teep_error(session, "too long URI");
+	case TEEP_INSTALL:
+		{
+			if (session->state != AGENT_POSTING_QUERY_RESPONSE) {
+				teep_error(session, "invalid teep message type");
 				goto err;
 			}
-		}
-		session->state = AGENT_DOWNLOAD_TA;
-		session->download_ta_index = 0;
-		break;
-	case TRUSTED_APP_DELETE:
-		if (session->state != AGENT_POSTING_QUERY_RESPONSE) {
-			teep_error(session, "invalid teep message type");
-			goto err;
-		}
-
-		for (size_t i = 0; i < m->trusted_app_delete.ta_list_len; i++) {
-			UsefulBufC *ta = &m->trusted_app_delete.ta_list[i];
+			free(session->manifests);
+			struct teep_buffer_array *p = &m->teep_install.manifest_list;
 			// TODO: handle error
-			ta_store_delete(ta->ptr, ta->len);
+			session->manifests = malloc(p->len * sizeof (struct ta_manifest));
+			session->manifests_len = p->len;
+			for (size_t i = 0; i < p->len; i++) {
+				// TODO: parse SUIT_Envelope
+				if (!set_manifest_from_uri(&session->manifests[i], p->array[i])) {
+					teep_error(session, "too long URI");
+					goto err;
+				}
+			}
+			session->state = AGENT_DOWNLOAD_TA;
+			session->download_ta_index = 0;
 		}
+		break;
+	case TEEP_DELETE:
+		{
+			if (session->state != AGENT_POSTING_QUERY_RESPONSE) {
+				teep_error(session, "invalid teep message type");
+				goto err;
+			}
+			struct teep_buffer_array *p = &m->teep_delete.ta_list;
+			for (size_t i = 0; i < p->len; i++) {
+				UsefulBufC *ta = &p->array[i];
+				// TODO: handle error
+				ta_store_delete(ta->ptr, ta->len);
+			}
 
-		session->state = AGENT_POSTING_SUCCESS;
+			session->state = AGENT_POSTING_SUCCESS;
+		}
 		break;
 	}
 err:
-	free_teep_message(m);
+	free_parsed_teep_message(m);
 }
 
 static void
@@ -286,14 +291,22 @@ static int build_query_response(struct teep_agent_session *session, void *dst, s
 {
 	struct teep_message_encoder enc;
 	teep_message_encoder_init(&enc, (UsefulBuf){ dst, *dst_len });
-	teep_message_encoder_add_header(&enc, QUERY_RESPONSE, session->token);
+	teep_message_encoder_add_header(&enc, TEEP_QUERY_RESPONSE, session->token);
 	teep_message_encoder_open_options(&enc);
-	{
+
+	uint64_t items = session->data_item_requested;
+	if (items & TEEP_DATA_ATTESTATION) {
+		// TODO
+	} else if (items & TEEP_DATA_TRUSTED_COMPONENTS) {
 		teep_message_encoder_open_ta_list(&enc);
 		for (size_t i = 0; i < session->manifests_len; i++) {
 			teep_message_encoder_add_ta_to_ta_list(&enc, session->manifests[i].id);
 		}
 		teep_message_encoder_close_ta_list(&enc);
+	} else if (items & TEEP_DATA_EXTENSIONS) {
+		// TODO
+	} else if (items & TEEP_DATA_SUIT_COMMANDS) {
+		// TODO
 	}
 	teep_message_encoder_close_options(&enc);
 	UsefulBufC ret;
@@ -308,7 +321,7 @@ static int build_success(struct teep_agent_session *session, void *dst, size_t *
 {
 	struct teep_message_encoder enc;
 	teep_message_encoder_init(&enc, (UsefulBuf){ dst, *dst_len });
-	teep_message_encoder_add_header(&enc, SUCCESS, session->token);
+	teep_message_encoder_add_header(&enc, TEEP_SUCCESS, session->token);
 	teep_message_encoder_open_options(&enc);
 	{
 	}
@@ -325,7 +338,7 @@ static int build_error(struct teep_agent_session *session, void *dst, size_t *ds
 {
 	struct teep_message_encoder enc;
 	teep_message_encoder_init(&enc, (UsefulBuf){ dst, *dst_len });
-	teep_message_encoder_add_header(&enc, ERROR, session->token);
+	teep_message_encoder_add_header(&enc, TEEP_ERROR, session->token);
 	teep_message_encoder_open_options(&enc);
 	{
 

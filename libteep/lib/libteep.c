@@ -30,6 +30,348 @@
 #include <stdlib.h>
 #include "libteep.h"
 
+static int parse_uint32_array(struct teep_uint32_array *p, QCBORDecodeContext *DC, const QCBORItem *option)
+{
+	if (option->uDataType != QCBOR_TYPE_ARRAY) {
+		return 0;
+	}
+	p->len = option->val.uCount;
+	p->array = malloc(p->len * sizeof (p->array[0]));
+	if (!p->array) {
+		return 0;
+	}
+	for (size_t i = 0; i < p->len; i++) {
+		QCBORItem Item;
+		QCBORDecode_GetNext(DC, &Item);
+		if (Item.uDataType == QCBOR_TYPE_INT64) {
+			if (QCBOR_Int64ToUInt32(Item.val.int64, &p->array[i]) < 0) {
+				return 0;
+			}
+		} else {
+			return 0;
+		}
+	}
+	p->have_value = 1;
+	return 1;
+}
+
+static int parse_uint32_option(struct teep_uint32_option *p, QCBORDecodeContext *DC, const QCBORItem *option)
+{
+	if (option->uDataType == QCBOR_TYPE_INT64) {
+		if (QCBOR_Int64ToUInt32(option->val.int64, &p->value) < 0) {
+			return 0;
+		}
+	} else {
+		return 0;
+	}
+	p->have_value = 1;
+	return 1;
+}
+
+static int parse_buffer_array(struct teep_buffer_array *p, QCBORDecodeContext *DC, const QCBORItem *option, bool binary)
+{
+	if (option->uDataType != QCBOR_TYPE_ARRAY) {
+		return 0;
+	}
+	p->len = option->val.uCount;
+	p->array = malloc(p->len * sizeof (p->array[0]));
+	if (!p->array) {
+		return 0;
+	}
+	for (size_t i = 0; i < p->len; i++) {
+		QCBORItem Item;
+		QCBORDecode_GetNext(DC, &Item);
+		if (Item.uDataType == QCBOR_TYPE_BYTE_STRING && binary) {
+			p->array[i] = Item.val.string;
+		} else if (Item.uDataType == QCBOR_TYPE_TEXT_STRING && !binary) {
+			p->array[i] = Item.val.string;
+		} else {
+			return 0;
+		}
+	}
+	p->have_value = 1;
+	return 1;
+}
+
+static int parse_tc_info_array(struct teep_tc_info_array *p, QCBORDecodeContext *DC, const QCBORItem *option, bool requested)
+{
+	if (option->uDataType != QCBOR_TYPE_ARRAY) {
+		return 0;
+	}
+	p->len = option->val.uCount;
+	p->array = malloc(p->len * sizeof (p->array[0]));
+	if (!p->array) {
+		return 0;
+	}
+	memset(p->array, 0, p->len * sizeof (p->array[0]));
+	for (size_t i = 0; i < p->len; i++) {
+		QCBORItem Map;
+		QCBORDecode_GetNext(DC, &Map);
+		if (Map.uDataType != QCBOR_TYPE_MAP) {
+			return 0;
+		}
+		for (size_t j = 0; j < Map.val.uCount; j++) {
+			QCBORItem Item;
+			QCBORDecode_GetNext(DC, &Item);
+			if (Item.uLabelType != QCBOR_TYPE_INT64) {
+				return 0;
+			}
+			int64_t label = Item.label.int64;
+			switch (label) {
+			case TEEP_OPTION_COMPONENT_ID:
+				{
+					if (Item.uDataType != QCBOR_TYPE_BYTE_STRING) {
+						return 0;
+					}
+					p->array[i].component_id = Item.val.string;
+				}
+				break;
+			case TEEP_OPTION_TC_MANIFEST_SEQUENCE_NUMBER:
+				{
+					if (!parse_uint32_option(&p->array[i].tc_manifest_sequence_number, DC, &Item)) {
+						return 0;
+					}
+				}
+				break;
+			case TEEP_OPTION_HAVE_BINARY:
+				{
+					if (!requested) {
+						return 0;
+					}
+					if (!parse_uint32_option(&p->array[i].have_binary, DC, &Item)) {
+						return 0;
+					}
+				}
+			default:
+				return 0;
+			}
+		}
+	}
+	p->have_value = 1;
+	return 1;
+}
+
+static int parse_option(struct teep_message *m, QCBORDecodeContext *DC, QCBORItem *option, uint8_t nest_level)
+{
+	if (option->uLabelType != QCBOR_TYPE_INT64) {
+		goto err;
+	}
+	int64_t label = option->label.int64;
+	switch (label) {
+	case TEEP_OPTION_SUPPORTED_CIPHER_SUITS:
+		{
+			if (m->type == TEEP_QUERY_REQUEST) {
+				if (!parse_uint32_array(&m->query_request.supported_cipher_suits, DC, option)) {
+					goto err;
+				}
+			} else if (m->type == TEEP_ERROR) {
+				if (!parse_uint32_array(&m->teep_error.supported_cipher_suits, DC, option)) {
+					goto err;
+				}
+			} else {
+				goto skip;
+			}
+		}
+		break;
+	case TEEP_OPTION_CHALLENGE:
+	case TEEP_OPTION_OCSP_DATA:
+		{
+			if (m->type != TEEP_QUERY_REQUEST) {
+				goto skip;
+			}
+			if (option->uDataType != QCBOR_TYPE_BYTE_STRING) {
+				goto err;
+			}
+			if (label == TEEP_OPTION_CHALLENGE) {
+				m->query_request.challenge = option->val.string;
+			} else {
+				m->query_request.ocsp_data = option->val.string;
+			}
+		}
+		break;
+	case TEEP_OPTION_VERSIONS:
+		{
+			if (m->type == TEEP_QUERY_REQUEST) {
+				if (!parse_uint32_array(&m->query_request.versions, DC, option)) {
+					goto err;
+				}
+			} else if (m->type == TEEP_ERROR) {
+				if (!parse_uint32_array(&m->teep_error.versions, DC, option)) {
+					goto err;
+				}
+			} else {
+				goto skip;
+			}
+		}
+		break;
+	case TEEP_OPTION_SELECTED_CIPHER_SUIT:
+		{
+			if (m->type != TEEP_QUERY_RESPONSE) {
+				goto skip;
+			}
+			if (!parse_uint32_option(&m->query_response.selected_cipher_suit, DC, option)) {
+				goto err;
+			}
+		}
+		break;
+	case TEEP_OPTION_SELECTED_VERSION:
+		{
+			if (m->type != TEEP_QUERY_RESPONSE) {
+				goto skip;
+			}
+			if (!parse_uint32_option(&m->query_response.selected_version, DC, option)) {
+				goto err;
+			}
+		}
+		break;
+	case TEEP_OPTION_EVIDENCE_FORMAT:
+		{
+			if (m->type != TEEP_QUERY_RESPONSE) {
+				goto skip;
+			}
+			if (option->uDataType != QCBOR_TYPE_TEXT_STRING) {
+				goto err;
+			}
+			m->query_response.evidence_format = option->val.string;
+		}
+		break;
+	case TEEP_OPTION_EVIDENCE:
+		{
+			if (m->type != TEEP_QUERY_RESPONSE) {
+				goto skip;
+			}
+			if (option->uDataType != QCBOR_TYPE_BYTE_STRING) {
+				goto err;
+			}
+			m->query_response.evidence = option->val.string;
+		}
+		break;
+	case TEEP_OPTION_TC_LIST:
+		{
+			if (m->type != TEEP_QUERY_RESPONSE) {
+				goto skip;
+			}
+			if (!parse_tc_info_array(&m->query_response.tc_list, DC, option, false)) {
+				goto err;
+			}
+		}
+		break;
+	case TEEP_OPTION_REQUESTED_TC_LIST:
+		{
+			if (m->type != TEEP_QUERY_RESPONSE) {
+				goto skip;
+			}
+			if (!parse_tc_info_array(&m->query_response.requested_tc_list, DC, option, true)) {
+				goto err;
+			}
+		}
+		break;
+	case TEEP_OPTION_UNNEEDED_TC_LIST:
+		{
+			if (m->type != TEEP_QUERY_RESPONSE) {
+				goto skip;
+			}
+			if (!parse_buffer_array(&m->query_response.unneeded_tc_list, DC, option, true)) {
+				goto err;
+			}
+		}
+		break;
+	case TEEP_OPTION_EXT_LIST:
+		{
+			if (m->type != TEEP_QUERY_RESPONSE) {
+				goto skip;
+			}
+			if (!parse_uint32_array(&m->query_response.ext_list, DC, option)) {
+				goto err;
+			}
+		}
+		break;
+	case TEEP_OPTION_MANIFEST_LIST:
+		{
+			if (m->type != TEEP_INSTALL) {
+				goto skip;
+			}
+			if (!parse_buffer_array(&m->teep_install.manifest_list, DC, option, true)) {
+				goto err;
+			}
+		}
+		break;
+	case TEEP_OPTION_MSG:
+		{
+			if (m->type != TEEP_SUCCESS) {
+				goto skip;
+			}
+			if (option->uDataType != QCBOR_TYPE_TEXT_STRING) {
+				goto err;
+			}
+			m->teep_success.msg = option->val.string;
+		}
+		break;
+	case TEEP_OPTION_ERR_MSG:
+		{
+			if (m->type != TEEP_ERROR) {
+				goto skip;
+			}
+			if (option->uDataType != QCBOR_TYPE_TEXT_STRING) {
+				goto err;
+			}
+			m->teep_error.err_msg = option->val.string;
+		}
+		break;
+	case TEEP_OPTION_SUIT_REPORTS:
+		{
+			if (m->type == TEEP_SUCCESS) {
+				if (!parse_buffer_array(&m->teep_success.suit_reports, DC, option, true)) {
+					goto err;
+				}
+			} else if (m->type == TEEP_ERROR) {
+				if (!parse_buffer_array(&m->teep_error.suit_reports, DC, option, true)) {
+					goto err;
+				}
+			} else {
+				goto skip;
+			}
+		}
+		break;
+	default:
+	skip:
+		{
+			uint8_t level = option->uNextNestLevel;	
+			// skip unknown option
+			while (level != nest_level) {
+				QCBORItem Item;
+				QCBORDecode_GetNext(DC, &Item);
+				if (option->uDataType == QCBOR_TYPE_NONE) {
+					goto err;
+				}
+				level = Item.uNextNestLevel;
+			}
+		}
+		break;
+	}
+	return 1;
+err:
+	return 0;
+}
+
+static int parse_options(struct teep_message *m, QCBORDecodeContext *DC)
+{
+	QCBORItem options;
+	QCBORDecode_GetNext(DC, &options);
+	if (options.uDataType != QCBOR_TYPE_MAP) {
+			return 0;
+	}
+
+	for (int i = 0; i < options.val.uCount; i++) {
+		QCBORItem option;
+		QCBORDecode_GetNext(DC, &option);
+		if (!parse_option(m, DC, &option, options.uNextNestLevel)) {
+			return 0;
+		}
+	}
+	return 1;
+}
+
 struct teep_message *parse_teep_message(UsefulBufC cbor)
 {
 	QCBORDecodeContext DC;
@@ -38,7 +380,7 @@ struct teep_message *parse_teep_message(UsefulBufC cbor)
 	QCBORItem Item;
 	QCBORDecode_GetNext(&DC, &Item);
 
-	if (Item.uDataType != QCBOR_TYPE_ARRAY || Item.val.uCount < 3) {
+	if (Item.uDataType != QCBOR_TYPE_ARRAY) {
 		return NULL;
 	}
 
@@ -48,12 +390,12 @@ struct teep_message *parse_teep_message(UsefulBufC cbor)
 	}
 	int64_t type_val = Item.val.int64;
 	switch (type_val) {
-	case QUERY_REQUEST:
-	case QUERY_RESPONSE:
-	case TRUSTED_APP_INSTALL:
-	case TRUSTED_APP_DELETE:
-	case ERROR:
-	case SUCCESS:
+	case TEEP_QUERY_REQUEST:
+	case TEEP_QUERY_RESPONSE:
+	case TEEP_INSTALL:
+	case TEEP_DELETE:
+	case TEEP_SUCCESS:
+	case TEEP_ERROR:
 		break;
 	default:
 		return NULL;
@@ -65,15 +407,9 @@ struct teep_message *parse_teep_message(UsefulBufC cbor)
 		if (QCBOR_Int64ToUInt64(Item.val.int64, &token) < 0) {
 			return NULL;
 		}
-	} else if (Item.uDataType == QCBOR_TYPE_INT64) {
+	} else if (Item.uDataType == QCBOR_TYPE_UINT64) {
 		token = Item.val.uint64;
 	} else {
-		return NULL;
-	}
-
-	QCBORItem options;
-	QCBORDecode_GetNext(&DC, &options);
-	if (options.uDataType != QCBOR_TYPE_MAP) {
 		return NULL;
 	}
 
@@ -85,61 +421,30 @@ struct teep_message *parse_teep_message(UsefulBufC cbor)
 	m->type = type_val;
 	m->token = token;
 
-	for (int i = 0; i < options.val.uCount; i++) {
-		QCBORItem option;
-		QCBORDecode_GetNext(&DC, &option);
-		if (option.uLabelType != QCBOR_TYPE_INT64) {
+	switch (m->type) {
+	case TEEP_ERROR:
+		QCBORDecode_GetNext(&DC, &Item);
+		if (Item.uDataType != QCBOR_TYPE_INT64) {
 			goto err;
 		}
-		if (option.label.int64 == 8 || option.label.int64 == 10) {
-			if (option.uDataType != QCBOR_TYPE_ARRAY) {
-				goto err;
-			}
-			size_t len = option.val.uCount;
-			UsefulBufC *p = malloc(len * sizeof (UsefulBufC));
-			if (!p) {
-				goto err;
-			}
-			for (size_t j = 0; j < len; j++) {
-				QCBORItem ArrayItem;
-				QCBORDecode_GetNext(&DC, &ArrayItem);
+		m->teep_error.err_code = Item.val.int64;
+		break;
+	default:
+		break;
+	}
 
-				if (ArrayItem.uDataType != QCBOR_TYPE_TEXT_STRING) {
-					free(p);
-					goto err;
-				}
-				p[i] = ArrayItem.val.string;
-			}
-			if (option.label.int64 == 10 && m->type == TRUSTED_APP_INSTALL) {
-				m->trusted_app_install.manifest_list = p;
-				m->trusted_app_install.manifest_list_len = len;
-			} else if (option.label.int64 == 8 && m->type == TRUSTED_APP_DELETE) {
-				m->trusted_app_delete.ta_list = p;
-				m->trusted_app_delete.ta_list_len = len;
-			} else {
-				free(p);
-				goto err;
-			}
-		} else { // TODO: handle more option
-			while (option.uNextNestLevel != options.uNextNestLevel) {
-				// skip unhandled option
-				QCBORDecode_GetNext(&DC, &option);
-				if (option.uDataType == QCBOR_TYPE_NONE) {
-					goto err;
-				}
-			}
-		}
+	if (!parse_options(m, &DC)) {
+		goto err;
 	}
 
 	switch (m->type) {
-	case QUERY_REQUEST:
+	case TEEP_QUERY_REQUEST:
 		QCBORDecode_GetNext(&DC, &Item);
 		if (Item.uDataType != QCBOR_TYPE_INT64) {
 			goto err;
 		}
 		m->query_request.data_item_requested = Item.val.int64;
 		break;
-		// TODO: err_code
 	default:
 		break;
 	}
@@ -150,29 +455,39 @@ struct teep_message *parse_teep_message(UsefulBufC cbor)
 
 	return m;
 err:
-	free_teep_message(m);
+	free_parsed_teep_message(m);
 	return NULL;
 }
 
-void free_teep_message(struct teep_message *message)
+void free_parsed_teep_message(struct teep_message *message)
 {
 	if (!message) {
 		return;
 	}
 	switch (message->type) {
-	case QUERY_REQUEST:
+	case TEEP_QUERY_REQUEST:
+		free(message->query_request.supported_cipher_suits.array);
+		free(message->query_request.versions.array);
 		break;
-	case QUERY_RESPONSE:
+	case TEEP_QUERY_RESPONSE:
+		free(message->query_response.tc_list.array);
+		free(message->query_response.requested_tc_list.array);
+		free(message->query_response.unneeded_tc_list.array);
+		free(message->query_response.ext_list.array);
 		break;
-	case TRUSTED_APP_INSTALL:
-		free(message->trusted_app_install.manifest_list);
+	case TEEP_INSTALL:
+		free(message->teep_install.manifest_list.array);
 		break;
-	case TRUSTED_APP_DELETE:
-		free(message->trusted_app_delete.ta_list);
+	case TEEP_DELETE:
+		free(message->teep_delete.ta_list.array);
 		break;
-	case SUCCESS:
+	case TEEP_SUCCESS:
+		free(message->teep_success.suit_reports.array);
 		break;
-	case ERROR:
+	case TEEP_ERROR:
+		free(message->teep_error.supported_cipher_suits.array);
+		free(message->teep_error.versions.array);
+		free(message->teep_error.suit_reports.array);
 		break;
 	}
 	free(message);

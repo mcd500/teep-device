@@ -39,12 +39,19 @@ extern "C" {
 #endif
 
 enum teep_message_type {
-	QUERY_REQUEST = 1,
-	QUERY_RESPONSE = 2,
-	TRUSTED_APP_INSTALL = 3,
-	TRUSTED_APP_DELETE = 4,
-	SUCCESS = 5,
-	ERROR = 6
+	TEEP_QUERY_REQUEST = 1,
+	TEEP_QUERY_RESPONSE = 2,
+	TEEP_INSTALL = 3,
+	TEEP_DELETE = 4,
+	TEEP_SUCCESS = 5,
+	TEEP_ERROR = 6
+};
+
+enum teep_data_item {
+	TEEP_DATA_ATTESTATION = 1,
+	TEEP_DATA_TRUSTED_COMPONENTS = 2,
+	TEEP_DATA_EXTENSIONS = 4,
+	TEEP_DATA_SUIT_COMMANDS = 8,
 };
 
 enum teep_suite {
@@ -52,50 +59,116 @@ enum teep_suite {
 	TEEP_AES_CCM_16_64_128_HMAC256_256_P_256_ES256  = 2,
 };
 
+enum teep_error {
+	TEEP_ERR_ILLEGAL_PARAMETER = 1,
+	TEEP_ERR_UNSUPPORTED_EXTENSION = 2,
+	TEEP_ERR_REQUEST_SIGNATURE_FAILED = 3,
+	TEEP_ERR_UNSUPPORTED_MSG_VERSION = 4,
+	TEEP_ERR_UNSUPPORTED_CRYPTO_ALG = 5,
+	TEEP_ERR_BAD_CERTIFICATE = 6,
+	TEEP_ERR_UNSUPPORTED_CERTIFICATE = 7,
+	TEEP_ERR_CERTIFICATE_REVOKED = 8,
+	TEEP_ERR_CERTIFICATE_EXPIRED = 9,
+	TEEP_ERR_INTERNAL_ERROR = 10,
+	TEEP_ERR_TC_NOT_FOUND = 12,
+	TEEP_ERR_MANIFEST_PROCESSING_FAILED = 17,
+};
+
+enum teep_option_key {
+	TEEP_OPTION_SUPPORTED_CIPHER_SUITS = 1,
+	TEEP_OPTION_CHALLENGE = 2,
+	TEEP_OPTION_VERSIONS = 3,
+	TEEP_OPTION_OCSP_DATA = 4,
+	TEEP_OPTION_SELECTED_CIPHER_SUIT = 5,
+	TEEP_OPTION_SELECTED_VERSION = 6,
+	TEEP_OPTION_EVIDENCE = 7,
+	TEEP_OPTION_TC_LIST = 8,
+	TEEP_OPTION_EXT_LIST = 9,
+	TEEP_OPTION_MANIFEST_LIST = 10,
+	TEEP_OPTION_MSG = 11,
+	TEEP_OPTION_ERR_MSG = 12,
+	TEEP_OPTION_EVIDENCE_FORMAT = 13,
+	TEEP_OPTION_REQUESTED_TC_LIST = 14,
+	TEEP_OPTION_UNNEEDED_TC_LIST = 15,
+	TEEP_OPTION_COMPONENT_ID = 16,
+	TEEP_OPTION_TC_MANIFEST_SEQUENCE_NUMBER = 17,
+	TEEP_OPTION_HAVE_BINARY = 18,
+	TEEP_OPTION_SUIT_REPORTS = 19,
+};
+
+struct teep_uint32_array {
+	bool have_value;
+	uint32_t *array;
+	size_t len;
+};
+
+struct teep_uint32_option {
+	bool have_value;
+	uint32_t value;
+};
+
+struct teep_buffer_array {
+	bool have_value;
+	UsefulBufC *array;
+	size_t len;
+};
+
+struct teep_tc_info {
+	UsefulBufC component_id;
+	struct teep_uint32_option tc_manifest_sequence_number;
+	struct teep_uint32_option have_binary;
+};
+
+struct teep_tc_info_array {
+	bool have_value;
+	struct teep_tc_info *array;
+	size_t len;
+};
+
 struct teep_message {
 	enum teep_message_type type;
 	uint64_t token;
 	union {
 		struct {
-			enum teep_suite supported_cipher_suit;
-			unsigned char nonce[64];
-			size_t nonce_len;
-			uint32_t version;
+			struct teep_uint32_array supported_cipher_suits;
+			UsefulBufC challenge;
+			struct teep_uint32_array versions;
 			UsefulBufC ocsp_data;
-			int64_t data_item_requested;
+			uint64_t data_item_requested;
 		} query_request;
 		struct {
-			enum teep_suite selected_cipher_suit;
-			uint32_t selected_version;
-			UsefulBufC eat;
-			UsefulBufC ta_list[10];
-			size_t ta_list_len;
-			UsefulBufC ext_list[10];
-			size_t ext_list_len;
+			struct teep_uint32_option selected_cipher_suit;
+			struct teep_uint32_option selected_version;
+			UsefulBufC evidence_format;
+			UsefulBufC evidence;
+			struct teep_tc_info_array tc_list;
+			struct teep_tc_info_array requested_tc_list;
+			struct teep_buffer_array unneeded_tc_list;
+			struct teep_uint32_array ext_list;
 		} query_response;
 		struct {
-			UsefulBufC *manifest_list;
-			size_t manifest_list_len;
-		} trusted_app_install;
+			struct teep_buffer_array manifest_list;
+		} teep_install;
 		struct {
-			UsefulBufC *ta_list;
-			size_t ta_list_len;
-		} trusted_app_delete;
-		struct {
-			UsefulBufC err_msg;
-			enum teep_suite cipher_suit;
-			uint32_t version;
-			uint64_t err_code;
-		} error;
+			struct teep_buffer_array ta_list;
+		} teep_delete;
 		struct {
 			UsefulBufC msg;
-		} success;
+			struct teep_buffer_array suit_reports;
+		} teep_success;
+		struct {
+			int64_t err_code;
+			UsefulBufC err_msg;
+			struct teep_uint32_array supported_cipher_suits;
+			struct teep_uint32_array versions;
+			struct teep_buffer_array suit_reports;
+		} teep_error;
 	};
 };
 
 // TODO: cose support
 struct teep_message *parse_teep_message(UsefulBufC cbor);
-void free_teep_message(struct teep_message *message);
+void free_parsed_teep_message(struct teep_message *message);
 
 struct teep_message_encoder
 {
