@@ -20,12 +20,16 @@ export APP_LDFLAGS = \
 	-L$(BUILD)/libteep/host/libwebsockets/lib
 
 export APP_LIBS = \
-	 -lwebsockets -lmbedtls -lmbedx509 -lmbedcrypto -lcap
+	 -lwebsockets -lmbedtls -lmbedx509 -lmbedcrypto
+
+ifeq ($(shell uname),Linux)
+APP_LIBS += -lcap
+endif
 
 libteep-mbedtls-host-FLAGS = \
 	-DCMAKE_BUILD_TYPE=RELEASE \
 	-DUSE_STATIC_MBEDTLS_LIBRARY=1 \
-	-DUSE_SAHTED_MBEDTLS_LIBRARY=0
+	-DUSE_SAHTED_MBEDTLS_LIBRARY=0 \
 
 libteep-libwebsockets-host-FLAGS = \
 	-DLWS_WITH_SSL=1 \
@@ -41,6 +45,7 @@ libteep-libwebsockets-host-FLAGS = \
 	-DLWS_WITH_STATIC=1 \
 	-DLWS_WITHOUT_SERVER=1 \
 	-DCMAKE_BUILD_TYPE=Debug \
+	-DCMAKE_C_FLAGS='-Wno-enum-conversion'
 
 libteep-mbedtls-ree-DISABLE = y
 libteep-libwebsockets-ree-DISABLE = y
@@ -64,8 +69,8 @@ scripts:
 	mkdir -p $(BUILD)/scripts
 	for f in dota dsta dta iota ista ita; do \
 		install $(SOURCE)/scripts/$$f.sh $(BUILD)/scripts; \
-		sed -i 's/3000/8888/' $(BUILD)/scripts/$$f.sh; \
-		sed -i 's@teep-broker-app@$(BUILD)/teep-broker-app/teep-broker-app@' $(BUILD)/scripts/$$f.sh; \
+		sed -i'' -e 's/3000/8888/' $(BUILD)/scripts/$$f.sh; \
+		sed -i'' -e 's@teep-broker-app@$(BUILD)/teep-broker-app/teep-broker-app@' $(BUILD)/scripts/$$f.sh; \
 	done
 
 upload_encfile_to_tamproto:
