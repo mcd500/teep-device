@@ -1,131 +1,133 @@
-# OTrP Overview
+# TEEP device side implementation
 
-## Normative docs
+## supported TEEs
 
- - [OTrP draft RFC](https://datatracker.ietf.org/doc/draft-ietf-teep-opentrustprotocol/?include_text=1)
- - [globalplatform GPD TMF OTrP profile (public review v0.0.0.21)](https://globalplatform.org/wp-content/uploads/2018/11/GPD_TMF_OTrP_Profile_v0.0.0.21_PublicReview.pdf)
- - [JWS RFC7515](https://tools.ietf.org/html/rfc7515)
- - [JWE RFC7516](https://tools.ietf.org/html/rfc7516)
- - [JWK RFC7517](https://tools.ietf.org/html/rfc7517)
- - [JWA RFC7518](https://tools.ietf.org/html/rfc7518)
+* keystone
+* optee
+* pc (not Trusted, developing purpose)
 
-## Working overview diagram
+## Prerequisite
 
-![Overview](./doc-assets/otrp-overview.png)
+Use Ubuntu 20.04 or docker images below.
 
-## 10000m view
+For keystone and optee, docker image is recommended.
 
-OTrP can be understood as existing to fix two limitations with the
-GlobalPlatform TEE definition:
+### Ubuntu (not recommended)
 
- 1. The TAs are not encrypted, just signed.  So they cannot contain secrets
-    as it is.
-
- 2. There is only one valid signing key defined at TEE build-time.  Nobody
-    without the key can make insertable TAs and anybody with the key can
-    build TAs to insert on any device with that build of the TEE.
-
-Everything about the architecture of OTrP has fallen out of fixing those
-two restrictions.
-
- - To solve TA encryption, they are encrypted by a remote provider (the
-   "Trusted Services Manager" or TSM) using a public key held by the targeted
-   device specifically, before transmission to the device.  They may be stored
-   with the encryption intact and the decrypted and confirmed on insertion.
-
- - So one provider can't snoop the TAs of another, there are separate
-   keypairs derived on the device per provider (held in a Security Domiain (SD)
-   per- "Service Provider" (SP)
-
- - A new TA insertion method is implied on the TEE-side that decrypts "installed"
-   TAs and inserts them after confirming decryption, without checking for the
-   old build-time trusted signature.
-
- - A granular PKI is defined using X.509 certs that allows the remote Trusted
-   Services Manager (TSM) to confirm if it is talking to something with access
-   a TEE certificate on the other side.  The TEE side holds a list of TSM
-   certifcates it is willing to trust and can confirm the packets it is receiving
-   came from something with access to one of those.
-
- - The client application initiates most activities, and includes a library that
-   deals with network connectivity.  However almost all of the traffic passing
-   through the client application and the OTrP broker has a payload encrypted with
-   keys unavailable to either the client application or the OTrP broker.  The
-   Trusted Services Manager (TAM) and the TEE side are the two endpoints for the
-   encrypted communication that have the necessary keys to see plaintext.
-
- - Network-traversing packets are placed in a "Flattened JSON" JWS signed wrapper.
-   JWS payload that fails the signature check is discarded without being processed,
-   making it difficult to trigger bugs or corner cases by fuzzing type attacks or
-   targeted hacks like buffer overflows.
-
-## TA Encryption
-
-![TA in transit](./doc-assets/otrp-ta-in-transit.png)
-
-## OTrP PKI
-
-![OTrP PKI](./doc-assets/otrp-pki.png)
-
-Step 1: Run otrp-kickstart-pki.sh as described below
-
-[Setting up OTrP PKI](./README-pki.md)
-
-## OTrP sources layout
-
-|Subdirectory|Function|
-|---|---|
-|teep-broker-app|Test REE client application, uses libteep to fetch an encrypted test TA from TAM and install it|
-|sp-hello-app|Tiny REE client that just opens a session to the test TA if it is installed successfully|
-|libteep|REE shared library that can do http(s) requests to the TAM and can forward results to teep-agent-ta|
-|pki|PKI created by scripts/otrp-kickstart-pki.sh|
-|teep-agent-ta|TA implementing OTrP on TEE side|
-|sp-hello-ta|Tiny TA that is copied to the fake TAM so it can be encrypted and sent to the TEE via teep-broker-app|
-
-## OTrP test flow
-
-![OTrP test flow](./doc-assets/otrp-initial-test-flow.png)
-
-Start the fake TAM on the remote server
-
-```
-# node /var/www/node/app.js
+```sh
+apt get (TODO)
 ```
 
-### Install Test TA flow
-
-```
-# ifconfig eth0 192.168.2.22/24 up
-# echo "nameserver 192.168.2.1" >  /etc/resolv.conf
-# echo "192.168.2.236 buddy.home.warmcat.com" > /etc/hosts
-# teep-broker-app --tamurl http://buddy.home.warmcat.com:3000
+Build keystone and optee, this task is not needed for TEE=pc.
+```sh
+TODO
 ```
 
-### Confirm test ta is installed
+### Docker (recommended)
 
-```
-# sp-hello-app 
-START: sp-hello-ap
-I/TA: TA_InvokeCommandEntryPoint:
-I/TA: sp-hello-ta: Hello IETF TEEP!
-
-sp_hello_app: done
+```sh
+docker pull trasioteam/ta_ref_teep_devel:keystone_qemu
+docker pull trasioteam/ta_ref_teep_devel:optee_qemu
 ```
 
-### Delete Test TA flow
+### booting tamproto
 
-```
-# teep-broker-app --tamurl http://buddy.home.warmcat.com:3000 -d
-```
+Clone tamproto server
 
-### Confirm Test TA deleted
-
-```
-# sp-hello-app
-START: sp-hello-app
-ERR [649] TEES:load_ta:225:   TA not found
-E/TC:? 0 tee_ta_open_session:540 init session failed 0xffff0008
-Could not open session with TA
+```sh
+git clone https://192.168.100.100/rinkai/tamproto.git
+cd tamproto
+git checkout teep-device-interop-cbor
 ```
 
+Once, it is cloned, it is able to start tamproto server directly from next time.
+
+```sh
+docker-compose build
+docker-compose up
+```
+
+Check if tamproto server is accessible with this url.
+```
+curl -d '' http://localhost:8888/api/tam_cbor
+```
+
+## git clone
+
+Clone parent module `ta-ref` and clone this repo as sub-module.
+This sub-module relation is planned to be removed in the future.
+
+```sh
+GIT_SSL_NO_VERIFY=1 git clone https://192.168.100.100/rinkai/ta-ref.git
+cd ta-ref
+git checkout teep-device-dev_cbor-latest-draft
+git submodule update --init --recursive
+```
+
+## run Docker container (recommended)
+
+Run docker container when using docker.
+
+TEE=keystone
+```sh
+docker run --network tamproto_default -it --rm -v $(pwd):/home/main/ta-ref trasioteam/ta_ref_teep_devel:keystone_qemu
+```
+
+TEE=optee
+```sh
+docker run --network tamproto_default -it --rm -v $(pwd):/home/main/ta-ref trasioteam/ta_ref_teep_devel:optee_qemu
+```
+
+And sections below should be executed in this shell.
+
+```sh
+cd ta-ref
+```
+
+Check if tamproto server is accessible with this url.
+```
+curl -d '' http://tamproto_tam_api_1:8888/api/tam_cbor
+```
+
+## build `teep-device`
+
+Initialize environment variables respective using TEE.
+
+TEE=keystone
+```sh
+source env/keystone.sh
+```
+
+TEE=optee
+```sh
+source env/optee-qemu.sh
+```
+
+TEE=pc
+```sh
+source env/pc.sh
+```
+
+Then, build `ta-ref`.
+```
+make
+```
+
+build `teep-device`.
+```
+cd teep-device
+make
+```
+
+## test with `tamproto` server
+
+```sh
+make test
+```
+
+## run qem
+
+```sh
+make qemu
+```
 
