@@ -151,7 +151,6 @@ set_dev_option(struct teep_agent_session *session, enum agent_dev_option option,
 	}
 }
 
-
 static void
 teep_error(struct teep_agent_session *session, const char *message)
 {
@@ -186,6 +185,155 @@ set_manifest_from_uri(struct ta_manifest *manifest, UsefulBufC src_uri)
 		return 0;
 	}
 	return 1;
+}
+
+static int
+set_manifest_from_suit_install(struct ta_manifest *manifest, UsefulBufC suit_install)
+{
+	QCBORDecodeContext DC;
+	QCBORDecode_Init(&DC, suit_install, QCBOR_DECODE_MODE_NORMAL);
+
+	QCBORItem SuitInstall;
+	QCBORDecode_GetNext(&DC, &SuitInstall);
+	if (SuitInstall.uDataType != QCBOR_TYPE_ARRAY) {
+		return 0;
+	}
+
+	if (SuitInstall.val.uCount % 2) {
+		return 0;
+	}
+
+	for (size_t i = 0; i < SuitInstall.val.uCount; i += 2) {
+		QCBORItem SuitCommand;
+		QCBORDecode_GetNext(&DC, &SuitCommand);
+		if (SuitCommand.uDataType != QCBOR_TYPE_INT64) {
+			return 0;
+		}
+		QCBORItem CommandParam;
+		QCBORDecode_GetNext(&DC, &CommandParam);
+
+		if (SuitCommand.uDataType == QCBOR_TYPE_NONE) {
+			return 0;
+		}
+
+		switch (SuitCommand.val.int64) {
+		case 19: // suit-directive-set-parameters
+			{
+				if (CommandParam.uDataType != QCBOR_TYPE_MAP) {
+					return 0;
+				}
+				for (size_t j = 0; j < CommandParam.val.uCount; j++) {
+					QCBORItem SuitParam;
+					QCBORDecode_GetNext(&DC, &SuitParam);
+
+					if (SuitParam.uLabelType != QCBOR_TYPE_INT64) {
+						return 0;
+					}
+
+					switch (SuitParam.label.int64) {
+					case 21: // suit-parameter-uri
+						if (SuitParam.uDataType != QCBOR_TYPE_TEXT_STRING) {
+							return 0;
+						}
+						return set_manifest_from_uri(manifest, SuitParam.val.string);
+					default:
+						while (SuitParam.uNextNestLevel != CommandParam.uNextNestLevel) {
+							QCBORDecode_GetNext(&DC, &SuitParam);
+							if (SuitParam.uDataType == QCBOR_TYPE_NONE) {
+								return 0;
+							}
+						}
+					}
+				}
+			}
+			break;
+		default:
+			while (CommandParam.uNextNestLevel != SuitInstall.uNextNestLevel) {
+				QCBORDecode_GetNext(&DC, &CommandParam);
+				if (CommandParam.uDataType == QCBOR_TYPE_NONE) {
+					return 0;
+				}
+			}
+		}
+
+	}
+	return 0;
+}
+
+static int
+set_manifest_from_suit_manifest(struct ta_manifest *manifest, UsefulBufC suit_manifest)
+{
+	QCBORDecodeContext DC;
+	QCBORDecode_Init(&DC, suit_manifest, QCBOR_DECODE_MODE_NORMAL);
+
+	QCBORItem SuitManifest;
+	QCBORDecode_GetNext(&DC, &SuitManifest);
+	if (SuitManifest.uDataType != QCBOR_TYPE_MAP) {
+		return 0;
+	}
+
+	for (size_t i = 0; i < SuitManifest.val.uCount; i++) {
+		QCBORItem ManifestItem;
+		QCBORDecode_GetNext(&DC, &ManifestItem);
+
+		if (ManifestItem.uLabelType != QCBOR_TYPE_INT64) {
+			return 0;
+		}
+
+		switch (ManifestItem.label.int64) {
+		case 9: // suit-install
+			if (ManifestItem.uDataType != QCBOR_TYPE_BYTE_STRING) {
+				return 0;
+			}
+			return set_manifest_from_suit_install(manifest, ManifestItem.val.string);
+		default:
+			while (ManifestItem.uNextNestLevel != SuitManifest.uNextNestLevel) {
+				QCBORDecode_GetNext(&DC, &ManifestItem);
+				if (ManifestItem.uDataType == QCBOR_TYPE_NONE) {
+					return 0;
+				}
+			}
+		}
+	}
+	return 0;
+}
+
+static int
+set_manifest_from_suit(struct ta_manifest *manifest, UsefulBufC suit_envelope)
+{
+	QCBORDecodeContext DC;
+	QCBORDecode_Init(&DC, suit_envelope, QCBOR_DECODE_MODE_NORMAL);
+
+	QCBORItem Envelope;
+	QCBORDecode_GetNext(&DC, &Envelope);
+	if (Envelope.uDataType != QCBOR_TYPE_MAP) {
+		return 0;
+	}
+
+	for (size_t i = 0; i < Envelope.val.uCount; i++) {
+		QCBORItem EnvelopeItem;
+		QCBORDecode_GetNext(&DC, &EnvelopeItem);
+
+		if (EnvelopeItem.uLabelType != QCBOR_TYPE_INT64) {
+			return 0;
+		}
+
+		switch (EnvelopeItem.label.int64) {
+		case 3: // suit-manifest
+			if (EnvelopeItem.uDataType != QCBOR_TYPE_BYTE_STRING) {
+				return 0;
+			}
+			return set_manifest_from_suit_manifest(manifest, EnvelopeItem.val.string);
+		default:
+			while (EnvelopeItem.uNextNestLevel != Envelope.uNextNestLevel) {
+				QCBORDecode_GetNext(&DC, &EnvelopeItem);
+				if (EnvelopeItem.uDataType == QCBOR_TYPE_NONE) {
+					return 0;
+				}
+			}
+		}
+	}
+	return 0;
 }
 
 static void
@@ -228,7 +376,7 @@ handle_tam_message(struct teep_agent_session *session, const void *buffer, size_
 			session->manifests_len = p->len;
 			for (size_t i = 0; i < p->len; i++) {
 				// TODO: parse SUIT_Envelope
-				if (!set_manifest_from_uri(&session->manifests[i], p->array[i])) {
+				if (!set_manifest_from_suit(&session->manifests[i], p->array[i])) {
 					teep_error(session, "too long URI");
 					goto err;
 				}
