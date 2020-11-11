@@ -341,7 +341,7 @@ static int parse_option(struct teep_message *m, QCBORDecodeContext *DC, QCBORIte
 			while (level != nest_level) {
 				QCBORItem Item;
 				QCBORDecode_GetNext(DC, &Item);
-				if (option->uDataType == QCBOR_TYPE_NONE) {
+				if (Item.uDataType == QCBOR_TYPE_NONE) {
 					goto err;
 				}
 				level = Item.uNextNestLevel;
