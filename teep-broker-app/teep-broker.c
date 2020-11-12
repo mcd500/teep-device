@@ -79,6 +79,7 @@ bail1:
 
 static void broker_ctx_destroy(struct broker_ctx *ctx)
 {
+	TEEC_CloseSession(&ctx->tee_session);
 	TEEC_FinalizeContext(&ctx->tee_context);
 }
 
