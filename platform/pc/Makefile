@@ -90,6 +90,12 @@ upload_encfile_to_tamproto:
 	curl $(TAM_URL)/api/
 	curl $(TAM_URL)/panel/upload \
 		-F "file=@$(BUILD)/$(HELLO_TA_UUID).ta.sign.enc;filename=$(HELLO_TA_UUID).ta"
+	sed "s@http://localhost:8888@$(TAM_URL)@" manifest/hello-ta.json >$(BUILD)/hello-ta.json
+	suit-tool create -i $(BUILD)/hello-ta.json -o $(BUILD)/hello-ta.suit
+	suit-tool sign -m $(BUILD)/hello-ta.suit -k ../../key/tc-provider-priv.pem -o $(BUILD)/signed-hello-ta.suit
+	curl $(TAM_URL)/panel/upload \
+		-F "file=@$(BUILD)/signed-hello-ta.suit;filename=suit_manifest_exp1.cbor"
+
 
 test: upload_encfile_to_tamproto
 	$(BROKER) --tamurl $(TAM_URL)/api/tam_cbor 2>&1 | tee $(BUILD)/pctest.log
