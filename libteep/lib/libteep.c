@@ -157,6 +157,7 @@ static int parse_option(struct teep_message *m, QCBORDecodeContext *DC, QCBORIte
 		goto err;
 	}
 	int64_t label = option->label.int64;
+
 	switch (label) {
 	case TEEP_OPTION_SUPPORTED_CIPHER_SUITS:
 		{
@@ -248,11 +249,16 @@ static int parse_option(struct teep_message *m, QCBORDecodeContext *DC, QCBORIte
 		break;
 	case TEEP_OPTION_TC_LIST:
 		{
-			if (m->type != TEEP_QUERY_RESPONSE) {
+			if (m->type == TEEP_QUERY_RESPONSE) {
+				if (!parse_tc_info_array(&m->query_response.tc_list, DC, option, false)) {
+					goto err;
+				}
+			} else if (m->type == TEEP_UPDATE) {
+				if (!parse_tc_info_array(&m->teep_update.tc_list, DC, option, false)) {
+					goto err;
+				}
+			} else {
 				goto skip;
-			}
-			if (!parse_tc_info_array(&m->query_response.tc_list, DC, option, false)) {
-				goto err;
 			}
 		}
 		break;
@@ -288,10 +294,10 @@ static int parse_option(struct teep_message *m, QCBORDecodeContext *DC, QCBORIte
 		break;
 	case TEEP_OPTION_MANIFEST_LIST:
 		{
-			if (m->type != TEEP_INSTALL) {
+			if (m->type != TEEP_UPDATE) {
 				goto skip;
 			}
-			if (!parse_buffer_array(&m->teep_install.manifest_list, DC, option, true)) {
+			if (!parse_buffer_array(&m->teep_update.manifest_list, DC, option, true)) {
 				goto err;
 			}
 		}
@@ -331,6 +337,22 @@ static int parse_option(struct teep_message *m, QCBORDecodeContext *DC, QCBORIte
 			} else {
 				goto skip;
 			}
+		}
+		break;
+	case TEEP_OPTION_TOKEN:
+		{
+			uint64_t token;
+			if (option->uDataType == QCBOR_TYPE_INT64) {
+				if (QCBOR_Int64ToUInt64(option->val.int64, &token) < 0) {
+					return NULL;
+				}
+			} else if (option->uDataType == QCBOR_TYPE_UINT64) {
+				token = option->val.uint64;
+			} else {
+				goto err;
+			}
+			m->token.have_value = 1;
+			m->token.value = token;
 		}
 		break;
 	default:
@@ -392,24 +414,11 @@ struct teep_message *parse_teep_message(UsefulBufC cbor)
 	switch (type_val) {
 	case TEEP_QUERY_REQUEST:
 	case TEEP_QUERY_RESPONSE:
-	case TEEP_INSTALL:
-	case TEEP_DELETE:
+	case TEEP_UPDATE:
 	case TEEP_SUCCESS:
 	case TEEP_ERROR:
 		break;
 	default:
-		return NULL;
-	}
-
-	QCBORDecode_GetNext(&DC, &Item);
-	uint64_t token;
-	if (Item.uDataType == QCBOR_TYPE_INT64) {
-		if (QCBOR_Int64ToUInt64(Item.val.int64, &token) < 0) {
-			return NULL;
-		}
-	} else if (Item.uDataType == QCBOR_TYPE_UINT64) {
-		token = Item.val.uint64;
-	} else {
 		return NULL;
 	}
 
@@ -419,19 +428,6 @@ struct teep_message *parse_teep_message(UsefulBufC cbor)
 	}
 	memset(m, 0, sizeof *m);
 	m->type = type_val;
-	m->token = token;
-
-	switch (m->type) {
-	case TEEP_ERROR:
-		QCBORDecode_GetNext(&DC, &Item);
-		if (Item.uDataType != QCBOR_TYPE_INT64) {
-			goto err;
-		}
-		m->teep_error.err_code = Item.val.int64;
-		break;
-	default:
-		break;
-	}
 
 	if (!parse_options(m, &DC)) {
 		goto err;
@@ -444,6 +440,13 @@ struct teep_message *parse_teep_message(UsefulBufC cbor)
 			goto err;
 		}
 		m->query_request.data_item_requested = Item.val.int64;
+		break;
+	case TEEP_ERROR:
+		QCBORDecode_GetNext(&DC, &Item);
+		if (Item.uDataType != QCBOR_TYPE_INT64) {
+			goto err;
+		}
+		m->teep_error.err_code = Item.val.int64;
 		break;
 	default:
 		break;
@@ -475,11 +478,9 @@ void free_parsed_teep_message(struct teep_message *message)
 		free(message->query_response.unneeded_tc_list.array);
 		free(message->query_response.ext_list.array);
 		break;
-	case TEEP_INSTALL:
-		free(message->teep_install.manifest_list.array);
-		break;
-	case TEEP_DELETE:
-		free(message->teep_delete.ta_list.array);
+	case TEEP_UPDATE:
+		free(message->teep_update.tc_list.array);
+		free(message->teep_update.manifest_list.array);
 		break;
 	case TEEP_SUCCESS:
 		free(message->teep_success.suit_reports.array);
@@ -500,11 +501,9 @@ void teep_message_encoder_init(struct teep_message_encoder *encoder, UsefulBuf b
 }
 
 void teep_message_encoder_add_header(struct teep_message_encoder *encoder,
-	enum teep_message_type type,
-	uint64_t token)
+	enum teep_message_type type)
 {
 	QCBOREncode_AddInt64(&encoder->EC, type);
-	QCBOREncode_AddUInt64(&encoder->EC, token);
 }
 
 void teep_message_encoder_open_options(struct teep_message_encoder *encoder)
@@ -512,25 +511,63 @@ void teep_message_encoder_open_options(struct teep_message_encoder *encoder)
 	QCBOREncode_OpenMap(&encoder->EC);
 }
 
-void teep_message_encoder_open_ta_list(struct teep_message_encoder *encoder)
-{
-	QCBOREncode_OpenArrayInMapN(&encoder->EC, 8);
-}
-
-void teep_message_encoder_add_ta_to_ta_list(struct teep_message_encoder *encoder, const char *ta)
-{
-	QCBOREncode_AddSZString(&encoder->EC, ta);
-}
-
-void teep_message_encoder_close_ta_list(struct teep_message_encoder *encoder)
-{
-	QCBOREncode_CloseArray(&encoder->EC);
-}
-
 void teep_message_encoder_close_options(struct teep_message_encoder *encoder)
 {
 	QCBOREncode_CloseMap(&encoder->EC);
 }
+
+void teep_message_encoder_add_token(struct teep_message_encoder *encoder, const struct teep_uint64_option *token)
+{
+	if (token->have_value) {
+		QCBOREncode_AddUInt64ToMapN(&encoder->EC, TEEP_OPTION_TOKEN, token->value);
+	}
+}
+
+void teep_message_encoder_open_tc_list(struct teep_message_encoder *encoder)
+{
+	QCBOREncode_OpenArrayInMapN(&encoder->EC, TEEP_OPTION_TC_LIST);
+}
+
+void teep_message_encoder_add_tc_to_tc_list(struct teep_message_encoder *encoder, const char *ta)
+{
+	QCBOREncode_AddSZString(&encoder->EC, ta);
+}
+
+void teep_message_encoder_close_tc_list(struct teep_message_encoder *encoder)
+{
+	QCBOREncode_CloseArray(&encoder->EC);
+}
+
+void teep_message_encoder_open_requested_tc_list(struct teep_message_encoder *encoder)
+{
+	QCBOREncode_OpenArrayInMapN(&encoder->EC, TEEP_OPTION_REQUESTED_TC_LIST);
+}
+
+void teep_message_encoder_add_tc_to_requested_tc_list(struct teep_message_encoder *encoder, const char *ta)
+{
+	QCBOREncode_AddSZString(&encoder->EC, ta);
+}
+
+void teep_message_encoder_close_requested_tc_list(struct teep_message_encoder *encoder)
+{
+	QCBOREncode_CloseArray(&encoder->EC);
+}
+
+void teep_message_encoder_open_unneeded_tc_list(struct teep_message_encoder *encoder)
+{
+	QCBOREncode_OpenArrayInMapN(&encoder->EC, TEEP_OPTION_UNNEEDED_TC_LIST);
+}
+
+void teep_message_encoder_add_tc_to_unneeded_tc_list(struct teep_message_encoder *encoder, const char *ta)
+{
+	QCBOREncode_AddSZString(&encoder->EC, ta);
+}
+
+void teep_message_encoder_close_unneeded_tc_list(struct teep_message_encoder *encoder)
+{
+	QCBOREncode_CloseArray(&encoder->EC);
+}
+
 
 void teep_message_encoder_add_err_code(struct teep_message_encoder *encoder, uint64_t err_code)
 {

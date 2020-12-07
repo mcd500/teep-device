@@ -41,8 +41,7 @@ extern "C" {
 enum teep_message_type {
 	TEEP_QUERY_REQUEST = 1,
 	TEEP_QUERY_RESPONSE = 2,
-	TEEP_INSTALL = 3,
-	TEEP_DELETE = 4,
+	TEEP_UPDATE = 3,
 	TEEP_SUCCESS = 5,
 	TEEP_ERROR = 6
 };
@@ -94,6 +93,7 @@ enum teep_option_key {
 	TEEP_OPTION_TC_MANIFEST_SEQUENCE_NUMBER = 17,
 	TEEP_OPTION_HAVE_BINARY = 18,
 	TEEP_OPTION_SUIT_REPORTS = 19,
+	TEEP_OPTION_TOKEN = 20,
 };
 
 struct teep_uint32_array {
@@ -105,6 +105,11 @@ struct teep_uint32_array {
 struct teep_uint32_option {
 	bool have_value;
 	uint32_t value;
+};
+
+struct teep_uint64_option {
+	bool have_value;
+	uint64_t value;
 };
 
 struct teep_buffer_array {
@@ -127,7 +132,7 @@ struct teep_tc_info_array {
 
 struct teep_message {
 	enum teep_message_type type;
-	uint64_t token;
+	struct teep_uint64_option token;
 	union {
 		struct {
 			struct teep_uint32_array supported_cipher_suits;
@@ -147,21 +152,19 @@ struct teep_message {
 			struct teep_uint32_array ext_list;
 		} query_response;
 		struct {
+			struct teep_buffer_array tc_list;
 			struct teep_buffer_array manifest_list;
-		} teep_install;
-		struct {
-			struct teep_buffer_array ta_list;
-		} teep_delete;
+		} teep_update;
 		struct {
 			UsefulBufC msg;
 			struct teep_buffer_array suit_reports;
 		} teep_success;
 		struct {
-			int64_t err_code;
 			UsefulBufC err_msg;
 			struct teep_uint32_array supported_cipher_suits;
 			struct teep_uint32_array versions;
 			struct teep_buffer_array suit_reports;
+			int64_t err_code;
 		} teep_error;
 	};
 };
@@ -177,14 +180,25 @@ struct teep_message_encoder
 
 void teep_message_encoder_init(struct teep_message_encoder *encoder, UsefulBuf buffer);
 void teep_message_encoder_add_header(struct teep_message_encoder *encoder,
-	enum teep_message_type type,
-	uint64_t token);
+	enum teep_message_type type
+	);
 
 void teep_message_encoder_open_options(struct teep_message_encoder *encoder);
-void teep_message_encoder_open_ta_list(struct teep_message_encoder *encoder);
-void teep_message_encoder_add_ta_to_ta_list(struct teep_message_encoder *encoder, const char *ta);
-void teep_message_encoder_close_ta_list(struct teep_message_encoder *encoder);
 void teep_message_encoder_close_options(struct teep_message_encoder *encoder);
+
+void teep_message_encoder_add_token(struct teep_message_encoder *encoder, const struct teep_uint64_option *token);
+
+void teep_message_encoder_open_tc_list(struct teep_message_encoder *encoder);
+void teep_message_encoder_add_tc_to_tc_list(struct teep_message_encoder *encoder, const char *ta);
+void teep_message_encoder_close_tc_list(struct teep_message_encoder *encoder);
+
+void teep_message_encoder_open_requested_tc_list(struct teep_message_encoder *encoder);
+void teep_message_encoder_add_tc_to_requested_tc_list(struct teep_message_encoder *encoder, const char *ta);
+void teep_message_encoder_close_requested_tc_list(struct teep_message_encoder *encoder);
+
+void teep_message_encoder_open_unneeded_tc_list(struct teep_message_encoder *encoder);
+void teep_message_encoder_add_tc_to_unneeded_tc_list(struct teep_message_encoder *encoder, const char *ta);
+void teep_message_encoder_close_unneeded_tc_list(struct teep_message_encoder *encoder);
 
 void teep_message_encoder_add_err_code(struct teep_message_encoder *encoder, uint64_t err_code);
 

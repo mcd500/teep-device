@@ -46,6 +46,8 @@ enum agent_state
 
 struct ta_manifest
 {
+	bool requested;
+	bool unneeded;
 	char id[128];
 	char uri[TEEP_MAX_URI_LEN];
 };
@@ -57,7 +59,7 @@ struct teep_agent_session
 	struct broker_task *on_going_task;
 	struct broker_task task_buffer;
 
-	uint64_t token;
+	struct teep_uint64_option token;
 
 	struct ta_manifest *manifests;
 	size_t manifests_len;
@@ -75,7 +77,7 @@ teep_agent_session_create()
 	}
 	session->state = AGENT_INIT;
 	session->on_going_task = NULL;
-	session->token = 0;
+	session->token.have_value = 0;
 	session->manifests = NULL;
 	session->manifests_len = 0;
 
@@ -129,6 +131,15 @@ set_dev_option(struct teep_agent_session *session, enum agent_dev_option option,
 		size_t index = 0;
 		for (const char *s = value; index < session->manifests_len; index++) {
 			memset(session->manifests[index].id, 0, 32);
+			session->manifests[index].unneeded = false;
+			session->manifests[index].requested = false;
+			if (*s == '+') {
+				s++;
+				session->manifests[index].requested = true;
+			} else if (*s == '-') {
+				s++;
+				session->manifests[index].unneeded = true;
+			}
 			for (size_t i = 0;; i++) {
 				if (*s == 0) {
 					break;
@@ -363,42 +374,38 @@ handle_tam_message(struct teep_agent_session *session, const void *buffer, size_
 		session->token = m->token;
 		session->data_item_requested = m->query_request.data_item_requested;
 		break;
-	case TEEP_INSTALL:
+	case TEEP_UPDATE:
 		{
 			if (session->state != AGENT_POSTING_QUERY_RESPONSE) {
 				teep_error(session, "invalid teep message type");
 				goto err;
 			}
-			free(session->manifests);
-			struct teep_buffer_array *p = &m->teep_install.manifest_list;
-			// TODO: handle error
-			session->manifests = malloc(p->len * sizeof (struct ta_manifest));
-			session->manifests_len = p->len;
-			for (size_t i = 0; i < p->len; i++) {
-				// TODO: parse SUIT_Envelope
-				if (!set_manifest_from_suit(&session->manifests[i], p->array[i])) {
-					teep_error(session, "too long URI");
-					goto err;
+
+			{
+				struct teep_buffer_array *p = &m->teep_update.tc_list;
+				for (size_t i = 0; i < p->len; i++) {
+					UsefulBufC *ta = &p->array[i];
+					// TODO: handle error
+					ta_store_delete(ta->ptr, ta->len);
+				}
+			}
+
+			{
+				free(session->manifests);
+				struct teep_buffer_array *p = &m->teep_update.manifest_list;
+				// TODO: handle error
+				session->manifests = malloc(p->len * sizeof (struct ta_manifest));
+				session->manifests_len = p->len;
+				for (size_t i = 0; i < p->len; i++) {
+					// TODO: parse SUIT_Envelope
+					if (!set_manifest_from_suit(&session->manifests[i], p->array[i])) {
+						teep_error(session, "too long URI");
+						goto err;
+					}
 				}
 			}
 			session->state = AGENT_DOWNLOAD_TA;
 			session->download_ta_index = 0;
-		}
-		break;
-	case TEEP_DELETE:
-		{
-			if (session->state != AGENT_POSTING_QUERY_RESPONSE) {
-				teep_error(session, "invalid teep message type");
-				goto err;
-			}
-			struct teep_buffer_array *p = &m->teep_delete.ta_list;
-			for (size_t i = 0; i < p->len; i++) {
-				UsefulBufC *ta = &p->array[i];
-				// TODO: handle error
-				ta_store_delete(ta->ptr, ta->len);
-			}
-
-			session->state = AGENT_POSTING_SUCCESS;
 		}
 		break;
 	}
@@ -439,18 +446,40 @@ static int build_query_response(struct teep_agent_session *session, void *dst, s
 {
 	struct teep_message_encoder enc;
 	teep_message_encoder_init(&enc, (UsefulBuf){ dst, *dst_len });
-	teep_message_encoder_add_header(&enc, TEEP_QUERY_RESPONSE, session->token);
+	teep_message_encoder_add_header(&enc, TEEP_QUERY_RESPONSE);
 	teep_message_encoder_open_options(&enc);
+	teep_message_encoder_add_token(&enc, &session->token);
 
 	uint64_t items = session->data_item_requested;
 	if (items & TEEP_DATA_ATTESTATION) {
 		// TODO
 	} else if (items & TEEP_DATA_TRUSTED_COMPONENTS) {
-		teep_message_encoder_open_ta_list(&enc);
+		teep_message_encoder_open_tc_list(&enc);
 		for (size_t i = 0; i < session->manifests_len; i++) {
-			teep_message_encoder_add_ta_to_ta_list(&enc, session->manifests[i].id);
+			struct ta_manifest *m = &session->manifests[i];
+			if (!m->requested && !m->unneeded) {
+				teep_message_encoder_add_tc_to_tc_list(&enc, m->id);
+			}
 		}
-		teep_message_encoder_close_ta_list(&enc);
+		teep_message_encoder_close_tc_list(&enc);
+
+		teep_message_encoder_open_requested_tc_list(&enc);
+		for (size_t i = 0; i < session->manifests_len; i++) {
+			struct ta_manifest *m = &session->manifests[i];
+			if (m->requested) {
+				teep_message_encoder_add_tc_to_requested_tc_list(&enc, m->id);
+			}
+		}
+		teep_message_encoder_close_requested_tc_list(&enc);
+
+		teep_message_encoder_open_unneeded_tc_list(&enc);
+		for (size_t i = 0; i < session->manifests_len; i++) {
+			struct ta_manifest *m = &session->manifests[i];
+			if (m->requested) {
+				teep_message_encoder_add_tc_to_unneeded_tc_list(&enc, m->id);
+			}
+		}
+		teep_message_encoder_close_unneeded_tc_list(&enc);
 	} else if (items & TEEP_DATA_EXTENSIONS) {
 		// TODO
 	} else if (items & TEEP_DATA_SUIT_COMMANDS) {
@@ -469,9 +498,10 @@ static int build_success(struct teep_agent_session *session, void *dst, size_t *
 {
 	struct teep_message_encoder enc;
 	teep_message_encoder_init(&enc, (UsefulBuf){ dst, *dst_len });
-	teep_message_encoder_add_header(&enc, TEEP_SUCCESS, session->token);
+	teep_message_encoder_add_header(&enc, TEEP_SUCCESS);
 	teep_message_encoder_open_options(&enc);
 	{
+		teep_message_encoder_add_token(&enc, &session->token);
 	}
 	teep_message_encoder_close_options(&enc);
 	UsefulBufC ret;
@@ -486,12 +516,13 @@ static int build_error(struct teep_agent_session *session, void *dst, size_t *ds
 {
 	struct teep_message_encoder enc;
 	teep_message_encoder_init(&enc, (UsefulBuf){ dst, *dst_len });
-	teep_message_encoder_add_header(&enc, TEEP_ERROR, session->token);
+	teep_message_encoder_add_header(&enc, TEEP_ERROR);
 	teep_message_encoder_open_options(&enc);
 	{
-
+		teep_message_encoder_add_token(&enc, &session->token);
 	}
 	teep_message_encoder_close_options(&enc);
+	teep_message_encoder_add_err_code(&enc, 42); // TODO
 	UsefulBufC ret;
 	if (teep_message_encoder_finish(&enc, &ret) != QCBOR_SUCCESS) {
 		return 0;
