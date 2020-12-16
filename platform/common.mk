@@ -60,7 +60,7 @@ libteep-QCBOR-host:
 	if [ -z "$($@-DISABLE)" ]; then \
 		mkdir -p $(BUILD)/libteep/host && \
 		rm -rf $(BUILD)/libteep/host/QCBOR && \
-		cp -rs $(SOURCE)/libteep/QCBOR $(BUILD)/libteep/host && \
+		cp -r $(SOURCE)/libteep/QCBOR $(BUILD)/libteep/host && \
 		make -C $(BUILD)/libteep/host/QCBOR $($@-FLAGS); \
 	fi
 
@@ -68,7 +68,7 @@ libteep-QCBOR-ree:
 	if [ -z "$($@-DISABLE)" ]; then \
 		mkdir -p $(BUILD)/libteep/ree && \
 		rm -rf $(BUILD)/libteep/ree/QCBOR && \
-		cp -rs $(SOURCE)/libteep/QCBOR $(BUILD)/libteep/ree; \
+		cp -r $(SOURCE)/libteep/QCBOR $(BUILD)/libteep/ree; \
 		make -C $(BUILD)/libteep/ree/QCBOR $($@-FLAGS); \
 	fi
 
@@ -76,7 +76,7 @@ libteep-QCBOR-tee:
 	if [ -z "$($@-DISABLE)" ]; then \
 		mkdir -p $(BUILD)/libteep/tee && \
 		rm -rf $(BUILD)/libteep/tee/QCBOR && \
-		cp -rs $(SOURCE)/libteep/QCBOR $(BUILD)/libteep/tee; \
+		cp -r $(SOURCE)/libteep/QCBOR $(BUILD)/libteep/tee; \
 		make -C $(BUILD)/libteep/tee/QCBOR $($@-FLAGS); \
 	fi
 
