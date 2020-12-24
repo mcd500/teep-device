@@ -21,6 +21,7 @@ export APP_CFLAGS ?= \
 
 export APP_LDFLAGS ?= \
 	-L$(OPTEE_DIR)/out-br/target/usr/lib \
+	-L$(OPTEE_DIR)/optee_client/out/libteec \
 	-L$(BUILD)/libteep/ree/lib \
 	-L$(BUILD)/libteep/ree/mbedtls/library \
 	-L$(BUILD)/libteep/ree/libwebsockets/lib
