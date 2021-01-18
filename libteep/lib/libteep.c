@@ -530,7 +530,11 @@ void teep_message_encoder_open_tc_list(struct teep_message_encoder *encoder)
 
 void teep_message_encoder_add_tc_to_tc_list(struct teep_message_encoder *encoder, const char *ta)
 {
+	QCBOREncode_OpenMap(&encoder->EC);
+	QCBOREncode_OpenArrayInMapN(&encoder->EC, TEEP_OPTION_COMPONENT_ID);
 	QCBOREncode_AddSZString(&encoder->EC, ta);
+	QCBOREncode_CloseArray(&encoder->EC);
+	QCBOREncode_CloseMap(&encoder->EC);
 }
 
 void teep_message_encoder_close_tc_list(struct teep_message_encoder *encoder)
@@ -545,7 +549,11 @@ void teep_message_encoder_open_requested_tc_list(struct teep_message_encoder *en
 
 void teep_message_encoder_add_tc_to_requested_tc_list(struct teep_message_encoder *encoder, const char *ta)
 {
+	QCBOREncode_OpenMap(&encoder->EC);
+	QCBOREncode_OpenArrayInMapN(&encoder->EC, TEEP_OPTION_COMPONENT_ID);
 	QCBOREncode_AddSZString(&encoder->EC, ta);
+	QCBOREncode_CloseArray(&encoder->EC);
+	QCBOREncode_CloseMap(&encoder->EC);
 }
 
 void teep_message_encoder_close_requested_tc_list(struct teep_message_encoder *encoder)
@@ -560,7 +568,9 @@ void teep_message_encoder_open_unneeded_tc_list(struct teep_message_encoder *enc
 
 void teep_message_encoder_add_tc_to_unneeded_tc_list(struct teep_message_encoder *encoder, const char *ta)
 {
+	QCBOREncode_OpenArray(&encoder->EC);
 	QCBOREncode_AddSZString(&encoder->EC, ta);
+	QCBOREncode_CloseArray(&encoder->EC);
 }
 
 void teep_message_encoder_close_unneeded_tc_list(struct teep_message_encoder *encoder)
