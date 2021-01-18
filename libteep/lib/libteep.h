@@ -118,10 +118,18 @@ struct teep_buffer_array {
 	size_t len;
 };
 
+typedef struct teep_buffer_array teep_component_id;
+
 struct teep_tc_info {
-	UsefulBufC component_id;
+	teep_component_id component_id;
 	struct teep_uint32_option tc_manifest_sequence_number;
 	struct teep_uint32_option have_binary;
+};
+
+struct teep_component_id_array {
+	bool have_value;
+	teep_component_id *array;
+	size_t len;
 };
 
 struct teep_tc_info_array {
@@ -152,7 +160,7 @@ struct teep_message {
 			struct teep_uint32_array ext_list;
 		} query_response;
 		struct {
-			struct teep_buffer_array tc_list;
+			struct teep_buffer_array unneeded_tc_list;
 			struct teep_buffer_array manifest_list;
 		} teep_update;
 		struct {

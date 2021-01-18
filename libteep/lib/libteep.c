@@ -249,16 +249,11 @@ static int parse_option(struct teep_message *m, QCBORDecodeContext *DC, QCBORIte
 		break;
 	case TEEP_OPTION_TC_LIST:
 		{
-			if (m->type == TEEP_QUERY_RESPONSE) {
-				if (!parse_tc_info_array(&m->query_response.tc_list, DC, option, false)) {
-					goto err;
-				}
-			} else if (m->type == TEEP_UPDATE) {
-				if (!parse_tc_info_array(&m->teep_update.tc_list, DC, option, false)) {
-					goto err;
-				}
-			} else {
+			if (m->type != TEEP_QUERY_RESPONSE) {
 				goto skip;
+			}
+			if (!parse_tc_info_array(&m->query_response.tc_list, DC, option, false)) {
+				goto err;
 			}
 		}
 		break;
@@ -274,11 +269,16 @@ static int parse_option(struct teep_message *m, QCBORDecodeContext *DC, QCBORIte
 		break;
 	case TEEP_OPTION_UNNEEDED_TC_LIST:
 		{
-			if (m->type != TEEP_QUERY_RESPONSE) {
+			if (m->type == TEEP_QUERY_RESPONSE) {
+				if (!parse_buffer_array(&m->query_response.unneeded_tc_list, DC, option, true)) {
+					goto err;
+				}
+			} else if (m->type == TEEP_UPDATE) {
+				if (!parse_buffer_array(&m->teep_update.unneeded_tc_list, DC, option, true)) {
+					goto err;
+				}
+			} else {
 				goto skip;
-			}
-			if (!parse_buffer_array(&m->query_response.unneeded_tc_list, DC, option, true)) {
-				goto err;
 			}
 		}
 		break;
@@ -344,7 +344,7 @@ static int parse_option(struct teep_message *m, QCBORDecodeContext *DC, QCBORIte
 			uint64_t token;
 			if (option->uDataType == QCBOR_TYPE_INT64) {
 				if (QCBOR_Int64ToUInt64(option->val.int64, &token) < 0) {
-					return NULL;
+					goto err;
 				}
 			} else if (option->uDataType == QCBOR_TYPE_UINT64) {
 				token = option->val.uint64;
@@ -473,13 +473,13 @@ void free_parsed_teep_message(struct teep_message *message)
 		free(message->query_request.versions.array);
 		break;
 	case TEEP_QUERY_RESPONSE:
-		free(message->query_response.tc_list.array);
-		free(message->query_response.requested_tc_list.array);
-		free(message->query_response.unneeded_tc_list.array);
+		free_tc_info_array(message->query_response.tc_list.array);
+		free_tc_info_array(message->query_response.requested_tc_list.array);
+		free_component_id_array(message->query_response.unneeded_tc_list.array);
 		free(message->query_response.ext_list.array);
 		break;
 	case TEEP_UPDATE:
-		free(message->teep_update.tc_list.array);
+		free_component_id_array(message->teep_update.unneeded_tc_list.array);
 		free(message->teep_update.manifest_list.array);
 		break;
 	case TEEP_SUCCESS:
