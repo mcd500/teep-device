@@ -46,7 +46,13 @@ TEEC_SharedMemory shm;
 uint8_t *filecontents;
 size_t file_length;
 
+/**
+@brief sp_hello_app start the hello app
 
+create a TEEC_Operation and then call TEEC_InvokeCommand with session and TEEC_Operation.
+
+@return return TEEC_Result on success invoke command, on failure return error code.
+*/
 TEEC_Result
 sp_hello_app()
 {
@@ -78,6 +84,16 @@ sp_hello_app()
 	return n;
 }
 
+/**
+@brief create context and session and start hello-app
+
+@param[in] argc argument count
+@param[in] argv[] argument list
+
+create a context for hello-app and then initialize context,
+create and open the session. then call the hello-app.
+Any error occured while creating context or session, print the error and exit.
+*/
 int main(int argc, char *argv[])
 {
 	int tries;

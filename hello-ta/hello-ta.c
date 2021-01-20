@@ -30,15 +30,36 @@
 #include <tee_internal_api.h>
 #include <tee_internal_api_extensions.h>
 
+/**
+@brief The TA_CreateEntryPoint function is the Trusted Application’s constructor, which the Framework calls  when it creates a new instance of the Trusted Application.
+
+The TA_CreateEntryPoint function just return TEEC_SUCCESS for now.
+
+@return Its return TEEC_SUCCESS.
+*/ 
 TEE_Result TA_CreateEntryPoint(void)
 {
 	return TEE_SUCCESS;
 }
 
+/**
+@brief The function TA_DestroyEntryPoint is the Trusted Application’s destructor,which the Framework calls when the instance is being destroyed.
+*/ 
 void TA_DestroyEntryPoint(void)
 {
 }
 
+/**
+@brief TA_OpenSessionEntryPoint function when a client requests to open a session with the Trusted Application
+
+@param[in] param_types 	The types of the four parameters
+@param[in] params  	A pointer to an array of four parameters
+@param[in] sess_ctx 	A pointer to a variable that can be filled by the Trusted Application instance with pointer.
+
+The TA_OpenSessionEntryPoint function just return TEEC_SUCCESS for now.
+
+@return 		return TEE_SUCCESS.
+*/ 
 TEE_Result TA_OpenSessionEntryPoint(uint32_t param_types,
 		TEE_Param __maybe_unused params[4],
 		void __maybe_unused **sess_ctx)
@@ -47,12 +68,31 @@ TEE_Result TA_OpenSessionEntryPoint(uint32_t param_types,
 	return TEE_SUCCESS;
 }
 
+/**
+@brief TA_CloseSessionEntryPoint function is called when the client closes a session and
+disconnects from the Trusted Application instance.
+ 
+@param[in] 	sess_ctx The value of the void* opaque data pointer set by the Trusted Application
+
+**The TA_CloseSessionEntryPoint function invoke sess_ctx.
+*/ 
 void TA_CloseSessionEntryPoint(void __maybe_unused *sess_ctx)
 {
 	(void)&sess_ctx;
 }
 
+/**
+@brief The TA_InvokeCommandEntryPoint function when the client invokes a command within the given session.
 
+@param[in] sess_ctx	The value of the void* opaque data pointer set by the Trusted Application in the function TA_OpenSessionEntryPoint
+@param[in] cmd_id	A Trusted Application-specific code that identifies the command to be invoked
+@param[in] param_types	The types of the four parameters.
+@param[in] params 	A pointer to an array of four parameters
+
+**The TA_InvokeCommandEntryPoint function return TEE_ERROR_NOT_IMPLEMENTED.
+
+@return Its return TEE_ERROR_NOT_IMPLEMENTED.
+*/ 
 TEE_Result TA_InvokeCommandEntryPoint(void __maybe_unused *sess_ctx,
 			uint32_t cmd_id,
 			uint32_t param_types,
@@ -69,6 +109,9 @@ TEE_Result TA_InvokeCommandEntryPoint(void __maybe_unused *sess_ctx,
 #include <edger/Enclave_t.h>
 // TODO: should implemet in ref-ta/api???
 
+/**
+@brief eapp_entry() prints hello TA message when it is invoked
+*/ 
 void EAPP_ENTRY eapp_entry()
 {
 	ocall_print_string("hello TA\n");
