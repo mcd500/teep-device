@@ -11,6 +11,14 @@
 #include <libwebsockets.h>
 #endif
 
+/**
+@brief The _strlen() computes the length of the string str up to, but not including the terminating null character.
+
+@param[in]    str string whose length is to be found.
+
+The inline function strnlen is declares variable for loop till the condition attain and 
+    while in the return they typecasting the value into unsigned int format. 
+*/ 
 static inline unsigned int _strlen(const char* str)
 {
   const char* s;
@@ -18,6 +26,17 @@ static inline unsigned int _strlen(const char* str)
   return (unsigned int)(s - str);
 }
 
+/**
+@brief The strcpy function is to copies the string pointed to, by src to dest.
+
+@param[in] dst pointer to the destination array where the content is to be copied.
+@param[in] src the string to be copied.
+
+In the strcpy function firstly declares the variable for string copy and the while will do like, The d and s variables are pointers, the contents of d (*d) are copied to s (*s), one character.
+d and s are both incremented (++). The assignment (copy) returns the character that was copied (to the while). The while continues until that character is zero (end of string in C).
+
+@return It returns a pointer to the destination string dest.
+*/
 char *strcpy(char *dst, const char *src)
 {
   char *d = dst;
@@ -27,6 +46,18 @@ char *strcpy(char *dst, const char *src)
   return dst;
 }
 
+/**
+@brief The strncpy function copies up to n characters from the string pointed to, by src to dest, In a case where the length of src is less than that of n, the remainder of dest will be padded with null bytes.
+
+@param[in] dst pointer to the destination array
+@param[in] src the string to be copied.
+@param[in] n number of characters to be copied from source.
+
+In strncpy fucntion firstly declaring the variable with size_t data type and two loops will run first loop is to run until the condition attain and assigen dest value into src value
+second loop will run until variable the number of characters present in the source and returns the dest value.
+
+@return It returns the final copy of the copied string.
+*/
 char *strncpy(char *dst, const char *src, size_t n)
 {
   size_t i;
@@ -61,6 +92,13 @@ char *strdup(const char *s)
   return p;
 }
 
+/**
+@brief The strchr function searches for the first occurrence of the character c (an unsigned char) in the string pointed to by the argument str. And it just
+return with another function  __builtin_strchr(s, c).
+
+@param[in] *s string to be scanned.
+@param[in]  c character to be searched in str.
+*/
 char *strchr(const char *s, int c)
 {
   return __builtin_strchr(s, c);
@@ -79,7 +117,16 @@ char *strrchr(const char *s, int c)
 }
 
 #ifdef KEYSTONE
-// Compiler may replace simple printf to puts and putchar
+/**
+@brief The puts function writes a string to stdout up to but not including the null character. A newline character is appended to the output.
+
+@param[in] *s string to be written
+
+The puts function having the ifdef  directive checks whether the identifier is currently defined Compiler may replace simple printf to puts declaring variable and calls the
+ocall_print_wapper function and storing that value into sz 
+
+@return Its return the sz with type size_t if success else return 0.
+*/
 int puts(const char *s)
 {
 #ifdef ENCLAVE_VERBOSE
@@ -91,6 +138,16 @@ int puts(const char *s)
 #endif
 }
 
+/**
+@brief The putchar function  is used to write a character, of unsigned char type, to stdout. This character is passed as the parameter to this method.
+
+@param[in] c The value is internally converted to an unsigned char when written.
+
+The putchar function is  having the ifdef  directive checks whether the identifier is currently defined Compiler may replace simple printf to putchar as well after that declaring variable and calls the
+ocall_print_wapper function and storing that value into sz 
+
+@return Its return the sz with type size_t if success else return 0
+*/
 int putchar(int c)
 {
 #ifdef ENCLAVE_VERBOSE
@@ -103,6 +160,16 @@ int putchar(int c)
 #endif
 }
 
+/**
+@brief The printf fucntion is sends formatted output to stdout. 
+
+@param[in] fmt string that contains the text to be written to stdout.
+
+The printf function is a system call function in with they included #ifdef(ENCLAVE_VERBOSE) directive allows for conditional compilation. The preprocessor determines if the provided macro exists before including the subsequent code in the compilation process.
+along with variable argument list attributes are declared va_start function and va_end function in between they called vsnprinf function The va_start and end is nothing but allows a function with variable arguments which used the va_start macro to return. If va_end is not called before returning from the function, the result is undefined.
+
+@return It return typecasted int of strlen(buf) else return 0.
+*/
 int printf(const char* fmt, ...)
 {
 #ifdef ENCLAVE_VERBOSE

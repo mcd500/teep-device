@@ -84,8 +84,14 @@ typedef struct {
   void* arg;
 } out_fct_wrap_type;
 
+/**
+@brief This _out_buffer function called as internal buffer output
 
-// internal buffer output
+@param[in] character it is a char data type
+@param[in] buffer string size of buffer
+@param[in] idx bytes of size_t
+@param[in] maxlen maximum lenghth of bytes in size_t
+*/
 static inline void _out_buffer(char character, void* buffer, size_t idx, size_t maxlen)
 {
   if (idx < maxlen) {
@@ -93,15 +99,33 @@ static inline void _out_buffer(char character, void* buffer, size_t idx, size_t 
   }
 }
 
+/**
+@brief This _out_null function called as internal null output.
 
-// internal null output
+@param[in] character it is a char data type
+@param[in] buffer string size of buffer
+@param[in] idx bytes of size_t
+@param[in] maxlen maximum lenghth of bytes in size_t
+
+The typecasting for variable with void is to avoid unused variable warnings in some compilers.
+*/
 static inline void _out_null(char character, void* buffer, size_t idx, size_t maxlen)
 {
   (void)character; (void)buffer; (void)idx; (void)maxlen;
 }
 
+/**
+@brief The _out_char function is a internal putchar wrapper
 
-// internal _putchar wrapper
+@param[in] character it is a char data type
+@param[in] buffer string size of buffer
+@param[in] idx bytes of size_t
+@param[in] maxlen maximum lenghth of bytes in size_t
+
+It is a internal putchar function wrapper The typecasting for variable with void is to 
+avoid unused variable warnings in some compilers. firstly it checks with the if condition the variable not equal to 
+zero means that putchar function will call.
+*/
 static inline void _out_char(char character, void* buffer, size_t idx, size_t maxlen)
 {
   (void)buffer; (void)idx; (void)maxlen;
@@ -110,18 +134,33 @@ static inline void _out_char(char character, void* buffer, size_t idx, size_t ma
   }
 }
 
+/**
+@brief The _out_fct function is about internal output function wrapper
 
-// internal output function wrapper
+@param[in] character          it is a char data type
+@param[in] buffer             string size of buffer
+@param[in] idx                bytes of size_t
+@param[in] maxlen             maximum lenghth of bytes in size_t
+
+The _out_fct function fistly typecasting some variable to avoid compiler error is a 
+output function wrapper and the buffer is the output fct pointer.
+*/
 static inline void _out_fct(char character, void* buffer, size_t idx, size_t maxlen)
 {
   (void)idx; (void)maxlen;
-  // buffer is the output fct pointer
   ((out_fct_wrap_type*)buffer)->fct(character, ((out_fct_wrap_type*)buffer)->arg);
 }
 
+/**
+@brief The strlen function computes the length of the string str up to, but not including the terminating null character.
 
-// internal strlen
-// \return The length of the string (excluding the terminating 0)
+@param[in] str        This is the string whose length is to be found.
+
+The strlen function fistly typecasting some variable to avoid compiler error declaring variable 
+
+@return They typecastimg the return variable into unsigned int and 
+retunr The length of the string (excluding the terminating 0)
+*/
 static inline unsigned int _strlen(const char* str)
 {
   const char* s;
@@ -129,16 +168,25 @@ static inline unsigned int _strlen(const char* str)
   return (unsigned int)(s - str);
 }
 
+/**
+@brief The _is_digit function is to internal test if char is a digit(0-9)
 
-// internal test if char is a digit (0-9)
-// \return true if char is a digit
+@param[in]   ch      This is the character to be checked.
+
+@return Its return true if char is a digit
+*/
 static inline bool _is_digit(char ch)
 {
   return (ch >= '0') && (ch <= '9');
 }
 
+/**
+@brief The _atoi() is to converting the internal ASCII string into unsigned integer
 
-// internal ASCII string to unsigned int conversion
+@param[in]   str      string representation of an integral number.
+
+@return After conversion it returns unsigned integer value.
+*/
 static unsigned int _atoi(const char** str)
 {
   unsigned int i = 0U;
@@ -148,8 +196,25 @@ static unsigned int _atoi(const char** str)
   return i;
 }
 
+/**
+@brief The ntoa format function is to convert the string into the defined format structure.
 
-// internal itoa format
+@param[in] out            type of out_fct_type
+@param[in] buffer         string type of buffer
+@param[in] idx            idx bytes of size_t
+@param[in] maxlen         maximum lenghth of the size_t
+@param[in] negative       boolean type
+@param[in] base           an unsigned long data type
+@param[in] prec           an unsigned integral data type 
+@param[in] width          an unsigned integral data type 
+@param[in] flags          an unsigned integral data type
+
+The ntoa format converting the string type into this specified format it having while condition for pad leading zeros in the given values, using the flags and if else condition
+handling the hash they checking the variable len with already defined base if not the len variable decrements using the same process remaining buf len are accumulated
+Using the conditional statement pad spaces up to given width, And reversing the given string, append pad spaces up to given width are manipulated.
+
+@return non integer value if success else error occur.
+*/
 static size_t _ntoa_format(out_fct_type out, char* buffer, size_t idx, size_t maxlen, char* buf, size_t len, bool negative, unsigned int base, unsigned int prec, unsigned int width, unsigned int flags)
 {
   const size_t start_idx = idx;
@@ -222,8 +287,23 @@ static size_t _ntoa_format(out_fct_type out, char* buffer, size_t idx, size_t ma
   return idx;
 }
 
+/**
+@brief The ntoa function is used for string into structure value.
 
-// internal itoa for 'long' type
+@param[in] out        type of out_fct_type
+@param[in] buffer     string type of buffer
+@param[in] idx        idx bytes of size_t
+@param[in] maxlen     maximum lenghth of the size_t
+@param[in] negative   boolean type
+@param[in] base       an unsigned long data type
+@param[in] prec       an unsigned integral data type 
+@param[in] width      an unsigned integral data type 
+@param[in] flags      an unsigned integral data type
+
+In the _ntoa_long function initialize the char buffer that value defined alread and check the for no hash value for zero and also checks with the same 
+condtion for flags precision valid or not and too the digits specified in the formart matches with the string, some uppercase case constraints are included
+to valid the string finally return the value with ntoa format.
+*/
 static size_t _ntoa_long(out_fct_type out, char* buffer, size_t idx, size_t maxlen, unsigned long value, bool negative, unsigned long base, unsigned int prec, unsigned int width, unsigned int flags)
 {
   char buf[PRINTF_NTOA_BUFFER_SIZE];
@@ -249,6 +329,23 @@ static size_t _ntoa_long(out_fct_type out, char* buffer, size_t idx, size_t maxl
 
 // internal itoa for 'long long' type
 #if defined(PRINTF_SUPPORT_LONG_LONG)
+
+/**
+@brief The _ntoa_long_long function to convert string to a struct.
+
+@param[in] out          type of out_fct_type
+@param[in] buffer       string type of buffer
+@param[in] idx          idx bytes of size_t
+@param[in] maxlen       maximum lenghth of the size_t
+@param[in] negative     boolean type
+@param[in] base         an unsigned long data type
+@param[in] prec         an unsigned integral data type 
+@param[in] width        an unsigned integral data type 
+@param[in] flags        an unsigned integral data type
+
+This _ntoa_long_long function firstly initialize the variables and checks the if condition for no hash for zero values using the condition do while 
+checking the buf lenghth, digits less than ten or not and flags uppercase is to check the string type finally its return the computed values into ntoa format.
+*/
 static size_t _ntoa_long_long(out_fct_type out, char* buffer, size_t idx, size_t maxlen, unsigned long long value, bool negative, unsigned long long base, unsigned int prec, unsigned int width, unsigned int flags)
 {
   char buf[PRINTF_NTOA_BUFFER_SIZE];
@@ -274,6 +371,27 @@ static size_t _ntoa_long_long(out_fct_type out, char* buffer, size_t idx, size_t
 
 
 #if defined(PRINTF_SUPPORT_FLOAT)
+
+/**
+@brief The _ftoa function that converts a given floating-point number or a double to a string. Use of standard library functions for direct conversion is not allowed
+
+@param[in] out        type of out_fct_type
+@param[in] buffer     string type of buffer
+@param[in] idx        it an unsigned integral data type 
+@param[in] maxlen     length of the string
+@param[in] value      it an double data type
+@param[in] prec       an unsigned integral data type 
+@param[in] width      an unsigned integral data type 
+@param[in] flags      an unsigned integral data type
+
+The ftoa function used for conversion float point into string firstly initialize the varibles and test case is added to check value are negative or not
+set up the default precision  to 6, if it not set explicitly its nothing but format specifier, And afterlimit precision to nine, cause a prec greater than or equal ten can lead to overflow errors.
+Initialize some variable for precision roll-over, round up also added if it required to round up the value, For very large numbers switch back to native sprintf for exponentials.
+Some fractional part adding some extra zeros, adding decimal for these also some condition id defined, Using the while loop condtion pad leading zeros concept also is there,
+using for loop they reverse the string if requires and append pad spaces up to given width.
+
+@return non integer value if success else error occur
+*/
 static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, unsigned int prec, unsigned int width, unsigned int flags)
 {
   const size_t start_idx = idx;
@@ -413,7 +531,26 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 }
 #endif  // PRINTF_SUPPORT_FLOAT
 
+/**
+@brief The _vsnprintf function write formatted output to a character array, up to a maximum number of characters (varargs) and evaluation of format specifiers are happening in this function.
 
+@param[in] out          type of out_fct_type
+@param[in] buffer       pointer to the buffer where you want to function to store the formatted string
+@param[in] maxlen       maximum number of characters to store in the buffer
+@param[in] format       string that specifies the format of the output.
+@param[in] va           variable-argument list of the additional argument
+
+The _vsnprintf fucntion firstly initialize the varibles of format specifers like flags, width, precsion
+in this they evalucating all the specifiers invidually.firlst checks the buffer equal to zero for null out function.
+after that flags evaluation will start using the switch case,
+then width field evalucation take process using if conditions,after using flag precision filed  its checking the 
+precision field finally using switch  its evaluate length field, after that defined PRINTF_SUPPORT_PTRDIFF_T depends 
+on the case it case statement will executes and end evaluate starts for specifer with switch case and setting
+the base with unsigned base, its convert the interger format of flags precision its having some if else condition to 
+cheack post padding, pre paddings and string output finally return written characters without terminating.
+
+@return Its return the typecasted int of idx if success otherwise error occured.
+*/
 // internal vsnprintf
 static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const char* format, va_list va)
 {
@@ -685,12 +822,17 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
   return (int)idx;
 }
 
-
-///////////////////////////////////////////////////////////////////////////////
-
-
 // This will issue one ocall for each charactor.
 #if 0
+
+/**
+@brief The printf function is a system call function used inside if 
+condition whether the value is zero means it will execute and also here used varibale arguments
+inside vsnprintf function the function will do composes a string with the same text that would be 
+printed if format was used on printf, but using the elements in the variable argument list identified
+by arg instead of additional function arguments and storing the resulting content as a C string in the
+buffer pointed by argument.
+*/
 int printf(const char* format, ...)
 {
   va_list va;
@@ -702,6 +844,17 @@ int printf(const char* format, ...)
 }
 #endif
 
+/**
+@brief The sprintf function sends formatted output to a string pointed to by the argument buffer.  
+
+@param[in] buffer  pointer to an array of char elements resulting string will store.
+@param[in] format tring that contains the text to be written to buffer.
+
+The sprintf function using the va_start() and va_end() its ac libraty macros before using the va_arg va_start function will call and
+in the int ret variable taking the value of the function called _vsnprintf function after the va_end macro its return the value.
+
+@returns Its returns the ret value as an integer type. 
+*/
 int sprintf(char* buffer, const char* format, ...)
 {
   va_list va;
@@ -711,7 +864,18 @@ int sprintf(char* buffer, const char* format, ...)
   return ret;
 }
 
+/**
+@brief The snprintf() places the generated output into the character array pointed to by buf, instead of writing it to a file
 
+@param[in] buffer       pointer to buffer where you want to function to store the formatted string. 
+@param[in] count        maximum number of characters to store in the buffer.
+@param[in] format       string that specifies the format of the output. 
+
+The snprintf function using the va_start() and va_end() its ac libraty macros before using the va_arg va_start function will call and
+in the int ret variable taking the value of the function called _vsnprintf function after the va_end macro its return the value.
+
+@returns Its returns the ret value as an integer type. 
+*/
 int snprintf(char* buffer, size_t count, const char* format, ...)
 {
   va_list va;
@@ -721,13 +885,30 @@ int snprintf(char* buffer, size_t count, const char* format, ...)
   return ret;
 }
 
+/**
+@brief The vsnprintf() just returns with another function called _vsnprintf() with some arguments.
 
+@param[in] buffer       pointer to the buffer where you want to function to store the formatted string. 
+@param[in] count        maximum number of characters to store in the buffer.
+@param[in] format       string that specifies the format of the output.
+*/
 int vsnprintf(char* buffer, size_t count, const char* format, va_list va)
 {
   return _vsnprintf(_out_buffer, buffer, count, format, va);
 }
 
+/**
+@brief The fctprintf function is using the libary macros of variable aruguments like vastart and vaend 
 
+@param[in] out        An output function which takes one character and an argument pointer.
+@param[in] arg        An argument pointer for user data passed to output function.
+@param[in] format     A string that specifies the format of the output. 
+
+The fctprintf function using the va_start() and va_end() its ac library macros before using the va_arg va_start function will call and
+in the int ret variable taking the value of the function called _vsnprintf function after the va_end macro its return the value.
+
+@return The number of characters that are sent to the output function, not counting the terminating null character
+*/
 int fctprintf(void (*out)(char character, void* arg), void* arg, const char* format, ...)
 {
   va_list va;
