@@ -230,6 +230,19 @@ static int broker_http_get(struct broker_ctx *ctx, const struct broker_task *tas
 	return broker_task_done(ctx, http_res_buf, len);
 }
 
+/**
+ * loop_teep - The teep message request.     
+ *
+ * This function has a loop. The loop condtion is based on
+ * the tam message and for each iteration it will go through the every 
+ * switch case and if the switch statement matches with the type it will 
+ * invoke the respective function; if it does not match,then it executes 
+ * the default case.
+ * 
+ * @param lao_ctx       It is an object of structure libteep context.    
+ * 
+ * @return 0            If success, else error occurred.
+ */
 static int loop_teep(struct broker_ctx *ctx)
 {
 	set_agent_dev_option(ctx, AGENT_OPTION_SET_TAM_URI, uri);
