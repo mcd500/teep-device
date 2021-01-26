@@ -15,6 +15,9 @@ typedef struct _QCBORItemWithOffset {
 
 QCBORError QCBORDecode_GetNextWithOffset(QCBORDecodeContext *pCtx, QCBORItemWithOffset *pDecodedItem);
 
+UsefulBufC QCBORDecode_Slice(QCBORDecodeContext *pCtx, size_t begin, size_t end);
+
+
 #ifdef __cplusplus
 }
 #endif
