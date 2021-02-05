@@ -47,12 +47,15 @@ uint8_t *filecontents;
 size_t file_length;
 
 /**
-@brief sp_hello_app start the hello app
-
-create a TEEC_Operation and then call TEEC_InvokeCommand with session and TEEC_Operation.
-
-@return return TEEC_Result on success invoke command, on failure return error code.
-*/
+ * sp_hello_app() - Start the hello app.
+ * 
+ * This function invokes the command and copies 0 to the first character
+ * of TEEC_Operation type op. Then the command is invoked within the 
+ * specified session by calling TEEC_InvokeCommand(). Upon success it 
+ * returns the n value.
+ *
+ * @return  n	TEEC_Result on success invoke command.
+ */
 TEEC_Result
 sp_hello_app()
 {
@@ -85,15 +88,19 @@ sp_hello_app()
 }
 
 /**
-@brief create context and session and start hello-app
-
-@param[in] argc argument count
-@param[in] argv[] argument list
-
-create a context for hello-app and then initialize context,
-create and open the session. then call the hello-app.
-Any error occured while creating context or session, print the error and exit.
-*/
+ * main() - Creates context, session and starts hello-app.
+ * 
+ * In this function the context is initialized for connecting to the TEE by calling
+ * TEEC_InitializeContext(). If the session value is null it invokes "bail2". Upon 
+ * the valid session, TEEC_OpenSession() is invoked. If the session is opened 
+ * successfully then it invokes sp_hello_app() and returns 0. Upon the failure of 
+ * sp_hello_app() it will go to "bail4".
+ *
+ * @param  argc		argument count
+ * @param  argv[]	argument list
+ * 
+ * @return 0		on success
+ */
 int main(int argc, char *argv[])
 {
 	int tries;

@@ -187,18 +187,17 @@ bail:
 #ifdef PLAT_KEYSTONE
 
 /**
-@brief Install plain.
- 
-@param[in]  *filename         filename is a type of the constant character
-@param[in]  *ta_image         ta_image is a type of the constant character
-@param[in]  *ta_image_len     ta_image_len is a type of the unsigned integer data type.
- 
-install_plain() function is to Receive the finame,ta image and length,opens a file for writing, 
-creating the file if it does not already exist and if fd less than zero it will return -1 and write the file then 
-if n not equal to ta_image length then close the fd.
-
-@return fd if success else error occured.
-*/
+ * install_plain() - Installs the plain in the TA.
+ * 
+ * The function opens a file for writing and creating
+ * the file if it does not already exist.
+ * 
+ * @param filename	filename is a type constant character.
+ * @param ta_image	ta_image is a type of the constant character
+ * @param ta_image_len	ta_image_len is a type of the unsigned integer data type.
+ * 
+ * @return 0		if success, else error occured.
+ */
 static int install_plain(const char *filename, const char *ta_image, size_t ta_image_len)
 {
 	int ret = -1;
@@ -216,21 +215,17 @@ bail_1:
 }
 
 /**
-@brief Install storage sector.
- 
-@param[in] 	*secstor_id         secstor_id is a type constant character.
-@param[in] 	*ta_image           ta_image is a type of the constant character
-@param[in] 	*ta_image_len       ta_image_len is a type of the unsigned integer data type.
- 
-install_secstor() function is to Receive the secstor_id,ta_image and ta_image_len and then 
-creates a persistent object and optionally returns either a handle on the created object, or 
-TEE_HANDLE_NULL upon failure and writes ta_image_len_16 bytes from the buffer pointed to by ta_image to the data 
-stream associated with the open object handle object and finally copies rest_len characters from memory area
-ta_image_len_16 to memory area padding and copies the character 16 - rest_len to the first  16 - rest_len
-characters of the string pointed to, by the argument padding + rest_len.
-
-@return 0 if success else error occured.
-*/
+ * install_secstor() - Installs the storage sector. 
+ * 
+ * The function creates a persistent object for writing the ta image data
+ * and padding the ta image length. 
+ * 
+ * @param secstor_id	secstor_id is a type constant character.
+ * @param ta_image	ta_image is a type of the constant character
+ * @param ta_image_len	ta_image_len is a type of the unsigned integer data type. 
+ * 
+ * @return 0		if success else, error occured.
+ */
 static int install_secstor(const char *secstor_id, const char *ta_image, size_t ta_image_len)
 {
 	int ret = -1;
@@ -268,22 +263,18 @@ bail_1:
 }
 
 /**
-@brief Install storage sector plain.
- 
-@param[in]  *filename           filename is a type of the constant character.
-@param[in] 	*secstor_id         secstor_id is a type constant character.
-@param[in] 	*ta_image_len       ta_image_len is a type of the unsigned integer data type.
- 
-install_secstor_plain() function is to Receive the filename,storage sector id and ta_image_len and then 
-opens a handle on an existing persistent object and It returns a handle that can be used to access the 
-object’s attributes and data stream it fails the open existing persistent object then return the -1 with error message
-(OpenPersistentObject failed) and opens a file for writing,creating the file if it does not already exist.if
-fd return less than zero it returns the ocall_open_file failed with close the object.
-if offset is less than ta image length then it will read persistent object data and finally write the file if n is not equal 
-count the return ocall_write_file failed with close the file.
-
-@return 0 if success else error occured.
-*/
+ * install_secstor_plain() - Installs the storage sector plain.
+ * 
+ * The function opens a handle on an existing persistent object and also opens a file  
+ * for writing the object data. If the offset value is less than the ta image length then it will 
+ * read persistent object data and write the file.
+ *
+ * @param filename	filename is a type of the constant character.
+ * @param secstor_id	secstor_id is a type constant character.
+ * @param ta_image_len	ta_image_len is a type of the unsigned integer data type.
+ * 
+ * @return 0		if success else error occured.
+ */
 static int install_secstor_plain(const char *filename, const char *secstor_id, size_t ta_image_len)
 {
 	int ret = -1;
@@ -335,23 +326,23 @@ bail_1:
 static ta_image_buf[TEMP_BUF_SIZE];
 
 /**
-@brief Install given a TA Image into secure storage using optee pta.
- 
-@param[in]  *ta_image           ta_image is a type of the constant character.
-@param[in]  *ta_image_len       ta_image_len is a type of the unsigned integer data type.
-@param[in]  *ta_name            ta_name is a type of the constant character.
-@param[in]  *ta_name_len        ta_name_len is a type of the unsigned integer data type.
-
-ta_store_install() function is to Receive the ta image,ta image length,ta name and ta name length.
-if defined value is PCTEST then it will send notification like  stub called ta_image_len with ta image length.
-if defined value is PLAT_KEYSTONE first it will send notification like ta image length and ta name.
-formats and stores a series of characters and values in the array filename_ta,filename_secstor and filename_secstor_plain.
-and then install plain,storage sector and storage sector plain.
-if it is not defined anything then it will open ta session in tee and invoke the command and finally it will close the ta session.
-if it success it will send notification like Wrote TA to secure storage.
-
-@return 0 if success else error occured.
-*/
+ * ta_store_install() - Installs the given  TA Image into secure storage using optee pta.
+ * 
+ * If defined value is PCTEST then it will send libwebsocket notification like   
+ * "stub called ta_image_len" with ta image length. If defined value is PLAT_KEYSTONE
+ * then it will send libwebsocket notification like "ta image length" and "ta name" 
+ * and then invokes the install plain(),storage sector() and storage sector plain().
+ * If it is not defined anything then it will open ta session in tee and invoke the 
+ * command and then finally it will close the ta session. If ta_store_install() 
+ * function success then it will send notification like "Wrote TA to secure storage". 
+ * 
+ * @param ta_image	ta_image is a type of the constant character.
+ * @param ta_image_len	ta_image_len is a type of the unsigned integer data type.
+ * @param ta_name	ta_name is a type of the constant character.
+ * @param ta_name_len	ta_name_len is a type of the unsigned integer data type.
+ * 
+ * @return 0		if success else error occured.
+ */
 int
 ta_store_install(const char *ta_image_ciphertext, size_t ta_image_ciphertext_len, const char *ta_name, size_t ta_name_len)
 {
@@ -414,21 +405,14 @@ ta_store_install(const char *ta_image_ciphertext, size_t ta_image_ciphertext_len
 }
 
 /**
-@brief Delete a TA Image corresponds to UUID from secure storage using optee pta.
- 
-@param[in]  *uuid_string           uuid_string is a type of the constant character.
-@param[in]  *uuid_string_len       uuid_string_len is a type of the unsigned integer data type.
-
-ta_store_delete() function is to receive the universally unique identifier (UUID) based on uuid 
-it will Delete the TA from secure storage.
-if defined value is PCTEST then will send notification like stub called with function name and Deleted TA from secure storage.
-if defined value PLAT_KEYSTONE then it will parse the UUID,open the ta session in tee and  
-copies it into each of the first pars characters of the object pointed to by pars.
-if not defined invokes a command  within  a  session  opened between the client Trusted Application 
-instance and a destination Trusted Application instance and finally it will close the ta session in tee.
-
-@return 0 if success else error occured.
-*/
+ * ta_store_delete() - Deletes a TA Image corresponds to UUID from 
+ * secure storage using optee pta.
+ * 
+ * @param uuid_string		uuid_string is a type of the constant character.
+ * @param uuid_string_len	uuid_string_len is a type of the unsigned integer data type.
+ * 
+ * @return 0			if success else, error occured.
+ */
 int
 ta_store_delete(const char *uuid_string, size_t uuid_string_len)
 {

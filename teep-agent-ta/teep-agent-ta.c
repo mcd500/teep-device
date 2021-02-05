@@ -157,7 +157,6 @@ teep_error(struct teep_agent_session *session, const char *message)
 	session->state = AGENT_POSTING_ERROR;
 }
 
-<<<<<<< HEAD
 static int
 set_manifest_from_uri(struct ta_manifest *manifest, UsefulBufC src_uri)
 {
@@ -190,20 +189,6 @@ set_manifest_from_uri(struct ta_manifest *manifest, UsefulBufC src_uri)
 
 static int
 set_manifest_from_suit_install(struct ta_manifest *manifest, UsefulBufC suit_install)
-=======
-/**
-@brief Gets the system’s clock time.
- 
-@param  *tv        tv is a type of the timeval structure gives the number of seconds and microseconds.         
-@param  *tz        tz is a type of the timezone structure.
-
-gettimeofday() function is to can get and set the time as well as a timezone,If either tv or tz is NULL, the corresponding 
-structure is not set or returned.
-
-@return 0 for success,On failure -1.
-*/
-int gettimeofday(struct timeval *tv, struct timezone *tz)
->>>>>>> 51868dd... adding doxygen comments for teep-agent-ta
 {
 	QCBORDecodeContext DC;
 	QCBORDecode_Init(&DC, suit_install, QCBOR_DECODE_MODE_NORMAL);
@@ -275,19 +260,8 @@ int gettimeofday(struct timeval *tv, struct timezone *tz)
 	return 0;
 }
 
-<<<<<<< HEAD
 static int
 set_manifest_from_suit_manifest(struct ta_manifest *manifest, UsefulBufC suit_manifest)
-=======
-/**
-@brief  Hex character and convert it to a integer number.
- 
-@param[in]  c         c is a data type of the character.              
-  
-@return integer value for success, on failure -1.
-*/
-int hex(char c)
->>>>>>> 51868dd... adding doxygen comments for teep-agent-ta
 {
 	QCBORDecodeContext DC;
 	QCBORDecode_Init(&DC, suit_manifest, QCBOR_DECODE_MODE_NORMAL);
@@ -324,7 +298,6 @@ int hex(char c)
 	return 0;
 }
 
-<<<<<<< HEAD
 static int
 set_manifest_from_suit(struct ta_manifest *manifest, UsefulBufC suit_envelope)
 {
@@ -365,19 +338,6 @@ set_manifest_from_suit(struct ta_manifest *manifest, UsefulBufC suit_envelope)
 
 static void
 handle_tam_message(struct teep_agent_session *session, const void *buffer, size_t len)
-=======
-/**
-@brief  Convert the uuid string to octets.
- 
-@param[in]  c          c is a data type of the character. 
-  
-input should be like this 8d82573a-926d-4754-9353-32dc29997f74.ta return will be 0, 16 bytes of octets16 will be filled.
-
-@return 0 for success, on failure -1.
-*/
-int
-string_to_uuid_octets(const char *s, uint8_t *octets16)
->>>>>>> 51868dd... adding doxygen comments for teep-agent-ta
 {
 	if (len == 0) {
 		session->state = AGENT_FINISH;
@@ -475,7 +435,6 @@ broker_task_done(struct teep_agent_session *session, const void *buffer, size_t 
 	return TEE_SUCCESS;
 }
 
-<<<<<<< HEAD
 static int build_query_response(struct teep_agent_session *session, void *dst, size_t *dst_len)
 {
 	struct teep_message_encoder enc;
@@ -594,17 +553,14 @@ query_next_broker_task(struct teep_agent_session *session)
 	}
 	return session->on_going_task;
 }
-=======
-/**
-@brief  Create the entry point for TA.
- 
-@param[in]  void   
-  
-TA_CreateEntryPoint() function is a set the log level for TA.
->>>>>>> 51868dd... adding doxygen comments for teep-agent-ta
 
-@return TEE_SUCCESS for success, else error occurred.
-*/
+/**
+ * TA_CreateEntryPoint() - Creates the entry point for TA.
+ * 
+ * The function set the log level for TA.
+ * 
+ * @return TEE_SUCCESS for success, else any other value.
+ */
 TEE_Result TA_CreateEntryPoint(void)
 {
 	lws_set_log_level(0
@@ -619,32 +575,25 @@ TEE_Result TA_CreateEntryPoint(void)
 }
 
 /**
-@brief  Destroy the entry point for TA.
- 
-@param[in]  void   
-*/
+ * TA_DestroyEntryPoint() - Destroys the entry point for TA.  
+ */
 void TA_DestroyEntryPoint(void)
 {
 }
 
 /**
-@brief Open session entry point for TA.
- 
-@param[in]  param_types             param_types is a numeric type that guarantees 32 bits.
-@param[in]  params[]                A pointer to an array of four parameters
-@param[in]  **sess_ctx              A pointer to a variable that can be filled by the Trusted Application instance with
-                                   an opaque void* data pointer
-
-TA_OpenSessionEntryPoint() function is to when a client requests to open a session with the Trusted Application. 
-The open session request may result in a new Trusted Application instance.
-The client can specify parameters in an open operation which are passed to the
-Trusted Application instance in the arguments paramTypes and params. These arguments can also be 
-used by the Trusted Application instance to transfer response data back to the client.
-If this function returns TEE_SUCCESS, the client is connected to a Trusted Application instance and 
-can invoke  Trusted  Application commands.
-
-@return TEE_SUCCESS for success, else error occurred.
-*/
+ * TA_OpenSessionEntryPoint() - Opens the session entry point for TA.
+ *    
+ * The Framework calls the function TA_OpenSessionEntryPoint when a client
+ * requests to open a session with the Trusted Application.
+ * 
+ * @param param_types	param_types is a numeric type that guarantees 32 bits.
+ * @param params[]	A pointer to an array of four parameters
+ * @param **sess_ctx	A pointer to a variable that can be filled by the Trusted
+ * 			Application instance with an opaque void* data pointer
+ * 
+ * @return TEE_SUCCESS	If the session is successfully opened, else any other value.
+ */
 TEE_Result TA_OpenSessionEntryPoint(uint32_t param_types,
 		TEE_Param params[4],
 		void **sess_ctx)
@@ -665,7 +614,19 @@ TEE_Result TA_OpenSessionEntryPoint(uint32_t param_types,
 	return TEE_SUCCESS;
 }
 
-<<<<<<< HEAD
+/**
+ * TA_CloseSessionEntryPoint() - The Framework calls the function 
+ * to close a client session.
+ *
+ * The Trusted Application implementation is responsible for 
+ * freeing any resources consumed by the session.
+ *
+ * @param *sess_ctx	The value of the void* opaque data pointer set by the 
+ *			Trusted Application in the function TA_OpenSessionEntryPoint
+ *			for this session.
+ * 
+ * @return TEE_SUCCESS	for success, else any other value.
+ */
 void TA_CloseSessionEntryPoint(void *sess_ctx)
 {
 	struct teep_agent_session *session = sess_ctx;
@@ -677,19 +638,6 @@ handle_TEEP_AGENT_SET_DEV_OPTION(
 	struct teep_agent_session *session,
 	uint32_t param_types,
 	TEE_Param params[TEE_NUM_PARAMS])
-=======
-/**
-@brief Close session entry point for TA.
-
-@param[out]  **sess_ctx              The value of the void* opaque data pointer set by the Trusted Application in the 
-                                   function TA_OpenSessionEntryPoint for this session.
-
-TA_CloseSessionEntryPoint() function is to close a client session.
-
-@return TEE_SUCCESS for success, else error occurred.
-*/
-void TA_CloseSessionEntryPoint(void __maybe_unused *sess_ctx)
->>>>>>> 51868dd... adding doxygen comments for teep-agent-ta
 {
 	uint32_t exp_param_types = TEE_PARAM_TYPES(
 		TEE_PARAM_TYPE_VALUE_INPUT,
@@ -760,20 +708,21 @@ handle_TEEP_AGENT_QUERY_NEXT_BROKER_TASK(
 }
 
 /**
-@brief Invoke the command entry point for TA.
- 
-@param[in]   **sess_ctx                The value of the void* opaque data pointer set by the Trusted Application in the function TA_OpenSessionEntryPoint.
-@param[in]   cmd_id                    A Trusted Application-specific code that identifies the command to be invoked.
-@param[in]   param_types               The types of the four parameters
-@param[in]   params[TEE_NUM_PARAMS]    A pointer to an array of four parameters     
-
-TA_InvokeCommandEntryPoint() function is to Receive the command id.
-Varify the tee parameter type and based command id it will wrap TEEP message,unwrap TEEP message,
-verify OTrP message,Install TA,Delete TA,sign(wrap) OTrP message,encrypt(wrap) OTrP message and
-decrypt(unwrap) OTrP message,
-
-@return TEE_SUCCESS for success, else error occurred.
-*/
+ * TA_InvokeCommandEntryPoint() - Invokes the command entry point for TA.    
+ * 
+ * Based on command id, verify the tee parameter type and invokes teep_message_wrap(),
+ * teep_message_unwrap(),otrp_message_verify(),ta_store_install(),ta_store_delete(),
+ * teep_message_unwrap_ta_image(),otrp_message_sign,otrp_message_encrypt(), and 
+ * otrp_message_decrypt().
+ * 
+ * @param *sess_ctx			The value of the void* opaque data pointer set by the Trusted 
+ *					Application in the function TA_OpenSessionEntryPoint.
+ * @param cmd_id			A Trusted Application-specific code that identifies the command to be invoked.
+ * @param param_types			The types of the four parameters
+ * @param params[TEE_NUM_PARAMS]    	A pointer to an array of four parameters 
+ * 
+ * @return TEE_SUCCESS               	for success, else any other value.
+ */
 TEE_Result
 TA_InvokeCommandEntryPoint(void *sess_ctx,
 			uint32_t cmd_id,
@@ -801,19 +750,23 @@ TA_InvokeCommandEntryPoint(void *sess_ctx,
 // TODO: should implemet in ref-ta/api???
 
 /**
-@brief Entry point that the runtime will start at in the enclave application.
- 
-eapp_entry() function is to first it will set the log level for app and this is the entry point that the 
-runtime will start at in the enclave application,pull the invoke command and if command is id is equal to 1000 
-then it will call the ocall_put_invoke_command_result() function and
-based on the parameter type it will execute the cases if parameter type is TEE_PARAM_TYPE_MEMREF_INOUT it will allocate 
-memory for size and read the invoke command and copies buf.size from memory area buf.buf to memory area params[i].memref.buffer + offset.
-if parameter type is a TEE_PARAM_TYPE_MEMREF_OUTPUT then allocate the memory for params[i].memref.size.
-Finally invoke the command entry point here Receive the commond id,param types and param and based on param type
-it will execute the switch case,if parameter type is TEE_PARAM_TYPE_MEMREF_INOUT it will write the invoke parameter.
-
-@return 0  for success, else error occurred.
-*/
+ * eapp_entry() - Defines the entry point that the runtime will start  in the enclave 
+ * application.
+ *   
+ * Firstly  the function  set the log level for app and this acts as the entry point  
+ * that the runtime will start in the enclave application,pull the invoke command and  
+ * if command id is equal to 1000 then invoke the ocall_put_invoke_command_result().
+ * Based on the parameter type it will execute the switch case if parameter type is 
+ * "TEE_PARAM_TYPE_MEMREF_INOUT" it will allocate memory for size and read the invoke 
+ * command and copies "buf.size" from memory area "buf.buf" to memory area
+ * "params[i].memref.buffer + offset". If parameter type is a TEE_PARAM_TYPE_MEMREF_OUTPUT
+ * then allocate the memory for params[i].memref.size. Finally invoke the command entry point
+ * here Receive the commond id,param types and param and based on param type it will execute
+ * the switch case,if parameter type is "TEE_PARAM_TYPE_MEMREF_INOUT" it will write the 
+ * invoke parameter.
+ * 
+ * @return 0  for success, else error occurred.
+ */
 void EAPP_ENTRY eapp_entry()
 {
 	TA_CreateEntryPoint();

@@ -31,35 +31,46 @@
 #include <tee_internal_api_extensions.h>
 
 /**
-@brief The TA_CreateEntryPoint function is the Trusted Application’s constructor, which the Framework calls  when it creates a new instance of the Trusted Application.
-
-The TA_CreateEntryPoint function just return TEEC_SUCCESS for now.
-
-@return Its return TEEC_SUCCESS.
-*/ 
+ * TA_CreateEntryPoint() - Trusted Application’s constructor,
+ * 
+ * This function is used to register instance data. the implementation of this 
+ * constructor can use either global variables or the function
+ * TEE_SetInstanceData.
+ * 
+ * @return        It returns TEE_SUCCESS.
+ */ 
 TEE_Result TA_CreateEntryPoint(void)
 {
 	return TEE_SUCCESS;
 }
 
 /**
-@brief The function TA_DestroyEntryPoint is the Trusted Application’s destructor,which the Framework calls when the instance is being destroyed.
-*/ 
+ * TA_DestroyEntryPoint() - Trusted Application’s destructor.
+ * 
+ * When the function TA_DestroyEntryPoint is called, the Framework guarantees 
+ * that no client session is currently open. Once the call to 
+ * TA_DestroyEntryPoint has been completed, no other entry point of this
+ * instance will ever be called.
+ */ 
 void TA_DestroyEntryPoint(void)
 {
 }
 
 /**
-@brief TA_OpenSessionEntryPoint function when a client requests to open a session with the Trusted Application
-
-@param[in] param_types 	The types of the four parameters
-@param[in] params  	A pointer to an array of four parameters
-@param[in] sess_ctx 	A pointer to a variable that can be filled by the Trusted Application instance with pointer.
-
-The TA_OpenSessionEntryPoint function just return TEEC_SUCCESS for now.
-
-@return 		return TEE_SUCCESS.
-*/ 
+ * TA_OpenSessionEntryPoint() - When a client requests to open a 
+ * session with the Trusted Application.
+ * 
+ * This function client can specify parameters in an open operation which are 
+ * passed to the Trusted Application instance in the arguments paramTypes and 
+ * params.
+ * 
+ * @param param_types	The types of the four parameters
+ * @param params	A pointer to an array of four parameters
+ * @param sess_ctx	A pointer to a variable that can be filled by the
+ *			Trusted Application instance with pointer. 
+ *
+ * @return		It returns TEEC_SUCCESS.
+ */ 
 TEE_Result TA_OpenSessionEntryPoint(uint32_t param_types,
 		TEE_Param __maybe_unused params[4],
 		void __maybe_unused **sess_ctx)
@@ -69,30 +80,37 @@ TEE_Result TA_OpenSessionEntryPoint(uint32_t param_types,
 }
 
 /**
-@brief TA_CloseSessionEntryPoint function is called when the client closes a session and
-disconnects from the Trusted Application instance.
- 
-@param[in] 	sess_ctx The value of the void* opaque data pointer set by the Trusted Application
-
-**The TA_CloseSessionEntryPoint function invoke sess_ctx.
-*/ 
+ * TA_CloseSessionEntryPoint() - It is called when the client closes a session and
+ * disconnects from the Trusted Application instance.
+ * 
+ * @param sess_ctx	The value of the void* opaque data pointer set by the 
+ *			Trusted Application.
+ */ 
 void TA_CloseSessionEntryPoint(void __maybe_unused *sess_ctx)
 {
 	(void)&sess_ctx;
 }
 
 /**
-@brief The TA_InvokeCommandEntryPoint function when the client invokes a command within the given session.
-
-@param[in] sess_ctx	The value of the void* opaque data pointer set by the Trusted Application in the function TA_OpenSessionEntryPoint
-@param[in] cmd_id	A Trusted Application-specific code that identifies the command to be invoked
-@param[in] param_types	The types of the four parameters.
-@param[in] params 	A pointer to an array of four parameters
-
-**The TA_InvokeCommandEntryPoint function return TEE_ERROR_NOT_IMPLEMENTED.
-
-@return Its return TEE_ERROR_NOT_IMPLEMENTED.
-*/ 
+ * The TA_InvokeCommandEntryPoint() - When the client invokes a command 
+ * within the given session.
+ * 
+ * The Trusted Application can access the parameters sent by the client through 
+ * the paramTypes and params arguments. It can also use these arguments to 
+ * transfer response data back to the client. A specification of how to handle 
+ * the operation parameters. During the call to TA_InvokeCommandEntryPoint 
+ * the client may request to cancel the operation.
+ * 
+ * @param sess_ctx	The value of the void* opaque data pointer set by the 
+ * 			Trusted Application in the function 
+ *			TA_OpenSessionEntryPoint
+ * @param cmd_id	A Trusted Application-specific code that identifies 
+ *			the command to be invoked
+ * @param param_types	The types of the four parameters.
+ * @param params	A pointer to an array of four parameters
+ *
+ * @return		Its return TEE_ERROR_NOT_IMPLEMENTED.
+ */ 
 TEE_Result TA_InvokeCommandEntryPoint(void __maybe_unused *sess_ctx,
 			uint32_t cmd_id,
 			uint32_t param_types,
@@ -110,8 +128,11 @@ TEE_Result TA_InvokeCommandEntryPoint(void __maybe_unused *sess_ctx,
 // TODO: should implemet in ref-ta/api???
 
 /**
-@brief eapp_entry() prints hello TA message when it is invoked
-*/ 
+ * eapp_entry() - Prints hello TA message when it is invoked.
+ * 
+ * This function just calls ocall_print_string() to print the string given in the
+ * bracket.
+ */ 
 void EAPP_ENTRY eapp_entry()
 {
 	ocall_print_string("hello TA\n");
