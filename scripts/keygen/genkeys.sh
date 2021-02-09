@@ -13,8 +13,6 @@ SP_PRIV_JWK=key/test-jw_tee_sds_xbank_spaik-priv.jwk
 
 npm install
 
-mkdir -p key/include
-
 node ${SCRIPTS_DIR}/generate-jwk.js $TAM_PRIV_JWK $TAM_PUB_JWK
 node ${SCRIPTS_DIR}/generate-jwk.js $TEE_PRIV_JWK $TEE_PUB_JWK
 node ${SCRIPTS_DIR}/generate-jwk.js $SP_PRIV_JWK $SP_PUB_JWK
@@ -22,12 +20,3 @@ node ${SCRIPTS_DIR}/generate-jwk.js $SP_PRIV_JWK $SP_PUB_JWK
 node ${SCRIPTS_DIR}/check-jwk.js $TAM_PRIV_JWK $TAM_PUB_JWK
 node ${SCRIPTS_DIR}/check-jwk.js $TEE_PRIV_JWK $TEE_PUB_JWK
 node ${SCRIPTS_DIR}/check-jwk.js $SP_PRIV_JWK $SP_PUB_JWK
-
-cat $TAM_PUB_JWK | sed 's/\"/\\\"/g' | sed 's/^/\"/g' | sed 's/$$/\\\n\"\n/g' > \
-            key/include/tam_id_pubkey_jwk.h
-cat $SP_PUB_JWK | sed 's/\"/\\\"/g' | sed 's/^/\"/g' | sed 's/$$/\\\n\"\n/g' > \
-            key/include/sp_pubkey_jwk.h
-cat $TEE_PUB_JWK | sed 's/\"/\\\"/g' | sed 's/^/\"/g' | sed 's/$$/\\\n\"\n/g' > \
-            key/include/tee_id_pubkey_jwk.h
-cat $TEE_PRIV_JWK | sed 's/\"/\\\"/g' | sed 's/^/\"/g' | sed 's/$$/\\\n\"\n/g' > \
-            key/include/tee_id_privkey_jwk.h

@@ -3,7 +3,27 @@
 .PHONY: test test-optee test-keystone test-pc
 .PHONY: qemu qemu-optee qemu-keystone
 
-all: all-$(TEE)
+all: $(KEY_HEADERS) all-$(TEE)
+
+KEYS := $(CURDIR)/key/test-jw_tee_identity_private_tee-mytee-private.jwk \
+	$(CURDIR)/key/test-jw_tee_identity_tee-mytee-public.jwk \
+	$(CURDIR)/key/test-jw_tee_sds_xbank_spaik-priv.jwk \
+	$(CURDIR)/key/test-jw_tee_sds_xbank_spaik-pub.jwk \
+	$(CURDIR)/key/test-jw_tsm_identity_private_tam-mytam-private.jwk \
+	$(CURDIR)/key/test-jw_tsm_identity_tam-mytam-public.jwk
+
+KEY_HEADERS := $(CURDIR)/key/include/sp_pubkey_jwk.h \
+	$(CURDIR)/key/include/tam_id_pubkey_jwk.h \
+	$(CURDIR)/key/include/tee_id_privkey_jwk.h \
+	$(CURDIR)/key/include/tee_id_pubkey_jwk.h
+
+.PHONY: gen-keys
+gen-keys $(KEYS):
+	scripts/keygen/genkeys.sh
+
+.PHONY: gen-key-headers
+gen-key-headers $(KEY_HEADERS): $(KEYS)
+	scripts/keygen/genheaders.sh
 
 clean: clean-optee clean-keystone clean-pc
 
