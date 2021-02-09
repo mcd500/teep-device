@@ -1,1 +1,1 @@
-srcs-y += teep-agent-ta.c teep_message.c ta-store.c tools.c
+srcs-y += teep-agent-ta.c ta-store.c tools.c

@@ -6,6 +6,11 @@
 #include <tee_internal_api.h>
 #include <tee_internal_api_extensions.h>
 
+#ifdef PLAT_OPTEE
+#include <time.h>
+#include <libwebsockets.h>
+#endif
+
 static inline unsigned int _strlen(const char* str)
 {
   const char* s;

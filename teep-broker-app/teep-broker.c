@@ -31,6 +31,9 @@
 #include <tee_client_api.h>
 #include "http.h"
 #include "ta-interface.h"
+#include <stdio.h>
+#include <stdlib.h>
+
 
 static const TEEC_UUID uuid_aist_otrp_ta =
         { 0x68373894, 0x5bb3, 0x403c,

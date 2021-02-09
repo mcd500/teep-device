@@ -30,6 +30,7 @@
 #include <tee_internal_api.h>
 #ifndef PLAT_KEYSTONE
 #include <pta_secstor_ta_mgmt.h>
+#include <time.h>
 #else
 #include <edger/Enclave_t.h>
 #endif

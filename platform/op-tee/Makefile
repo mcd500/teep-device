@@ -10,19 +10,22 @@ export TEE_AGENT_UUID ?= 68373894-5bb3-403c-9eec-3114a1f5d3fc
 
 export APP_CFLAGS ?= \
 	-Wall \
-	-I$(TA_DEV_KIT_DIR)/host_include \
+	-DPLAT_OPTEE=1 \
 	-I$(SOURCE)/libteep/lib \
 	-I$(SOURCE)/libteep/libwebsockets/include \
 	-I$(SOURCE)/libteep/mbedtls/include \
+	-I$(SOURCE)/include \
 	-I$(OPTEE_DIR)/optee_client/public \
 	-I$(TEE_REF_TA_DIR)/include \
 	-I$(BUILD)/libteep/ree/mbedtls/include \
-	-I$(BUILD)/libteep/ree/libwebsockets/include
+	-I$(BUILD)/libteep/ree/libwebsockets/include \
+	-I$(BUILD)/libteep/tee/QCBOR/inc
 
 export APP_LDFLAGS ?= \
 	-L$(OPTEE_DIR)/out-br/target/usr/lib \
 	-L$(OPTEE_DIR)/optee_client/out/libteec \
 	-L$(BUILD)/libteep/ree/lib \
+	-L$(BUILD)/libteep/tee/lib \
 	-L$(BUILD)/libteep/ree/mbedtls/library \
 	-L$(BUILD)/libteep/ree/libwebsockets/lib
 
@@ -34,7 +37,12 @@ export APP_LIBS ?= \
 	-lmbedcrypto \
 	-lmbedx509
 
-export TA_CFLAGS = \
+export TEE_CFLAGS = \
+	-I$(BUILD)/libteep/tee/QCBOR/inc \
+	-I$(SOURCE)/include \
+	-I$(SOURCE)/platform/op-tee/early
+
+export TA_CFLAGS = $(TEE_CFLAGS) \
 	-nostdinc -DPLAT_OPTEE=1  \
 	-Wall \
 	-Wno-overlength-strings \
@@ -45,7 +53,12 @@ export TA_CFLAGS = \
 	-I$(SOURCE)/key/include
 
 export TA_LDFLAGS = \
-	-L$(BUILD)/libteep/tee/libwebsockets/lib
+	-L$(BUILD)/libteep/tee/libwebsockets/lib \
+	-L$(BUILD)/libteep/tee/lib \
+	-L$(BUILD)/libteep/tee/QCBOR
+
+export TA_LIBS = \
+	-lqcbor
 
 TOOLCHAIN-ree = $(CURDIR)/cross-aarch64.cmake
 TOOLCHAIN-tee = $(CURDIR)/cross-aarch64-tee.cmake
