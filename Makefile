@@ -1,5 +1,5 @@
-.PHONY: all all- all-optee all-keystone all-pc
-.PHONY: clean clean-optee clean-keystone clean-pc
+.PHONY: all all- all-optee all-keystone all-pc docs
+.PHONY: clean clean-optee clean-keystone clean-pc clean-docs
 .PHONY: test test-optee test-keystone test-pc
 .PHONY: qemu qemu-optee qemu-keystone
 
@@ -25,7 +25,7 @@ gen-keys $(KEYS):
 gen-key-headers $(KEY_HEADERS): $(KEYS)
 	scripts/keygen/genheaders.sh
 
-clean: clean-optee clean-keystone clean-pc
+clean: clean-optee clean-keystone clean-pc clean-docs
 
 test: test-$(TEE)
 
@@ -48,6 +48,16 @@ all-optee: build-optee
 all-keystone: build-keystone
 
 all-pc: build-pc
+
+docs:
+	@echo "Generating doxygen files"
+	@doxygen docs/doxygen/Doxyfile
+	make -C docs/doxygen/latex
+	cp docs/doxygen/latex/refman.pdf docs/teep-device.pdf	
+
+clean-docs:
+	rm -f -r docs/doxygen/html
+	rm -f -r docs/doxygen/latex
 
 clean-optee:
 	$(MAKE) -C platform/op-tee clean

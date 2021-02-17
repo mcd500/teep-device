@@ -46,3 +46,5 @@ showtamurl
 tam_ip
 CMakeCache.txt
 CMakeFiles
+docs/doxygen/html
+docs/doxygen/latex
