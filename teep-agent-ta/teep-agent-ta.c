@@ -59,7 +59,7 @@ struct teep_agent_session
 	struct broker_task *on_going_task;
 	struct broker_task task_buffer;
 
-	struct teep_uint64_option token;
+	UsefulBufC token;
 
 	struct ta_manifest *manifests;
 	size_t manifests_len;
@@ -77,7 +77,7 @@ teep_agent_session_create()
 	}
 	session->state = AGENT_INIT;
 	session->on_going_task = NULL;
-	session->token.have_value = 0;
+	session->token = NULLUsefulBufC;
 	session->manifests = NULL;
 	session->manifests_len = 0;
 
@@ -448,7 +448,7 @@ static int build_query_response(struct teep_agent_session *session, void *dst, s
 	teep_message_encoder_init(&enc, (UsefulBuf){ dst, *dst_len });
 	teep_message_encoder_add_header(&enc, TEEP_QUERY_RESPONSE);
 	teep_message_encoder_open_options(&enc);
-	teep_message_encoder_add_token(&enc, &session->token);
+	teep_message_encoder_add_token(&enc, session->token);
 
 	uint64_t items = session->data_item_requested;
 	if (items & TEEP_DATA_ATTESTATION) {
@@ -501,7 +501,7 @@ static int build_success(struct teep_agent_session *session, void *dst, size_t *
 	teep_message_encoder_add_header(&enc, TEEP_SUCCESS);
 	teep_message_encoder_open_options(&enc);
 	{
-		teep_message_encoder_add_token(&enc, &session->token);
+		teep_message_encoder_add_token(&enc, session->token);
 	}
 	teep_message_encoder_close_options(&enc);
 	UsefulBufC ret;
@@ -519,7 +519,7 @@ static int build_error(struct teep_agent_session *session, void *dst, size_t *ds
 	teep_message_encoder_add_header(&enc, TEEP_ERROR);
 	teep_message_encoder_open_options(&enc);
 	{
-		teep_message_encoder_add_token(&enc, &session->token);
+		teep_message_encoder_add_token(&enc, session->token);
 	}
 	teep_message_encoder_close_options(&enc);
 	teep_message_encoder_add_err_code(&enc, 42); // TODO

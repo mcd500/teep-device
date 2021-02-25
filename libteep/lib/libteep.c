@@ -381,17 +381,10 @@ static int parse_option(struct teep_message *m, QCBORDecodeContext *DC, QCBORIte
 	case TEEP_OPTION_TOKEN:
 		{
 			uint64_t token;
-			if (option->uDataType == QCBOR_TYPE_INT64) {
-				if (QCBOR_Int64ToUInt64(option->val.int64, &token) < 0) {
-					goto err;
-				}
-			} else if (option->uDataType == QCBOR_TYPE_UINT64) {
-				token = option->val.uint64;
-			} else {
+			if (option->uDataType != QCBOR_TYPE_BYTE_STRING) {
 				goto err;
 			}
-			m->token.have_value = 1;
-			m->token.value = token;
+			m->token = option->val.string;
 		}
 		break;
 	default:
@@ -467,6 +460,7 @@ struct teep_message *parse_teep_message(UsefulBufC cbor)
 	}
 	memset(m, 0, sizeof *m);
 	m->type = type_val;
+	m->token = NULLUsefulBufC;
 
 	if (!parse_options(m, &DC)) {
 		goto err;
@@ -555,10 +549,10 @@ void teep_message_encoder_close_options(struct teep_message_encoder *encoder)
 	QCBOREncode_CloseMap(&encoder->EC);
 }
 
-void teep_message_encoder_add_token(struct teep_message_encoder *encoder, const struct teep_uint64_option *token)
+void teep_message_encoder_add_token(struct teep_message_encoder *encoder, UsefulBufC token)
 {
-	if (token->have_value) {
-		QCBOREncode_AddUInt64ToMapN(&encoder->EC, TEEP_OPTION_TOKEN, token->value);
+	if (!UsefulBuf_IsNULLC(token)) {
+		QCBOREncode_AddBytesToMapN(&encoder->EC, TEEP_OPTION_TOKEN, token);
 	}
 }
 
