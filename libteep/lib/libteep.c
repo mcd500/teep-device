@@ -181,7 +181,7 @@ static int parse_component_id_array(struct teep_component_id_array *p, QCBORDeco
 	memset(p->array, 0, p->len * sizeof (p->array[0]));
 	for (size_t i = 0; i < p->len; i++) {
 		QCBORItemWithOffset Item;
-		QCBORDecode_GetNext(DC, &Item);
+		QCBORDecode_GetNextWithOffset(DC, &Item);
 		if (!parse_component_id(&p->array[i], DC, &Item)) {
 			return 0;
 		}

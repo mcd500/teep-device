@@ -382,7 +382,7 @@ handle_tam_message(struct teep_agent_session *session, const void *buffer, size_
 			}
 
 			{
-				struct teep_buffer_array *p = &m->teep_update.tc_list;
+				struct teep_component_id_array *p = &m->teep_update.unneeded_tc_list;
 				for (size_t i = 0; i < p->len; i++) {
 					UsefulBufC *ta = &p->array[i];
 					// TODO: handle error
@@ -475,7 +475,7 @@ static int build_query_response(struct teep_agent_session *session, void *dst, s
 		teep_message_encoder_open_unneeded_tc_list(&enc);
 		for (size_t i = 0; i < session->manifests_len; i++) {
 			struct ta_manifest *m = &session->manifests[i];
-			if (m->requested) {
+			if (m->unneeded) {
 				teep_message_encoder_add_tc_to_unneeded_tc_list(&enc, m->id);
 			}
 		}
