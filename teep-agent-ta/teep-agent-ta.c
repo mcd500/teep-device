@@ -93,6 +93,7 @@ teep_agent_session_destroy(struct teep_agent_session *session)
 	if (session->manifests) {
 		free(session->manifests);
 	}
+	free((void *)session->token.ptr);
 	free(session);
 }
 
@@ -371,7 +372,10 @@ handle_tam_message(struct teep_agent_session *session, const void *buffer, size_
 			goto err;
 		}
 		session->state = AGENT_POSTING_QUERY_RESPONSE;
-		session->token = m->token;
+		UsefulBuf p = (UsefulBuf){malloc(m->token.len), m->token.len };
+		// TODO: check
+		UsefulBuf_Copy(p, m->token);
+		session->token = UsefulBuf_Const(p);
 		session->data_item_requested = m->query_request.data_item_requested;
 		break;
 	case TEEP_UPDATE:
