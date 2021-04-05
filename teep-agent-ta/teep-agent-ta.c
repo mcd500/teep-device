@@ -44,12 +44,58 @@ enum agent_state
 	AGENT_FINISH
 };
 
-struct ta_manifest
+struct suit_manifest_storage
+{
+	UsefulBufC envelope;
+};
+
+struct suit_component_storage
+{
+	UsefulBufC component;
+};
+
+struct suit_manifest_storage suit_manifests[1]; // TODO: multiple manifest
+struct suit_component_storage suit_components[1][1]; // suit_components[manifest_index][component_index]
+
+static bool store_bstr(UsefulBufC *p, const void *buf, size_t len)
+{
+	if (!UsefulBuf_IsNULLC(*p)) {
+		free(p->ptr);
+	}
+	void *q = malloc(len);
+	if (!q) {
+		return false;
+	}
+	memcpy(q, buf, len);
+	*p = (UsefulBufC){ q, len };
+	return true;
+}
+
+static bool store_envelope(size_t index, const void *buf, size_t len)
+{
+	if (index < 1) {
+		// TODO: check sig before store envelope is better
+		return store_bstr(&suit_manifests[index].envelope);
+	} else {
+		return false;
+	}
+}
+
+static bool store_component(size_t manifest_index, size_t component_index, const void *buf, size_t len)
+{
+	if (manifest_index < 1 && component_index < 1) {
+		// TODO: decrypt & hash
+		return store_bstr(&suit_components[manifest_index][component_index].component, buf, len);
+	} else { 
+		return false;
+	}
+}
+
+struct teep_manifest_request
 {
 	bool requested;
 	bool unneeded;
 	char id[128];
-	char uri[TEEP_MAX_URI_LEN];
 };
 
 struct teep_agent_session
@@ -61,12 +107,113 @@ struct teep_agent_session
 
 	UsefulBufC token;
 
-	struct ta_manifest *manifests;
-	size_t manifests_len;
-	size_t download_ta_index;
+	struct teep_manifest_request requests[16];
 
 	uint64_t data_item_requested;
 };
+
+
+static void suit_command_processor_init(struct suit_command_processor *state, UsefulBufC command_sequence_bstr)
+{
+	state->command_sequence_bstr = command_sequence_bstr;
+	QCBORDecode_Init(&state->decoder, command_sequence_bstr, QCBOR_DECODE_MODE_NORMAL);
+	state->step_index = 0;
+
+	QCBORItem array;
+	QCBORDecode_GetNext(&state->decoder, &array);
+	if (array.uDataType != QCBOR_TYPE_ARRAY) {
+		goto err;
+	}
+
+	if (array.val.uCount % 2) {
+		goto err;
+	}
+
+	state->step_index = 0;
+	state->step_length = array.val.uCount / 2;
+	// TODO: init parameters
+	
+err:
+	// TODO
+}
+
+
+static bool suit_directive_set_parameters(struct suit_command_processor *state)
+{
+	if (CommandParam.uDataType != QCBOR_TYPE_MAP) {
+		goto err;
+	}
+	for (size_t j = 0; j < CommandParam.val.uCount; j++) {
+		QCBORItem SuitParam;
+		QCBORDecode_GetNext(&state->decoder, &SuitParam);
+
+		if (SuitParam.uLabelType != QCBOR_TYPE_INT64) {
+			goto err;
+		}
+
+		switch (SuitParam.label.int64) {
+		case 21: // suit-parameter-uri
+			if (SuitParam.uDataType != QCBOR_TYPE_TEXT_STRING) {
+				goto err;
+			}
+			state->parameters.uri = SuitParam.val.string;
+			break;
+		// TODO:
+		default:
+			while (SuitParam.uNextNestLevel != CommandParam.uNextNestLevel) {
+				QCBORDecode_GetNext(&DC, &SuitParam);
+				if (SuitParam.uDataType == QCBOR_TYPE_NONE) {
+					goto err;
+				}
+			}
+		}
+	}
+
+	return true;
+err:
+	return false;
+}
+
+static enum suit_result suit_command_processor_step(struct suit_command_processor *state)
+{
+	for (; state->step_index < state->step_length; state->step_index++) {
+		QCBORItem SuitCommand;
+		QCBORDecode_GetNext(&state->decoder, &SuitCommand);
+		if (SuitCommand.uDataType != QCBOR_TYPE_INT64) {
+			goto err;
+		}
+		QCBORItem CommandParam;
+		QCBORDecode_GetNext(&state->decoder, &CommandParam);
+
+		switch (SuitCommand.val.int64) {
+		case 19: // suit-directive-set-parameters
+			{
+				if (!suit_directive_set_parameters(state)) {
+					goto err;
+				}
+			}
+			break;
+		case 21: // directive-fetch
+			{
+				if (CommandParam.uDataType != QCBOR_TYPE_NULL) {
+					goto err;
+				}
+			}
+			return SUIT_RESULT_FETCH_URI;
+		default:
+			while (CommandParam.uNextNestLevel != SuitInstall.uNextNestLevel) {
+				QCBORDecode_GetNext(&DC, &CommandParam);
+				if (CommandParam.uDataType == QCBOR_TYPE_NONE) {
+					goto err;
+				}
+			}
+		}
+
+	}
+	return SUIT_RESULT_DONE;
+err:
+	return SUIT_RESULT_ERROR;
+}
 
 static struct teep_agent_session *
 teep_agent_session_create()
@@ -169,6 +316,7 @@ teep_error(struct teep_agent_session *session, const char *message)
 	session->state = AGENT_POSTING_ERROR;
 }
 
+#if 0
 static int
 set_manifest_from_uri(struct ta_manifest *manifest, UsefulBufC src_uri)
 {
@@ -348,6 +496,8 @@ set_manifest_from_suit(struct ta_manifest *manifest, UsefulBufC suit_envelope)
 	return 0;
 }
 
+#endif
+
 static void
 handle_tam_message(struct teep_agent_session *session, const void *buffer, size_t len)
 {
@@ -385,31 +535,15 @@ handle_tam_message(struct teep_agent_session *session, const void *buffer, size_
 				goto err;
 			}
 
-			{
-				struct teep_component_id_array *p = &m->teep_update.unneeded_tc_list;
-				for (size_t i = 0; i < p->len; i++) {
-					UsefulBufC *ta = &p->array[i];
-					// TODO: handle error
-					ta_store_delete(ta->ptr, ta->len);
+			struct teep_buffer_array *p = &m->teep_update.manifest_list;
+
+			for (size_t i = 0; i < p->len; i++) {
+				if (!store_suit_envelope(i, p->array[i])) {
+					goto err;
 				}
 			}
 
-			{
-				free(session->manifests);
-				struct teep_buffer_array *p = &m->teep_update.manifest_list;
-				// TODO: handle error
-				session->manifests = malloc(p->len * sizeof (struct ta_manifest));
-				session->manifests_len = p->len;
-				for (size_t i = 0; i < p->len; i++) {
-					// TODO: parse SUIT_Envelope
-					if (!set_manifest_from_suit(&session->manifests[i], p->array[i])) {
-						teep_error(session, "too long URI");
-						goto err;
-					}
-				}
-			}
-			session->state = AGENT_DOWNLOAD_TA;
-			session->download_ta_index = 0;
+			session->state = AGENT_PROCESS_MANIFEST;
 		}
 		break;
 	}
@@ -418,12 +552,9 @@ err:
 }
 
 static void
-handle_ta_download(struct teep_agent_session *session, const void *buffer, size_t len, const char *uri)
+handle_component_download(struct teep_agent_session *session, const void *buffer, size_t len, const char *uri)
 {
-	struct ta_manifest *manifest = &session->manifests[session->download_ta_index];
-	// TODO: handle error
-	ta_store_install(buffer, len, manifest->id, strlen(manifest->id));
-	session->download_ta_index++;
+	suit_store_component(session->request_component, buffer, len);
 }
 
 static TEE_Result
@@ -439,7 +570,7 @@ broker_task_done(struct teep_agent_session *session, const void *buffer, size_t 
 		handle_tam_message(session, buffer, len);
 		break;
 	case BROKER_HTTP_GET:
-		handle_ta_download(session, buffer, len, task->uri);
+		handle_component_download(session, buffer, len, task->uri);
 		break;
 	}
 	session->on_going_task = NULL;
@@ -569,14 +700,17 @@ query_next_broker_task(struct teep_agent_session *session)
 			// TODO: handle return value
 			build_error(session, task->post_data, &task->post_data_len);
 			session->on_going_task = task;
-		} else if (session->state == AGENT_DOWNLOAD_TA) {
-			if (session->download_ta_index == session->manifests_len) {
-				session->state = AGENT_POSTING_SUCCESS;
-			} else {
+		} else if (session->state == AGENT_PROCESS_MANIFEST) {
+			enum suit_result sr = process_all_manifest(session);
+			if (sr == SUIT_RESULT_FETCH_URI) {
 				task->command = BROKER_HTTP_GET;
-				strcpy(task->uri, session->manifests[session->download_ta_index].uri);
+				strcpy(task->uri, session->suit_request_uri);
 				task->post_data_len = 0;
 				session->on_going_task = task;
+			} else if (sr == SUIT_RESULT_DONE) {
+				session->state = AGENT_POSTING_SUCCESS;
+			} else {
+				teep_error();
 			}
 		} else {
 			task->command = BROKER_FINISH;
