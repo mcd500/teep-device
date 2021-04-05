@@ -19,8 +19,8 @@ UsefulBufC QCBORDecode_Slice(QCBORDecodeContext *pCtx, size_t begin, size_t end)
 
 UsefulBufC QCBORDecode_SubObjectFrom(QCBORDecodeContext *pCtx, const QCBORItemWithOffset *pFirstItem)
 {
-    uint8_t uNestLevel = pFirstItem->uNestLevel;
-    uint8_t uNextNestLevel = pFirstItem->uNextNestLevel;
+    uint8_t uNestLevel = pFirstItem->item.uNestingLevel;
+    uint8_t uNextNestLevel = pFirstItem->item.uNextNestLevel;
     while (uNestLevel != uNextNestLevel) {
         QCBORItem Item;
         QCBORError err = QCBORDecode_GetNext(pCtx, &Item);

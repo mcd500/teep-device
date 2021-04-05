@@ -6,7 +6,7 @@ teep: teep-agent-ta teep-broker-app
 
 libteep-host: libteep-mbedtls-host libteep-libwebsockets-host libteep-QCBOR-host
 libteep-ree: libteep-mbedtls-ree libteep-libwebsockets-ree libteep-QCBOR-ree
-libteep-tee: libteep-mbedtls-tee libteep-libwebsockets-tee libteep-QCBOR-tee libteep-libteep-tee
+libteep-tee: libteep-mbedtls-tee libteep-libwebsockets-tee libteep-QCBOR-tee libteep-libteep-tee libteesuit-tee
 
 libteep-mbedtls-host:
 	if [ -z "$($@-DISABLE)" ]; then \
@@ -85,6 +85,15 @@ libteep-libteep-tee: libteep-mbedtls-tee libteep-libwebsockets-tee
 		mkdir -p $(BUILD)/libteep/tee/lib && \
 		make -C $(SOURCE)/libteep/lib build=$(BUILD)/libteep/tee/lib CFLAGS=$(TEE_CFLAGS); \
 	fi
+
+libteesuit-tee:
+	if [ -z "$($@-DISABLE)" ]; then \
+		mkdir -p $(BUILD)/libteep/tee/libteesuit && \
+		cd $(BUILD)/libteep/tee/libteesuit && \
+		cmake $($@-FLAGS) $(SOURCE)/suit && \
+		make; \
+	fi
+
 
 hello-ta: libteep
 	$(MAKE) -C $(SOURCE)/hello-ta -f $(PLAT).mk out-dir=$(BUILD)/hello-ta

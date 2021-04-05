@@ -13,6 +13,7 @@ export APP_CFLAGS = -g \
 	-I$(SOURCE)/libteep/libwebsockets/include \
 	-I$(SOURCE)/libteep/mbedtls/include \
 	-I$(BUILD)/libteep/host/QCBOR/inc \
+	-I$(SOURCE)/suit/include \
 	-I$(CURDIR)/include \
 	-I$(SOURCE)/key/include \
 	-DPCTEST -DPLAT_PC -DAPP_VERBOSE -Wall
@@ -20,10 +21,11 @@ export APP_CFLAGS = -g \
 export APP_LDFLAGS = \
 	-L$(BUILD)/libteep/host/mbedtls/library \
 	-L$(BUILD)/libteep/host/libwebsockets/lib \
-	-L$(BUILD)/libteep/host/QCBOR
+	-L$(BUILD)/libteep/host/QCBOR \
+	-L$(BUILD)/libteep/tee/libteesuit/lib
 
 export APP_LIBS = \
-	 -lwebsockets -lmbedtls -lmbedx509 -lmbedcrypto -lqcbor
+	 -lwebsockets -lmbedtls -lmbedx509 -lmbedcrypto -lqcbor -lteesuit
 
 ifeq ($(shell uname),Linux)
 APP_LIBS += -lcap

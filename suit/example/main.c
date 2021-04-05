@@ -69,7 +69,7 @@ static bool check_vendor_id(suit_runner_t *runner)
     return true;
 }
 
-static void fetch_complete(suit_runner_t *runner)
+static void fetch_complete(suit_runner_t *runner, void *user)
 {
     printf("finish fetch\n");
 }
@@ -143,12 +143,17 @@ int main()
     };
     suit_runner_init(&runner, &suit_processor, &platform, ep->manifest.install.body);
 
-    while (!suit_runner_run(&runner)) {
-        if (suit_runner_get_error(&runner, NULL)) {
+    while (true) {
+        suit_runner_run(&runner);
+        if (suit_runner_finished(&runner)) {
+            break;
+        } else if (suit_runner_suspended(&runner)) {
+            printf("do HTTP here\n");
+            suit_runner_resume(&runner, NULL);
+        } else {
             printf("error\n");
             goto err;
         }
-        printf("do HTTP here\n");
     }
 err:
     return 0;

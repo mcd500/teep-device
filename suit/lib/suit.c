@@ -404,6 +404,17 @@ static bool set_parameter(suit_runner_t *runner, uint64_t key, nocbor_any_t valu
     return true;
 }
 
+bool suit_runner_get_parameter(suit_runner_t *runner, uint64_t key, nocbor_any_t *any)
+{
+    suit_component_t *component = NULL; // TODO: use component index
+    suit_binder_t *binder = lookup_binder(runner, component, key);
+    if (!binder) {
+        return false;
+    }
+    *any = binder->value;
+    return true;
+}
+
 static bool directive_set_parameters(suit_runner_t *runner, enum suit_command command)
 {
     bool is_override = command == SUIT_DIRECTIVE_OVERRIDE_PARAMETERS;
@@ -456,23 +467,12 @@ static struct command_handler command_handlers[] = {
     { 0, false, NULL},
 };
 
-bool suit_runner_run(suit_runner_t *runner)
+void suit_runner_run(suit_runner_t *runner)
 {
-    if (runner->suspended) {
-        runner->suspended = false;
-        void (*f)(suit_runner_t *) = runner->on_resume;
-        runner->on_resume = NULL;
-        if (f) {
-            f(runner);
-        }
-        if (runner->suspended) {
-            return false;
-        }
-    }
-    if (runner->has_error) return false;
+    if (runner->has_error) return;
 
     for (;;) {
-        // TODO: check error here
+        if (runner->suspended) return;
 
         suit_continuation_t *pc = &runner->program_counter;
 
@@ -504,15 +504,31 @@ bool suit_runner_run(suit_runner_t *runner)
             }
             if (pc->is_common && !h->allow_common) goto err;
             if (!h->handler(runner, command)) goto err;
-            if (runner->suspended) {
-                return false;
-            }
+        }
+        if (runner->has_error) {
+            // TODO: unwind stack
+            break;
         }
     }
-    return true;
+    return;
 err:
-    // TODO
-    return false;
+    suit_runner_mark_error(runner); // syntax error
+    return;
+}
+
+bool suit_runner_finished(suit_runner_t *runner)
+{
+    return !runner->has_error && !runner->suspended;
+}
+
+bool suit_runner_has_error(suit_runner_t *runner)
+{
+    return runner->has_error;
+}
+
+bool suit_runner_suspended(suit_runner_t *runner)
+{
+    return !runner->has_error && runner->suspended;
 }
 
 
@@ -526,9 +542,24 @@ bool suit_runner_get_error(const suit_runner_t *runner, void *error_enum_todo)
     return runner->has_error;
 }
 
-void suit_runner_suspend(suit_runner_t *runner, void (*on_resume)(suit_runner_t *))
+void suit_runner_suspend(suit_runner_t *runner, void (*on_resume)(suit_runner_t *, void *))
 {
     runner->suspended = true;
     runner->on_resume = on_resume;
 }
 
+void suit_runner_resume(suit_runner_t *runner, void *user)
+{
+    if (runner->has_error) {
+        return;
+    }
+    if (runner->suspended) {
+        // allow on_resume to call suspend
+        runner->suspended = false;
+        void (*f)(suit_runner_t *, void *) = runner->on_resume;
+        runner->on_resume = NULL;
+        if (f) {
+            f(runner, user);
+        }
+    }
+}

@@ -219,7 +219,7 @@ struct suit_runner
     bool has_error;
 
     bool suspended;
-    void (*on_resume)(suit_runner_t *runner);
+    void (*on_resume)(suit_runner_t *runner, void *user);
 };
 
 typedef struct suit_callbacks
@@ -237,11 +237,23 @@ struct suit_platform
 void suit_processor_init(suit_processor_t *p);
 bool suit_processor_load_root_envelope(suit_processor_t *p, nocbor_range_t envelope);
 
+// prepare runner for executing SUIT command sequence.
 void suit_runner_init(suit_runner_t *r, suit_processor_t *p, suit_platform_t *platform, nocbor_range_t commands);
 
-bool suit_runner_run(suit_runner_t *r);
+// run some SUIT commands in suit runner
+// return when all command has executed successfully,
+//   `suit_runner_suspend()` is called or error
+void suit_runner_run(suit_runner_t *r);
+
+// check why `suit_runner_run()` retruned
+bool suit_runner_finished(suit_runner_t *r);
+bool suit_runner_has_error(suit_runner_t *r);
+bool suit_runner_suspended(suit_runner_t *r);
+
 
 void suit_runner_mark_error(suit_runner_t *r);
 bool suit_runner_get_error(const suit_runner_t *r, void *error_enum_todo);
 
-void suit_runner_suspend(suit_runner_t *r, void (*on_resume)(suit_runner_t *));
+void suit_runner_suspend(suit_runner_t *r, void (*on_resume)(suit_runner_t *, void *));
+
+bool suit_runner_get_parameter(suit_runner_t *r, uint64_t key, nocbor_any_t *any);

@@ -26,9 +26,12 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <inttypes.h>
 #include <tee_internal_api.h>
 #include <libwebsockets.h>
 #include <libteep.h>
+#include <teesuit.h>
+
 #include "ta-interface.h"
 #include "teep-agent-ta.h"
 #include "ta-store.h"
@@ -40,7 +43,9 @@ enum agent_state
 	AGENT_POSTING_QUERY_RESPONSE,
 	AGENT_POSTING_SUCCESS,
 	AGENT_POSTING_ERROR,
-	AGENT_DOWNLOAD_TA,
+	AGENT_INIT_RUNNER,
+	AGENT_RUN_SUIT_RUNNER,
+	AGENT_FETCH_COMPONENT,
 	AGENT_FINISH
 };
 
@@ -56,6 +61,7 @@ struct suit_component_storage
 
 struct suit_manifest_storage suit_manifests[1]; // TODO: multiple manifest
 struct suit_component_storage suit_components[1][1]; // suit_components[manifest_index][component_index]
+
 
 static bool store_bstr(UsefulBufC *p, const void *buf, size_t len)
 {
@@ -75,10 +81,15 @@ static bool store_envelope(size_t index, const void *buf, size_t len)
 {
 	if (index < 1) {
 		// TODO: check sig before store envelope is better
-		return store_bstr(&suit_manifests[index].envelope);
+		return store_bstr(&suit_manifests[index].envelope, buf, len);
 	} else {
 		return false;
 	}
+}
+
+static bool store_suit_envelope(size_t index, UsefulBufC envelope)
+{
+	return store_envelope(index, envelope.ptr, envelope.len);
 }
 
 static bool store_component(size_t manifest_index, size_t component_index, const void *buf, size_t len)
@@ -107,126 +118,33 @@ struct teep_agent_session
 
 	UsefulBufC token;
 
+	int n_requests;
 	struct teep_manifest_request requests[16];
 
 	uint64_t data_item_requested;
+
+	suit_processor_t suit_processor;
+	suit_runner_t suit_runner;
+	suit_platform_t suit_platform;
 };
 
-
-static void suit_command_processor_init(struct suit_command_processor *state, UsefulBufC command_sequence_bstr)
-{
-	state->command_sequence_bstr = command_sequence_bstr;
-	QCBORDecode_Init(&state->decoder, command_sequence_bstr, QCBOR_DECODE_MODE_NORMAL);
-	state->step_index = 0;
-
-	QCBORItem array;
-	QCBORDecode_GetNext(&state->decoder, &array);
-	if (array.uDataType != QCBOR_TYPE_ARRAY) {
-		goto err;
-	}
-
-	if (array.val.uCount % 2) {
-		goto err;
-	}
-
-	state->step_index = 0;
-	state->step_length = array.val.uCount / 2;
-	// TODO: init parameters
-	
-err:
-	// TODO
-}
-
-
-static bool suit_directive_set_parameters(struct suit_command_processor *state)
-{
-	if (CommandParam.uDataType != QCBOR_TYPE_MAP) {
-		goto err;
-	}
-	for (size_t j = 0; j < CommandParam.val.uCount; j++) {
-		QCBORItem SuitParam;
-		QCBORDecode_GetNext(&state->decoder, &SuitParam);
-
-		if (SuitParam.uLabelType != QCBOR_TYPE_INT64) {
-			goto err;
-		}
-
-		switch (SuitParam.label.int64) {
-		case 21: // suit-parameter-uri
-			if (SuitParam.uDataType != QCBOR_TYPE_TEXT_STRING) {
-				goto err;
-			}
-			state->parameters.uri = SuitParam.val.string;
-			break;
-		// TODO:
-		default:
-			while (SuitParam.uNextNestLevel != CommandParam.uNextNestLevel) {
-				QCBORDecode_GetNext(&DC, &SuitParam);
-				if (SuitParam.uDataType == QCBOR_TYPE_NONE) {
-					goto err;
-				}
-			}
-		}
-	}
-
-	return true;
-err:
-	return false;
-}
-
-static enum suit_result suit_command_processor_step(struct suit_command_processor *state)
-{
-	for (; state->step_index < state->step_length; state->step_index++) {
-		QCBORItem SuitCommand;
-		QCBORDecode_GetNext(&state->decoder, &SuitCommand);
-		if (SuitCommand.uDataType != QCBOR_TYPE_INT64) {
-			goto err;
-		}
-		QCBORItem CommandParam;
-		QCBORDecode_GetNext(&state->decoder, &CommandParam);
-
-		switch (SuitCommand.val.int64) {
-		case 19: // suit-directive-set-parameters
-			{
-				if (!suit_directive_set_parameters(state)) {
-					goto err;
-				}
-			}
-			break;
-		case 21: // directive-fetch
-			{
-				if (CommandParam.uDataType != QCBOR_TYPE_NULL) {
-					goto err;
-				}
-			}
-			return SUIT_RESULT_FETCH_URI;
-		default:
-			while (CommandParam.uNextNestLevel != SuitInstall.uNextNestLevel) {
-				QCBORDecode_GetNext(&DC, &CommandParam);
-				if (CommandParam.uDataType == QCBOR_TYPE_NONE) {
-					goto err;
-				}
-			}
-		}
-
-	}
-	return SUIT_RESULT_DONE;
-err:
-	return SUIT_RESULT_ERROR;
-}
+static suit_callbacks_t suit_callbacks;
 
 static struct teep_agent_session *
 teep_agent_session_create()
 {
 	struct teep_agent_session *session = malloc(sizeof *session);
 	if (!session) {
-		return session;
+		return NULL;
 	}
 	session->state = AGENT_INIT;
 	session->on_going_task = NULL;
 	session->token = NULLUsefulBufC;
-	session->manifests = NULL;
-	session->manifests_len = 0;
+	session->n_requests = 0;
+
+	suit_processor_init(&session->suit_processor);
+	session->suit_platform.user = NULL;
+	session->suit_platform.callbacks = &suit_callbacks;
 
 	return session;
 }
@@ -258,35 +176,29 @@ set_dev_option(struct teep_agent_session *session, enum agent_dev_option option,
 		strcpy(session->tam_uri, value);
 		return TEE_SUCCESS;
 	case AGENT_OPTION_SET_CURRENT_TA_LIST:
-		if (session->manifests) {
-			free(session->manifests);
-		}
-		session->manifests = NULL;
-		session->manifests_len = 0;
 		if (strlen(value) == 0) {
 			return TEE_SUCCESS;
 		}
-		session->manifests_len++;
+		int n = 1;
 		for (const char *s = value; *s; s++) {
 			if (*s == ',') {
-				session->manifests_len++;
+				n++;
 			}
 		}
-		session->manifests = malloc(session->manifests_len * sizeof (struct ta_manifest));
-		if (!session->manifests) {
-			return TEE_ERROR_OUT_OF_MEMORY;
+		if (n > 16) {
+			return TEE_ERROR_BAD_PARAMETERS;
 		}
-		size_t index = 0;
-		for (const char *s = value; index < session->manifests_len; index++) {
-			memset(session->manifests[index].id, 0, 32);
-			session->manifests[index].unneeded = false;
-			session->manifests[index].requested = false;
+		int index = 0;
+		for (const char *s = value; index < n; index++) {
+			memset(session->requests[index].id, 0, 32);
+			session->requests[index].unneeded = false;
+			session->requests[index].requested = false;
 			if (*s == '+') {
 				s++;
-				session->manifests[index].requested = true;
+				session->requests[index].requested = true;
 			} else if (*s == '-') {
 				s++;
-				session->manifests[index].unneeded = true;
+				session->requests[index].unneeded = true;
 			}
 			for (size_t i = 0;; i++) {
 				if (*s == 0) {
@@ -296,15 +208,14 @@ set_dev_option(struct teep_agent_session *session, enum agent_dev_option option,
 					break;
 				} else {
 					if (i < 31) {
-						session->manifests[index].id[i] = *s;
+						session->requests[index].id[i] = *s;
 					}
 					s++;
 				}
 			}
-			strcpy(session->manifests[index].uri, "");
 		}
+		session->n_requests = n;
 		return TEE_SUCCESS;
-
 	default:
 		return TEE_ERROR_BAD_PARAMETERS;
 	}
@@ -315,188 +226,6 @@ teep_error(struct teep_agent_session *session, const char *message)
 {
 	session->state = AGENT_POSTING_ERROR;
 }
-
-#if 0
-static int
-set_manifest_from_uri(struct ta_manifest *manifest, UsefulBufC src_uri)
-{
-	UsefulOutBuf uri;
-	UsefulOutBuf_Init(&uri, UsefulBuf_FROM_BYTE_ARRAY(manifest->uri));
-	UsefulOutBuf_AppendUsefulBuf(&uri, src_uri);
-	UsefulOutBuf_AppendByte(&uri, 0);
-	if (UsefulOutBuf_GetError(&uri) != 0) {
-		return 0;
-	}
-
-	char *id_start = strrchr(manifest->uri, '/');
-	if (!id_start) {
-		id_start = manifest->uri;
-	} else {
-		id_start++;
-	}
-	UsefulOutBuf id;
-	UsefulOutBuf_Init(&id, UsefulBuf_FROM_BYTE_ARRAY(manifest->id));
-	for (char *p = id_start; *p; p++) {
-		if (*p == '.') break;
-		UsefulOutBuf_AppendByte(&id, *p);
-	}
-	UsefulOutBuf_AppendByte(&id, 0);
-	if (UsefulOutBuf_GetError(&id) != 0) {
-		return 0;
-	}
-	return 1;
-}
-
-static int
-set_manifest_from_suit_install(struct ta_manifest *manifest, UsefulBufC suit_install)
-{
-	QCBORDecodeContext DC;
-	QCBORDecode_Init(&DC, suit_install, QCBOR_DECODE_MODE_NORMAL);
-
-	QCBORItem SuitInstall;
-	QCBORDecode_GetNext(&DC, &SuitInstall);
-	if (SuitInstall.uDataType != QCBOR_TYPE_ARRAY) {
-		return 0;
-	}
-
-	if (SuitInstall.val.uCount % 2) {
-		return 0;
-	}
-
-	for (size_t i = 0; i < SuitInstall.val.uCount; i += 2) {
-		QCBORItem SuitCommand;
-		QCBORDecode_GetNext(&DC, &SuitCommand);
-		if (SuitCommand.uDataType != QCBOR_TYPE_INT64) {
-			return 0;
-		}
-		QCBORItem CommandParam;
-		QCBORDecode_GetNext(&DC, &CommandParam);
-
-		if (SuitCommand.uDataType == QCBOR_TYPE_NONE) {
-			return 0;
-		}
-
-		switch (SuitCommand.val.int64) {
-		case 19: // suit-directive-set-parameters
-			{
-				if (CommandParam.uDataType != QCBOR_TYPE_MAP) {
-					return 0;
-				}
-				for (size_t j = 0; j < CommandParam.val.uCount; j++) {
-					QCBORItem SuitParam;
-					QCBORDecode_GetNext(&DC, &SuitParam);
-
-					if (SuitParam.uLabelType != QCBOR_TYPE_INT64) {
-						return 0;
-					}
-
-					switch (SuitParam.label.int64) {
-					case 21: // suit-parameter-uri
-						if (SuitParam.uDataType != QCBOR_TYPE_TEXT_STRING) {
-							return 0;
-						}
-						return set_manifest_from_uri(manifest, SuitParam.val.string);
-					default:
-						while (SuitParam.uNextNestLevel != CommandParam.uNextNestLevel) {
-							QCBORDecode_GetNext(&DC, &SuitParam);
-							if (SuitParam.uDataType == QCBOR_TYPE_NONE) {
-								return 0;
-							}
-						}
-					}
-				}
-			}
-			break;
-		default:
-			while (CommandParam.uNextNestLevel != SuitInstall.uNextNestLevel) {
-				QCBORDecode_GetNext(&DC, &CommandParam);
-				if (CommandParam.uDataType == QCBOR_TYPE_NONE) {
-					return 0;
-				}
-			}
-		}
-
-	}
-	return 0;
-}
-
-static int
-set_manifest_from_suit_manifest(struct ta_manifest *manifest, UsefulBufC suit_manifest)
-{
-	QCBORDecodeContext DC;
-	QCBORDecode_Init(&DC, suit_manifest, QCBOR_DECODE_MODE_NORMAL);
-
-	QCBORItem SuitManifest;
-	QCBORDecode_GetNext(&DC, &SuitManifest);
-	if (SuitManifest.uDataType != QCBOR_TYPE_MAP) {
-		return 0;
-	}
-
-	for (size_t i = 0; i < SuitManifest.val.uCount; i++) {
-		QCBORItem ManifestItem;
-		QCBORDecode_GetNext(&DC, &ManifestItem);
-
-		if (ManifestItem.uLabelType != QCBOR_TYPE_INT64) {
-			return 0;
-		}
-
-		switch (ManifestItem.label.int64) {
-		case 9: // suit-install
-			if (ManifestItem.uDataType != QCBOR_TYPE_BYTE_STRING) {
-				return 0;
-			}
-			return set_manifest_from_suit_install(manifest, ManifestItem.val.string);
-		default:
-			while (ManifestItem.uNextNestLevel != SuitManifest.uNextNestLevel) {
-				QCBORDecode_GetNext(&DC, &ManifestItem);
-				if (ManifestItem.uDataType == QCBOR_TYPE_NONE) {
-					return 0;
-				}
-			}
-		}
-	}
-	return 0;
-}
-
-static int
-set_manifest_from_suit(struct ta_manifest *manifest, UsefulBufC suit_envelope)
-{
-	QCBORDecodeContext DC;
-	QCBORDecode_Init(&DC, suit_envelope, QCBOR_DECODE_MODE_NORMAL);
-
-	QCBORItem Envelope;
-	QCBORDecode_GetNext(&DC, &Envelope);
-	if (Envelope.uDataType != QCBOR_TYPE_MAP) {
-		return 0;
-	}
-
-	for (size_t i = 0; i < Envelope.val.uCount; i++) {
-		QCBORItem EnvelopeItem;
-		QCBORDecode_GetNext(&DC, &EnvelopeItem);
-
-		if (EnvelopeItem.uLabelType != QCBOR_TYPE_INT64) {
-			return 0;
-		}
-
-		switch (EnvelopeItem.label.int64) {
-		case 3: // suit-manifest
-			if (EnvelopeItem.uDataType != QCBOR_TYPE_BYTE_STRING) {
-				return 0;
-			}
-			return set_manifest_from_suit_manifest(manifest, EnvelopeItem.val.string);
-		default:
-			while (EnvelopeItem.uNextNestLevel != Envelope.uNextNestLevel) {
-				QCBORDecode_GetNext(&DC, &EnvelopeItem);
-				if (EnvelopeItem.uDataType == QCBOR_TYPE_NONE) {
-					return 0;
-				}
-			}
-		}
-	}
-	return 0;
-}
-
-#endif
 
 static void
 handle_tam_message(struct teep_agent_session *session, const void *buffer, size_t len)
@@ -543,7 +272,19 @@ handle_tam_message(struct teep_agent_session *session, const void *buffer, size_
 				}
 			}
 
-			session->state = AGENT_PROCESS_MANIFEST;
+			// load root manifest
+			// TODO: handle multiple manifests? how?
+			UsefulBufC e = suit_manifests[0].envelope;
+			nocbor_range_t r = {
+				e.ptr, e.ptr + e.len
+			};
+
+			if (!suit_processor_load_root_envelope(&session->suit_processor, r)) {
+				teep_error(session, "TODO");
+				goto err;
+			}
+
+			session->state = AGENT_INIT_RUNNER;
 		}
 		break;
 	}
@@ -554,7 +295,14 @@ err:
 static void
 handle_component_download(struct teep_agent_session *session, const void *buffer, size_t len, const char *uri)
 {
-	suit_store_component(session->request_component, buffer, len);
+	if (session->state != AGENT_FETCH_COMPONENT) {
+		teep_error(session, "invalid state");
+		return;
+	}
+	printf("component download %"PRIu64"\n", len);
+	//suit_store_component(session->request_component, buffer, len);
+	suit_runner_resume(&session->suit_runner, NULL);
+	session->state = AGENT_RUN_SUIT_RUNNER;
 }
 
 static TEE_Result
@@ -590,8 +338,8 @@ static int build_query_response(struct teep_agent_session *session, void *dst, s
 		// TODO
 	} else if (items & TEEP_DATA_TRUSTED_COMPONENTS) {
 		teep_message_encoder_open_tc_list(&enc);
-		for (size_t i = 0; i < session->manifests_len; i++) {
-			struct ta_manifest *m = &session->manifests[i];
+		for (size_t i = 0; i < session->n_requests; i++) {
+			struct teep_manifest_request *m = &session->requests[i];
 			if (!m->requested && !m->unneeded) {
 				teep_message_encoder_add_tc_to_tc_list(&enc, m->id);
 			}
@@ -599,8 +347,8 @@ static int build_query_response(struct teep_agent_session *session, void *dst, s
 		teep_message_encoder_close_tc_list(&enc);
 
 		teep_message_encoder_open_requested_tc_list(&enc);
-		for (size_t i = 0; i < session->manifests_len; i++) {
-			struct ta_manifest *m = &session->manifests[i];
+		for (size_t i = 0; i < session->n_requests; i++) {
+			struct teep_manifest_request *m = &session->requests[i];
 			if (m->requested) {
 				teep_message_encoder_add_tc_to_requested_tc_list(&enc, m->id);
 			}
@@ -608,8 +356,8 @@ static int build_query_response(struct teep_agent_session *session, void *dst, s
 		teep_message_encoder_close_requested_tc_list(&enc);
 
 		teep_message_encoder_open_unneeded_tc_list(&enc);
-		for (size_t i = 0; i < session->manifests_len; i++) {
-			struct ta_manifest *m = &session->manifests[i];
+		for (size_t i = 0; i < session->n_requests; i++) {
+			struct teep_manifest_request *m = &session->requests[i];
 			if (m->unneeded) {
 				teep_message_encoder_add_tc_to_unneeded_tc_list(&enc, m->id);
 			}
@@ -666,6 +414,58 @@ static int build_error(struct teep_agent_session *session, void *dst, size_t *ds
 	return 1;
 }
 
+static void hexdump(nocbor_range_t r)
+{
+    if (!r.begin) {
+        printf(" (NULL)\n");
+        return;
+    }
+    for (const uint8_t *p = r.begin; p != r.end;) {
+        for (int i = 0; i < 16 && p != r.end; i++, p++) {
+            printf(" %2.2X", *p);
+        }
+        printf("\n");
+    }
+}
+
+static void severed(suit_severed_t s)
+{
+    if (!s.has_value) {
+        printf(" (NULL)\n");
+        return;
+    }
+    if (s.severed) {
+        printf("  id=%"PRIu64"\n", s.digest.algorithm_id);
+        hexdump(s.digest.bytes);
+    } else {
+        hexdump(s.body);
+    }
+}
+
+
+static bool check_vendor_id(suit_runner_t *runner)
+{
+    printf("check vendor id\n");
+    return true;
+}
+
+static void fetch_complete(suit_runner_t *runner, void *user)
+{
+    printf("finish fetch\n");
+}
+
+static bool fetch(suit_runner_t *runner)
+{
+    printf("start fetch\n");
+    suit_runner_suspend(runner, fetch_complete);
+    return true;
+}
+
+static suit_callbacks_t suit_callbacks = {
+    .check_vendor_id = check_vendor_id,
+    .fetch = fetch,
+};
+
 static struct broker_task *
 query_next_broker_task(struct teep_agent_session *session)
 {
@@ -700,17 +500,71 @@ query_next_broker_task(struct teep_agent_session *session)
 			// TODO: handle return value
 			build_error(session, task->post_data, &task->post_data_len);
 			session->on_going_task = task;
-		} else if (session->state == AGENT_PROCESS_MANIFEST) {
-			enum suit_result sr = process_all_manifest(session);
-			if (sr == SUIT_RESULT_FETCH_URI) {
+		} else if (session->state == AGENT_INIT_RUNNER) {
+			struct suit_envelope *ep = &session->suit_processor.envelope_buf[0];
+
+			printf("envelope:\n");
+			hexdump(ep->binary);
+			printf("envelope.delegation:\n");
+			hexdump(ep->delegation);
+			printf("envelope.authentication_wrapper:\n");
+			hexdump(ep->authentication_wrapper);
+
+			printf("envelope.manifest:\n");
+			hexdump(ep->manifest.binary);
+			printf("envelope.manifest.version: %"PRIu64"\n", ep->manifest.version);
+			printf("envelope.manifest.sequence_number: %"PRIu64"\n", ep->manifest.sequence_number);
+			printf("envelope.manifest.common:\n");
+			hexdump(ep->manifest.common);
+			printf("envelope.manifest.reference_uri:\n");
+			hexdump(ep->manifest.reference_uri);
+
+			printf("envelope.manifest.dependency_resolution:\n");
+			severed(ep->manifest.dependency_resolution);
+			printf("envelope.manifest.payload_fetch:\n");
+			severed(ep->manifest.payload_fetch);
+			printf("envelope.manifest.install:\n");
+			severed(ep->manifest.install);
+			printf("envelope.manifest.text:\n");
+			severed(ep->manifest.text);
+			printf("envelope.manifest.coswid:\n");
+			severed(ep->manifest.coswid);
+
+			printf("envelope.manifest.validate:\n");
+			hexdump(ep->manifest.validate);
+			printf("envelope.manifest.load:\n");
+			hexdump(ep->manifest.load);
+			printf("envelope.manifest.run:\n");
+			hexdump(ep->manifest.run);
+
+			suit_runner_init(&session->suit_runner, &session->suit_processor, &session->suit_platform, ep->manifest.install.body);
+
+			session->state = AGENT_RUN_SUIT_RUNNER;
+		} else if (session->state == AGENT_RUN_SUIT_RUNNER) {
+			suit_runner_run(&session->suit_runner);
+
+			if (suit_runner_finished(&session->suit_runner)) {
+				session->state = AGENT_POSTING_SUCCESS;
+			} else if (suit_runner_suspended(&session->suit_runner)) {
+				session->state = AGENT_FETCH_COMPONENT;
+			} else {
+				teep_error(session, "suit error");
+			}
+		} else if (session->state == AGENT_FETCH_COMPONENT) {
+			nocbor_any_t any;
+			if (!suit_runner_get_parameter(&session->suit_runner, SUIT_PARAMETER_URI, &any)) {
+				printf("url error\n");
+				teep_error(session, "suit error");
+			} else if (!nocbor_is_tstr(any)) {
+				printf("url error\n");
+				teep_error(session, "suit error");
+			} else {
 				task->command = BROKER_HTTP_GET;
-				strcpy(task->uri, session->suit_request_uri);
+				memset(task->uri, 0, sizeof task->uri);
+				// TODO
+				memcpy(task->uri, any.bytes.begin, any.bytes.end - any.bytes.begin);
 				task->post_data_len = 0;
 				session->on_going_task = task;
-			} else if (sr == SUIT_RESULT_DONE) {
-				session->state = AGENT_POSTING_SUCCESS;
-			} else {
-				teep_error();
 			}
 		} else {
 			task->command = BROKER_FINISH;
