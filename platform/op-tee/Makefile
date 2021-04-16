@@ -50,6 +50,7 @@ export TA_CFLAGS = $(TEE_CFLAGS) \
 	-L$(TA_DEV_KIT_DIR)/lib \
 	-I$(BUILD)/libteep/tee/libwebsockets/include \
 	-I$(SOURCE)/libteep/lib \
+	-I$(SOURCE)/suit/include \
 	-I$(SOURCE)/key/include
 
 export TA_LDFLAGS = \
