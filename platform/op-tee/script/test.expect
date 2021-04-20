@@ -37,28 +37,7 @@ expect "# "
 send -- "./hello-app\r"
 expect "# "
 
-send -- "./teep-broker-app --tamurl $::env(TAM_URL)/api/tam\r"
-expect {
-	-re " ERR:.*$" { exit 1 }
-	timeout { exit 1 }
-	"# "
-}
-
-send -- "./teep-broker-app --tamurl $::env(TAM_URL)/api/tam_delete  --talist 8d82573a-926d-4754-9353-32dc29997f74\r"
-expect {
-	-re " ERR:.*$" { exit 1 }
-	timeout { exit 1 }
-	"# "
-}
-
-send -- "./teep-broker-app --tamurl $::env(TAM_URL)/api/tam_jose --jose\r"
-expect {
-	-re " ERR:.*$" { exit 1 }
-	timeout { exit 1 }
-	"# "
-}
-
-send -- "./teep-broker-app --tamurl $::env(TAM_URL)/api/tam_jose_delete --jose --talist 8d82573a-926d-4754-9353-32dc29997f74\r"
+send -- "./teep-broker-app --tamurl $::env(TAM_URL)/api/tam_cbor\r"
 expect {
 	-re " ERR:.*$" { exit 1 }
 	timeout { exit 1 }

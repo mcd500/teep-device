@@ -1,6 +1,6 @@
 CPPFLAGS += -DTEE_TA
 CFLAGS += $(TA_CFLAGS)
-LDADD += $(TA_LDFLAGS) -lteep -lqcbor
+LDADD += $(TA_LDFLAGS) -lteep -lqcbor -lteesuit
 BINARY = $(TEE_AGENT_UUID)
 
 libnames += websockets

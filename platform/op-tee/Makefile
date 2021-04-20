@@ -56,10 +56,11 @@ export TA_CFLAGS = $(TEE_CFLAGS) \
 export TA_LDFLAGS = \
 	-L$(BUILD)/libteep/tee/libwebsockets/lib \
 	-L$(BUILD)/libteep/tee/lib \
-	-L$(BUILD)/libteep/tee/QCBOR
+	-L$(BUILD)/libteep/tee/QCBOR \
+	-L$(BUILD)/libteep/tee/libteesuit/lib
 
 export TA_LIBS = \
-	-lqcbor
+	-lqcbor -lteesuit
 
 TOOLCHAIN-ree = $(CURDIR)/cross-aarch64.cmake
 TOOLCHAIN-tee = $(CURDIR)/cross-aarch64-tee.cmake
@@ -140,6 +141,11 @@ libteep-libwebsockets-tee-FLAGS = \
 
 libteep-QCBOR-tee-FLAGS = CC=$(CROSS_COMPILE)gcc
 
+libteesuit-tee-FLAGS = \
+	-DCMAKE_TOOLCHAIN_FILE=$(TOOLCHAIN-tee) \
+	-DLWS_OPTEE_DIR=$(OPTEE_DIR)/optee_os \
+	-DLWS_OPTEE_DEV_KIT_DIR=$(OPTEE_DEV_KIT_DIR) \
+
 all: libteep hello teep
 
 include ../common.mk
@@ -163,7 +169,7 @@ install_qemu: all
 	mkdir -p $(prefix)/rootfs/usr/lib
 	install $(BUILD)/libteep/ree/mbedtls/library/lib* $(prefix)/rootfs/usr/lib
 	install $(BUILD)/libteep/ree/libwebsockets/lib/lib* $(prefix)/rootfs/usr/lib
-	install $(BUILD)/libteep/ree/lib/lib* $(prefix)/rootfs/usr/lib
+#	install $(BUILD)/libteep/ree/lib/lib* $(prefix)/rootfs/usr/lib
 	cd $(prefix)/rootfs; \
 	sudo find . | sudo cpio -o -H newc 2> /dev/null | gzip -c9 > ../rootfs.cpio.gz
 

@@ -36,6 +36,10 @@
 #include "teep-agent-ta.h"
 #include "ta-store.h"
 
+#ifdef IMSG
+#define printf(...) IMSG(__VA_ARGS__)
+#endif
+
 enum agent_state
 {
 	AGENT_INIT,

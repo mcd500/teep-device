@@ -255,5 +255,6 @@ void suit_runner_mark_error(suit_runner_t *r);
 bool suit_runner_get_error(const suit_runner_t *r, void *error_enum_todo);
 
 void suit_runner_suspend(suit_runner_t *r, void (*on_resume)(suit_runner_t *, void *));
+void suit_runner_resume(suit_runner_t *r, void *user);
 
 bool suit_runner_get_parameter(suit_runner_t *r, uint64_t key, nocbor_any_t *any);
