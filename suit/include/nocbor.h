@@ -2,6 +2,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct nocbor_range
 {
     const uint8_t *begin;
@@ -110,47 +114,49 @@ static inline bool nocbor_primitive_read_any(nocbor_range_t *r, nocbor_any_t *ds
 
     if (p == r->end) goto need_data;
 
-    uint8_t header = *p++;
-    uint8_t mt = header >> 5;
-    uint8_t ai = header & 0x1F;
-    uint64_t value = ai;
+    {
+        uint8_t header = *p++;
+        uint8_t mt = header >> 5;
+        uint8_t ai = header & 0x1F;
+        uint64_t value = ai;
+        nocbor_range_t bytes = { NULL, NULL };
 
-    switch (ai) {
-    case 24: case 25: case 26: case 27:
-        value = 0;
-        for (int i = 0; i < (1 << (ai - 24)); i++) {
-            if (p == r->end) goto need_data;
-            value = (value << 8) | *p++;
+        switch (ai) {
+        case 24: case 25: case 26: case 27:
+            value = 0;
+            for (int i = 0; i < (1 << (ai - 24)); i++) {
+                if (p == r->end) goto need_data;
+                value = (value << 8) | *p++;
+            }
+            break;
+        case 28: case 29: case 30:
+            goto malformed;
+        case 31:
+            goto not_supported;
         }
-        break;
-    case 28: case 29: case 30:
-        goto malformed;
-    case 31:
-        goto not_supported;
-    }
 
-    if (mt == 7) {
-        if (ai == 24 && value < 32) goto malformed;
-    }
+        if (mt == 7) {
+            if (ai == 24 && value < 32) goto malformed;
+        }
 
-    nocbor_range_t bytes = { NULL, NULL };
-    if (mt == 2 || mt == 3) {
-        if (r->end - p < value) goto need_data;
-        bytes.begin = p;
-        bytes.end = p + value;
-        p += value;
-    }
-
-    if (dst) {
-        dst->header = header;
         if (mt == 2 || mt == 3) {
-            dst->bytes = bytes;
-        } else {
-            dst->value = value;
+            if (r->end - p < value) goto need_data;
+            bytes.begin = p;
+            bytes.end = p + value;
+            p += value;
         }
+
+        if (dst) {
+            dst->header = header;
+            if (mt == 2 || mt == 3) {
+                dst->bytes = bytes;
+            } else {
+                dst->value = value;
+            }
+        }
+        r->begin = p;
+        *e = NOCBOR_OK;
     }
-    r->begin = p;
-    *e = NOCBOR_OK;
     return true;
 need_data:
     *e = NOCBOR_NEED_DATA;
@@ -372,3 +378,21 @@ mismatch:
 err:
     return nocbor_fail(ctx, saved);
 }
+
+static inline bool nocbor_read_bool(nocbor_context_t *ctx, bool *b)
+{
+    nocbor_context_t saved = *ctx;
+    nocbor_any_t any;
+    if (!nocbor_read_any(ctx, &any)) goto err;
+    if (!nocbor_is_bool(any)) goto mismatch;
+    *b = nocbor_is_true(any);
+    return true;
+mismatch:
+    ctx->error = NOCBOR_NOT_MATCH;
+err:
+    return nocbor_fail(ctx, saved);
+}
+
+#ifdef __cplusplus
+}
+#endif

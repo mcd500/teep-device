@@ -512,7 +512,7 @@ query_next_broker_task(struct teep_agent_session *session)
 			printf("envelope.delegation:\n");
 			hexdump(ep->delegation);
 			printf("envelope.authentication_wrapper:\n");
-			hexdump(ep->authentication_wrapper);
+			//hexdump(ep->authentication_wrapper);
 
 			printf("envelope.manifest:\n");
 			hexdump(ep->manifest.binary);
@@ -541,7 +541,7 @@ query_next_broker_task(struct teep_agent_session *session)
 			printf("envelope.manifest.run:\n");
 			hexdump(ep->manifest.run);
 
-			suit_runner_init(&session->suit_runner, &session->suit_processor, &session->suit_platform, ep->manifest.install.body);
+			suit_runner_init(&session->suit_runner, &session->suit_processor, &session->suit_platform, SUIT_INSTALL);
 
 			session->state = AGENT_RUN_SUIT_RUNNER;
 		} else if (session->state == AGENT_RUN_SUIT_RUNNER) {

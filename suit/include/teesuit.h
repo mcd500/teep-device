@@ -1,6 +1,10 @@
 #pragma once
 #include "nocbor.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum suit_cbor_label
 {
     SUIT_DELEGATION = 1,
@@ -154,12 +158,17 @@ struct suit_manifest
     nocbor_range_t run;
 };
 
+typedef struct suit_authentication_wrapper
+{
+    suit_digest_t digest;
+} suit_authentication_wrapper_t;
+
 typedef struct suit_envelope
 {
     nocbor_range_t binary;
 
     nocbor_range_t delegation;
-    nocbor_range_t authentication_wrapper;
+    suit_authentication_wrapper_t authentication_wrapper;
     struct suit_manifest manifest;
 } suit_envelope_t;
 
@@ -170,9 +179,16 @@ typedef struct suit_component
 
 typedef struct suit_dependency
 {
-    nocbor_range_t digest;
+    suit_digest_t digest;
     nocbor_range_t component_id;
 } suit_dependency_t;
+
+typedef struct suit_dependency_binder
+{
+    suit_envelope_t *source;
+    int dependency_index;
+    suit_envelope_t *target;
+} suit_dependency_binder_t;
 
 #define SUIT_ENVELOPE_MAX 8
 #define SUIT_COMPONENT_MAX 32
@@ -188,11 +204,32 @@ typedef struct suit_processor
 
 typedef struct suit_platform suit_platform_t;
 
+enum suit_next_action
+{
+    SUIT_NEXT_EXECUTE_COMMAND,
+    SUIT_NEXT_EXECUTE_TRY_ENTRY,
+    SUIT_NEXT_EXECUTE_DEPENDENCY,
+    SUIT_NEXT_EXIT
+};
+
 typedef struct suit_continuation
 {
-    bool is_try_each;
-    bool is_common;
-    nocbor_context_t context;
+    suit_envelope_t *envelope;
+    enum suit_next_action next;
+    union {
+        struct {
+            nocbor_context_t common;
+            nocbor_context_t target;
+        } command;
+        struct {
+            nocbor_context_t context;
+        } try_entry;
+        struct {
+            uint64_t selected;
+        } dependency;
+        struct {
+        } exit;
+    };
 } suit_continuation_t;
 
 typedef struct suit_runner suit_runner_t;
@@ -201,11 +238,15 @@ struct suit_runner
 {
     suit_processor_t *processor;
     suit_platform_t *platform;
+    enum suit_cbor_label label;
 
     int n_component;
     suit_component_t component_buf[SUIT_COMPONENT_MAX];
     int n_dependency;
-    suit_dependency_t dependency_buf[SUIT_DEPENDENCY_MAX];
+    suit_dependency_binder_t dependency_map[SUIT_DEPENDENCY_MAX];
+
+    uint64_t selected_component_bits;
+    uint64_t selected_dependency_bits;
 
     // TODO: use component indexed structure
     int n_binder;
@@ -236,9 +277,10 @@ struct suit_platform
 
 void suit_processor_init(suit_processor_t *p);
 bool suit_processor_load_root_envelope(suit_processor_t *p, nocbor_range_t envelope);
+bool suit_processor_load_envelope(suit_processor_t *p, int index, nocbor_range_t envelope);
 
 // prepare runner for executing SUIT command sequence.
-void suit_runner_init(suit_runner_t *r, suit_processor_t *p, suit_platform_t *platform, nocbor_range_t commands);
+void suit_runner_init(suit_runner_t *r, suit_processor_t *p, suit_platform_t *platform, enum suit_cbor_label label);
 
 // run some SUIT commands in suit runner
 // return when all command has executed successfully,
@@ -258,3 +300,7 @@ void suit_runner_suspend(suit_runner_t *r, void (*on_resume)(suit_runner_t *, vo
 void suit_runner_resume(suit_runner_t *r, void *user);
 
 bool suit_runner_get_parameter(suit_runner_t *r, uint64_t key, nocbor_any_t *any);
+
+#ifdef __cplusplus
+}
+#endif
