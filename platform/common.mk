@@ -83,7 +83,7 @@ libteep-QCBOR-tee:
 libteep-libteep-tee: libteep-mbedtls-tee libteep-libwebsockets-tee
 	if [ -z "$($@-DISABLE)" ]; then \
 		mkdir -p $(BUILD)/libteep/tee/lib && \
-		make -C $(SOURCE)/libteep/lib build=$(BUILD)/libteep/tee/lib CFLAGS=$(TEE_CFLGS); \
+		make -C $(SOURCE)/libteep/lib build=$(BUILD)/libteep/tee/lib CFLAGS=$(TEE_CFLAGS); \
 	fi
 
 hello-ta: libteep
