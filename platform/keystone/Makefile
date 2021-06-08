@@ -50,8 +50,8 @@ export TA_CFLAGS = \
 	-I$(TEE_REF_TA_DIR)/api/keystone \
 	-I$(TEE_REF_TA_DIR)/build/include \
 	-I$(TEE_REF_TA_DIR)/keyedge/target/include \
-	-I$(KEYSTONE_SDK_DIR)/lib/app/include \
-	-I$(KEYSTONE_SDK_DIR)/lib/edge/include \
+	-I$(KEYSTONE_SDK_DIR)/include/app \
+	-I$(KEYSTONE_SDK_DIR)/include/edge \
 	-I$(BUILD)/libteep/tee/libwebsockets/include \
 	-I$(BUILD)/libteep/tee/QCBOR/inc \
 	-I$(SOURCE)/libteep/lib \
@@ -176,7 +176,7 @@ clean:
 	rm -rf $(BUILD)
 
 
-prefix ?= $(KEYSTONE_DIR)/buildroot_overlay
+prefix ?= $(KEYSTONE_DIR)/build/overlay
 
 install: all
 	test -n "$(prefix)"
@@ -185,7 +185,7 @@ install: all
 	install $(BUILD)/hello-app/hello-app $(prefix)/root/teep-device
 	install $(BUILD)/teep-agent-ta/teep-agent-ta $(prefix)/root/teep-device
 	install $(BUILD)/teep-broker-app/teep-broker-app $(prefix)/root/teep-device
-	install $(KEYSTONE_DIR)/sdk/rts/eyrie/eyrie-rt $(prefix)/root/teep-device
+	install $(KEYSTONE_SDK_DIR)/runtime/eyrie-rt $(prefix)/root/teep-device
 	mkdir -p $(prefix)/usr/lib
 	install $(BUILD)/libteep/ree/mbedtls/library/lib* $(prefix)/usr/lib
 	install $(BUILD)/libteep/ree/libwebsockets/lib/lib* $(prefix)/usr/lib
@@ -218,20 +218,23 @@ ship-trvsim: all
 	sshpass -p sifive scp -P $(PORT) -o "StrictHostKeyChecking no" $(SHIP_LIBS) root@trvsim:/usr/lib/
 
 image: install
-	make -C $(KEYSTONE_DIR) image
+	make -C $(KEYSTONE_DIR)/build image
 
 qemu: image
 	$(MAKE) run-qemu
 
 run-qemu:
-	$(KEYSTONE_DIR)/riscv-qemu/riscv64-softmmu/qemu-system-riscv64 \
+	qemu-system-riscv64 \
 		-m 4G \
-		-bios $(KEYSTONE_DIR)/bootrom/bootrom.elf \
+		-bios $(KEYSTONE_DIR)/build/bootrom.build/bootrom.bin \
 		-nographic \
 		-machine virt \
-		-kernel $(KEYSTONE_DIR)/hifive-work/riscv-pk/bbl \
+		-kernel $(KEYSTONE_DIR)/build/sm.build/platform/generic/firmware/fw_payload.elf \
+		-append "console=ttyS0 ro root=/dev/vda" \
+		-device virtio-blk-device,drive=hd0 -drive file=$(KEYSTONE_DIR)/build/buildroot.build/images/rootfs.ext2,format=raw,id=hd0 \
 		-netdev user,id=net0,net=192.168.100.1/24,dhcpstart=192.168.100.128,hostfwd=tcp::10032-:22 \
-		-device virtio-net-device,netdev=net0
+		-device virtio-net-device,netdev=net0 \
+		-device virtio-rng-pci
 
 TAM_URL ?= http://tamproto_tam_api_1:8888
 

@@ -18,6 +18,7 @@
 #include "profiler/profiler.h"
 #endif
 
+#define SHA3_H
 #include "tee_client_api.h"
 
 #include <libteep.h>
@@ -25,6 +26,7 @@
 
 #include "ta-interface.h"
 
+using namespace Keystone;
 
 /* We hardcode these for demo purposes. */
 const char* enc_path = "teep-agent-ta";
@@ -147,7 +149,7 @@ public:
 
 // XXX: only one TEEC_Session is supported
 static CommandQueue queue;
-static Keystone enclave;
+static Enclave enclave;
 static std::thread enclave_thread;
 
 TEEC_Result TEEC_InitializeContext(const char *name, TEEC_Context *context)
@@ -174,7 +176,7 @@ TEEC_Result TEEC_OpenSession(TEEC_Context *context,
     Params params;
     params.setFreeMemSize(1024*1024);
     params.setUntrustedMem(DEFAULT_UNTRUSTED_PTR, 1024*1024);
-    if(enclave.init(enc_path, runtime_path, params) != KEYSTONE_SUCCESS){
+    if(enclave.init(enc_path, runtime_path, params) != Error::Success){
         lwsl_err("Unable to start enclave\n");
         return TEEC_ERROR_GENERIC;
     }
@@ -221,12 +223,12 @@ invoke_command_t ocall_pull_invoke_command()
     return queue.pull_invoke_command();
 }
 
-param_buffer_t ocall_read_invoke_param(int index, size_t offset)
+param_buffer_t ocall_read_invoke_param(int index, unsigned int offset)
 {
     return queue.read_invoke_param(index, offset);
 }
 
-void ocall_write_invoke_param(int index, size_t offset, size_t size, const char *buf)
+void ocall_write_invoke_param(int index, unsigned int offset, unsigned int size, const char *buf)
 {
     //lwsl_hexdump_notice(buf, size);
     queue.write_invoke_param(index, offset, size, buf);
@@ -236,6 +238,10 @@ void ocall_put_invoke_command_result(invoke_command_t cmd, unsigned int result)
 {
     return queue.put_invoke_command_result(cmd, result);
 }
+
+nonce_t ocall_import_nonce(void) {}
+
+int ocall_invoke_command_callback(invoke_command_t cb_cmd) {}
 
 EDGE_EXTERNC_END
 

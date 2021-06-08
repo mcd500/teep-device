@@ -15,7 +15,10 @@
 #include "profiler/profiler.h"
 #endif
 
+#define SHA3_H
 #include "tee_client_api.h"
+
+using namespace Keystone;
 
 /**
  * main() - To launch the enclave.
@@ -36,11 +39,11 @@ int main(int argc, char** argv)
         printf("Usage: %s enclave-file runtime-file\n", argv[0]);
         return 1;
     }
-    Keystone enclave;
+    Enclave enclave;
     Params params;
     params.setFreeMemSize(1024*1024);
     params.setUntrustedMem(DEFAULT_UNTRUSTED_PTR, 1024*1024);
-    if(enclave.init(argv[1], argv[2], params) != KEYSTONE_SUCCESS){
+    if(enclave.init(argv[1], argv[2], params) != Error::Success){
         printf("%s: Unable to start enclave\n", argv[0]);
         exit(-1);
     }
@@ -57,6 +60,8 @@ int main(int argc, char** argv)
 }
 
 EDGE_EXTERNC_BEGIN
+
+nonce_t ocall_import_nonce(void) {}
 
 /**
  * ocall_pull_invoke_command() - Invokes the pull command.
@@ -100,6 +105,19 @@ void ocall_write_invoke_param(int index, size_t, size_t size, const char *buf)
  */
 void ocall_put_invoke_command_result(invoke_command_t cmd, unsigned int result)
 {
+}
+
+int ocall_invoke_command_callback(invoke_command_t cb_cmd) {}
+
+param_buffer_t ocall_read_invoke_param(int index, unsigned int offset)
+{
+    param_buffer_t ret;
+    return ret;
+}
+
+void ocall_write_invoke_param(int index, unsigned int offset, unsigned int size, const char *buf)
+{
+
 }
 
 EDGE_EXTERNC_END
