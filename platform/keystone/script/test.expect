@@ -9,7 +9,7 @@ spawn qemu-system-riscv64 \
 		-nographic \
 		-machine virt \
 		-kernel $::env(KEYSTONE_DIR)/build/sm.build/platform/generic/firmware/fw_payload.elf \
-		-append "console=ttyS0 ro root=/dev/vda" \
+		-append "console=ttyS0 ro root=/dev/vda cma=256M@0x00000000C0000000" \
 		-device virtio-blk-device,drive=hd0 -drive file=$::env(KEYSTONE_DIR)/build/buildroot.build/images/rootfs.ext2,format=raw,id=hd0 \
 		-netdev user,id=net0,net=192.168.100.1/24,dhcpstart=192.168.100.128,hostfwd=tcp::10032-:22 \
 		-device virtio-net-device,netdev=net0 \
