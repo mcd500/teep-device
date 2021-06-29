@@ -194,7 +194,8 @@ set_dev_option(struct teep_agent_session *session, enum agent_dev_option option,
 		}
 		int index = 0;
 		for (const char *s = value; index < n; index++) {
-			memset(session->requests[index].id, 0, 32);
+			size_t len = sizeof session->requests[index].id;
+			memset(session->requests[index].id, 0, len);
 			session->requests[index].unneeded = false;
 			session->requests[index].requested = false;
 			if (*s == '+') {
@@ -211,7 +212,7 @@ set_dev_option(struct teep_agent_session *session, enum agent_dev_option option,
 					s++;
 					break;
 				} else {
-					if (i < 31) {
+					if (i < len - 1) {
 						session->requests[index].id[i] = *s;
 					}
 					s++;

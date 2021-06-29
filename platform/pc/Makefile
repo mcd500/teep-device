@@ -3,6 +3,7 @@ export SOURCE ?= $(CURDIR)/../..
 export PLAT = pc
 
 export HELLO_TA_UUID  ?= 8d82573a-926d-4754-9353-32dc29997f74
+export HELLO_TA_UUID_2 ?= 8d82573a-926d-4754-9353-32dc29997f75
 export TEE_AGENT_UUID ?= 68373894-5bb3-403c-9eec-3114a1f5d3fc
 
 export APP_CFLAGS = -g \
@@ -95,12 +96,16 @@ upload_encfile_to_tamproto:
 	sed "s@http://localhost:8888@$(TAM_URL)@" manifest/hello-ta.json >$(BUILD)/hello-ta.json
 	suit-tool create -i $(BUILD)/hello-ta.json -o $(BUILD)/hello-ta.suit
 	suit-tool sign -m $(BUILD)/hello-ta.suit -k ../../key/tc-provider-priv.pem -o $(BUILD)/signed-hello-ta.suit
-	curl $(TAM_URL)/panel/upload \
-		-F "file=@$(BUILD)/signed-hello-ta.suit;filename=suit_manifest_exp1.cbor"
+	#curl $(TAM_URL)/panel/upload \
+	#	-F "file=@$(BUILD)/signed-hello-ta.suit;filename=suit_manifest_exp1.cbor"
+	curl --location --request POST '$(TAM_URL)/panel/upload_manifest_and_TC' \
+		--form 'uuid="$(HELLO_TA_UUID_2)"' \
+		--form 'file=@"$(BUILD)/signed-hello-ta.suit";filename=$(HELLO_TA_UUID_2).cbor' \
+		--form 'file=@"$(BUILD)/$(HELLO_TA_UUID).ta.sign.enc";filename=$(HELLO_TA_UUID_2).ta'
 
 
 test: upload_encfile_to_tamproto
-	$(BROKER) --tamurl $(TAM_URL)/api/tam_cbor 2>&1 | tee $(BUILD)/pctest.log
+	$(BROKER) --tamurl $(TAM_URL)/api/tam_cbor --talist $(HELLO_TA_UUID_2) 2>&1 | tee $(BUILD)/pctest.log
 	! fgrep 'ERR:' $(BUILD)/pctest.log
 	fgrep 'ta_store_install: stub called' $(BUILD)/pctest.log
 
