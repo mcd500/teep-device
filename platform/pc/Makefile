@@ -53,6 +53,9 @@ libteep-libwebsockets-host-FLAGS = \
 	-DCMAKE_BUILD_TYPE=Debug \
 	-DCMAKE_C_FLAGS='-Wno-enum-conversion'
 
+libteesuit-tee-FLAGS = \
+	-DCMAKE_BUILD_TYPE=DEBUG
+
 libteep-mbedtls-ree-DISABLE = y
 libteep-libwebsockets-ree-DISABLE = y
 libteep-QCBOR-ree-DISABLE = y

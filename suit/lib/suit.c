@@ -663,12 +663,14 @@ static void run_command_step(suit_runner_t *runner, bool *pop_pc)
         is_common = false;
     } else {
         *pop_pc = true;
+        printf("end of command seq\n");
         return;
     }
 
     uint64_t command;
 
     if (!nocbor_read_uint(ctx, &command)) goto err;
+    printf("command %lu\n", command);
 
     const struct command_handler *h = find_handler(command, is_common);
     if (!h) {

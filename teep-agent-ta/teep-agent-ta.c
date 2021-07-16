@@ -63,7 +63,7 @@ struct suit_component_storage
 	UsefulBufC component;
 };
 
-struct suit_manifest_storage suit_manifests[1]; // TODO: multiple manifest
+struct suit_manifest_storage suit_manifests[2]; // TODO: multiple manifest
 struct suit_component_storage suit_components[1][1]; // suit_components[manifest_index][component_index]
 
 
@@ -83,7 +83,7 @@ static bool store_bstr(UsefulBufC *p, const void *buf, size_t len)
 
 static bool store_envelope(size_t index, const void *buf, size_t len)
 {
-	if (index < 1) {
+	if (index < 2) {
 		// TODO: check sig before store envelope is better
 		return store_bstr(&suit_manifests[index].envelope, buf, len);
 	} else {
@@ -277,16 +277,15 @@ handle_tam_message(struct teep_agent_session *session, const void *buffer, size_
 				}
 			}
 
-			// load root manifest
-			// TODO: handle multiple manifests? how?
-			UsefulBufC e = suit_manifests[0].envelope;
-			nocbor_range_t r = {
-				e.ptr, e.ptr + e.len
-			};
-
-			if (!suit_processor_load_root_envelope(&session->suit_processor, r)) {
-				teep_error(session, "TODO");
-				goto err;
+			for (size_t i = 0; i < p->len; i++) {
+				UsefulBufC e = suit_manifests[p->len - i - 1].envelope;
+				nocbor_range_t r = {
+					e.ptr, e.ptr + e.len
+				};
+				if (!suit_processor_load_envelope(&session->suit_processor, i, r)) {
+					teep_error(session, "TODO");
+					goto err;
+				}
 			}
 
 			session->state = AGENT_INIT_RUNNER;
