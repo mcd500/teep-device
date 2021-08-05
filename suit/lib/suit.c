@@ -2,6 +2,7 @@
 #include <string.h>
 #include "nocbor.h"
 #include "teesuit.h"
+#include "teelog.h"
 
 static bool match_key(nocbor_context_t *ctx, uint64_t key)
 {
@@ -472,21 +473,21 @@ static bool read_rep_policy(nocbor_context_t *ctx)
 static bool condition_vendor_identifier(suit_runner_t *runner, enum suit_command command, nocbor_context_t *ctx)
 {
     if (!read_rep_policy(ctx)) return false;
-    printf("execute suit-condition-vendor-identifier\n");
+    tee_log_trace("execute suit-condition-vendor-identifier\n");
     return true;
 }
 
 static bool condition_class_identifier(suit_runner_t *runner, enum suit_command command, nocbor_context_t *ctx)
 {
     if (!read_rep_policy(ctx)) return false;
-    printf("execute suit-condition-class-identifier\n");
+    tee_log_trace("execute suit-condition-class-identifier\n");
     return true;
 }
 
 static bool condition_image_match(suit_runner_t *runner, enum suit_command command, nocbor_context_t *ctx)
 {
     if (!read_rep_policy(ctx)) return false;
-    printf("execute suit-condition-image-match\n");
+    tee_log_trace("execute suit-condition-image-match\n");
     return true;
 }
 
@@ -570,7 +571,7 @@ bool suit_runner_get_parameter(suit_runner_t *runner, uint64_t key, nocbor_any_t
 
 static bool directive_set_parameters(suit_runner_t *runner, enum suit_command command, nocbor_context_t *ctx)
 {
-    printf("execute suit-set-parameters\n");
+    tee_log_trace("execute suit-set-parameters\n");
     bool is_override = command == SUIT_DIRECTIVE_OVERRIDE_PARAMETERS;
     
     nocbor_context_t map;
@@ -600,7 +601,7 @@ err:
 static bool directive_process_dependency(suit_runner_t *runner, enum suit_command command, nocbor_context_t *ctx)
 {
     if (!read_rep_policy(ctx)) return false;
-    printf("execute suit-directive-process-dependency\n");
+    tee_log_trace("execute suit-directive-process-dependency\n");
 
     suit_envelope_t *ep = runner->program_counter.envelope;
     uint64_t selected = runner->selected_dependency_bits;
@@ -615,7 +616,7 @@ static bool directive_process_dependency(suit_runner_t *runner, enum suit_comman
 static bool directive_fetch(suit_runner_t *runner, enum suit_command command, nocbor_context_t *ctx)
 {
     if (!read_rep_policy(ctx)) return false;
-    printf("execute suit-directive-fetch\n");
+    tee_log_trace("execute suit-directive-fetch\n");
     return runner->platform->callbacks->fetch(runner);
 }
 
@@ -663,18 +664,18 @@ static void run_command_step(suit_runner_t *runner, bool *pop_pc)
         is_common = false;
     } else {
         *pop_pc = true;
-        printf("end of command seq\n");
+        tee_log_trace("end of command seq\n");
         return;
     }
 
     uint64_t command;
 
     if (!nocbor_read_uint(ctx, &command)) goto err;
-    printf("command %lu\n", command);
+    tee_log_trace("command %lu\n", command);
 
     const struct command_handler *h = find_handler(command, is_common);
     if (!h) {
-        printf("unknown command %lu\n", command);
+        tee_log_trace("unknown command %lu\n", command);
         goto err;
     }
     if (!h->handler(runner, command, ctx)) goto err;
