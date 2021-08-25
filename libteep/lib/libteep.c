@@ -312,10 +312,6 @@ static int parse_option(struct teep_message *m, QCBORDecodeContext *DC, QCBORIte
 				if (!parse_component_id_array(&m->query_response.unneeded_tc_list, DC, option)) {
 					goto err;
 				}
-			} else if (m->type == TEEP_UPDATE) {
-				if (!parse_component_id_array(&m->teep_update.unneeded_tc_list, DC, option)) {
-					goto err;
-				}
 			} else {
 				goto skip;
 			}
@@ -385,6 +381,21 @@ static int parse_option(struct teep_message *m, QCBORDecodeContext *DC, QCBORIte
 				goto err;
 			}
 			m->token = option->val.string;
+		}
+		break;
+	case TEEP_OPTION_SUPPORTED_FRESHNESS_MECHANISMS:
+		{
+			if (m->type == TEEP_QUERY_REQUEST) {
+				if (!parse_uint32_array(&m->query_request.supported_freshness_mechanisms, DC, option)) {
+					goto err;
+				}
+			} else if (m->type == TEEP_ERROR) {
+				if (!parse_uint32_array(&m->teep_error.supported_freshness_mechanisms, DC, option)) {
+					goto err;
+				}
+			} else {
+				goto skip;
+			}
 		}
 		break;
 	default:
@@ -503,6 +514,7 @@ void free_parsed_teep_message(struct teep_message *message)
 	switch (message->type) {
 	case TEEP_QUERY_REQUEST:
 		free(message->query_request.supported_cipher_suits.array);
+		free(message->query_request.supported_freshness_mechanisms.array);
 		free(message->query_request.versions.array);
 		break;
 	case TEEP_QUERY_RESPONSE:
@@ -512,7 +524,6 @@ void free_parsed_teep_message(struct teep_message *message)
 		free(message->query_response.ext_list.array);
 		break;
 	case TEEP_UPDATE:
-		free(message->teep_update.unneeded_tc_list.array);
 		free(message->teep_update.manifest_list.array);
 		break;
 	case TEEP_SUCCESS:
@@ -520,6 +531,7 @@ void free_parsed_teep_message(struct teep_message *message)
 		break;
 	case TEEP_ERROR:
 		free(message->teep_error.supported_cipher_suits.array);
+		free(message->teep_error.supported_freshness_mechanisms.array);
 		free(message->teep_error.versions.array);
 		free(message->teep_error.suit_reports.array);
 		break;

@@ -58,18 +58,20 @@ enum teep_suite {
 	TEEP_AES_CCM_16_64_128_HMAC256_256_P_256_ES256  = 2,
 };
 
+enum teep_freshness_mechanism {
+	TEEP_FRESHNESS_NONCE = 0,
+	TEEP_FRESHNESS_TIMESTAMP = 1,
+	TEEP_FRESHNESS_EPOCH_ID = 2,
+};
+
 enum teep_error {
-	TEEP_ERR_ILLEGAL_PARAMETER = 1,
+	TEEP_ERR_PERMANENT_ERROR = 1,
 	TEEP_ERR_UNSUPPORTED_EXTENSION = 2,
-	TEEP_ERR_REQUEST_SIGNATURE_FAILED = 3,
 	TEEP_ERR_UNSUPPORTED_MSG_VERSION = 4,
 	TEEP_ERR_UNSUPPORTED_CRYPTO_ALG = 5,
 	TEEP_ERR_BAD_CERTIFICATE = 6,
-	TEEP_ERR_UNSUPPORTED_CERTIFICATE = 7,
-	TEEP_ERR_CERTIFICATE_REVOKED = 8,
 	TEEP_ERR_CERTIFICATE_EXPIRED = 9,
-	TEEP_ERR_INTERNAL_ERROR = 10,
-	TEEP_ERR_TC_NOT_FOUND = 12,
+	TEEP_ERR_TEMPORARY_ERROR = 10,
 	TEEP_ERR_MANIFEST_PROCESSING_FAILED = 17,
 };
 
@@ -94,6 +96,7 @@ enum teep_option_key {
 	TEEP_OPTION_HAVE_BINARY = 18,
 	TEEP_OPTION_SUIT_REPORTS = 19,
 	TEEP_OPTION_TOKEN = 20,
+	TEEP_OPTION_SUPPORTED_FRESHNESS_MECHANISMS = 21,
 };
 
 struct teep_uint32_array {
@@ -144,6 +147,7 @@ struct teep_message {
 	union {
 		struct {
 			struct teep_uint32_array supported_cipher_suits;
+			struct teep_uint32_array supported_freshness_mechanisms;
 			UsefulBufC challenge;
 			struct teep_uint32_array versions;
 			UsefulBufC ocsp_data;
@@ -160,7 +164,6 @@ struct teep_message {
 			struct teep_uint32_array ext_list;
 		} query_response;
 		struct {
-			struct teep_component_id_array unneeded_tc_list;
 			struct teep_buffer_array manifest_list;
 		} teep_update;
 		struct {
@@ -170,6 +173,7 @@ struct teep_message {
 		struct {
 			UsefulBufC err_msg;
 			struct teep_uint32_array supported_cipher_suits;
+			struct teep_uint32_array supported_freshness_mechanisms;
 			struct teep_uint32_array versions;
 			struct teep_buffer_array suit_reports;
 			int64_t err_code;
