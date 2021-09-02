@@ -50,7 +50,7 @@ static bool read_digest(nocbor_context_t *ctx, suit_digest_t *d)
 {
     nocbor_context_t array;
     if (!nocbor_read_array(ctx, &array)) goto err;
-    if (!nocbor_read_uint(&array, &d->algorithm_id)) goto err;
+    if (!nocbor_read_nint(&array, &d->algorithm_id)) goto err;
     if (!nocbor_read_bstr(&array, &d->bytes)) goto err;
     if (!nocbor_skip_all(&array)) goto err;
     if (!nocbor_close(ctx, array)) goto err;
@@ -160,6 +160,10 @@ bool suit_parse_envelope(struct suit_envelope *ep, nocbor_range_t envelope)
 
     nocbor_context_t ctx = nocbor_toplevel(envelope);
 
+    uint64_t tag;
+    if (!nocbor_read_tag(&ctx, &tag)) return false;
+    if (tag != 107) return false;
+
     nocbor_context_t map;
     if (!nocbor_read_map(&ctx, &map)) return false;
 
@@ -174,6 +178,13 @@ bool suit_parse_envelope(struct suit_envelope *ep, nocbor_range_t envelope)
     }
     if (!suit_parse_authentication_wrapper(&ep->authentication_wrapper, auth_wrapper)) {
         return false;
+    }
+
+    // TODO: key order
+    nocbor_range_t payload_key;
+    if (nocbor_read_tstr(&map, &payload_key)) {
+        nocbor_range_t payload;
+        if (!nocbor_read_bstr(&map, &payload)) return false;
     }
 
     nocbor_range_t manifest;

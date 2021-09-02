@@ -254,7 +254,9 @@ static inline bool nocbor_read_any(nocbor_context_t *ctx, nocbor_any_t *dst)
         return false;
     } else {
         if (nocbor_primitive_read_any(&ctx->r, dst, &ctx->error)) {
-            ctx->index++;
+            if (!nocbor_is_tag(*dst)) {
+                ctx->index++;
+            }
             return true;
         } else {
             return false;
@@ -386,6 +388,21 @@ static inline bool nocbor_read_bool(nocbor_context_t *ctx, bool *b)
     if (!nocbor_read_any(ctx, &any)) goto err;
     if (!nocbor_is_bool(any)) goto mismatch;
     *b = nocbor_is_true(any);
+    return true;
+mismatch:
+    ctx->error = NOCBOR_NOT_MATCH;
+err:
+    return nocbor_fail(ctx, saved);
+}
+
+
+static inline bool nocbor_read_tag(nocbor_context_t *ctx, uint64_t *dst)
+{
+    nocbor_context_t saved = *ctx;
+    nocbor_any_t any;
+    if (!nocbor_read_any(ctx, &any)) goto err;
+    if (!nocbor_is_tag(any)) goto mismatch;
+    if (dst) *dst = any.value;
     return true;
 mismatch:
     ctx->error = NOCBOR_NOT_MATCH;
