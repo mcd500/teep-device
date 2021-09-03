@@ -1,13 +1,13 @@
 #include <cstdio>
 #include "example-util.h"
 
-static bool check_vendor_id(suit_runner_t *runner)
+static bool check_vendor_id(suit_runner_t *runner, void *user)
 {
     printf("check vendor id\n");
     return true;
 }
 
-static bool fetch(suit_runner_t *runner)
+static bool fetch(suit_runner_t *runner, void *user)
 {
     printf("fetch\n");
     return true;
@@ -35,10 +35,9 @@ int main(int argc, char **argv)
         envelope_binaries.push_back(std::move(bin));
     }
     
-    suit_processor_t suit_processor;
-    suit_processor_init(&suit_processor);
+    suit_context_t suit_context;
+    suit_context_init(&suit_context);
 
-    int index = 0;
     for (auto i = envelope_binaries.begin(); i != envelope_binaries.end(); i++) {
         nocbor_range r = {
             &*i->begin(),
@@ -49,21 +48,16 @@ int main(int argc, char **argv)
         hexdump(r);
         printf("\n\n");
 
-        if (!suit_processor_load_envelope(&suit_processor, index, r)) {
+        if (!suit_context_add_envelope(&suit_context, r)) {
             printf("parse error\n");
             return 1;
         }
-        index++;
     }
 
-    struct suit_envelope *ep = &suit_processor.envelope_buf[0];
+    //struct suit_envelope *ep = &suit_context.envelope_buf[0];
 
     suit_runner_t runner;
-    suit_platform_t platform = {
-        NULL,
-        &callbacks
-    };
-    suit_runner_init(&runner, &suit_processor, &platform, SUIT_INSTALL);
+    suit_runner_init(&runner, &suit_context, SUIT_COMMAND_SEQUENCE_INSTALL, &callbacks, NULL);
 
     while (true) {
         suit_runner_run(&runner);

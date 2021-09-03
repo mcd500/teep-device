@@ -1,5 +1,5 @@
 
-set(TEESUIT_SRC suit.c)
+set(TEESUIT_SRC suit.c suit-parser.c suit-context.c)
 if(${ENABLE_LOG_STDOUT})
     list(APPEND TEESUIT_SRC tee_log_stdout.c)
 endif()

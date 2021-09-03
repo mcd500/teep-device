@@ -127,9 +127,8 @@ struct teep_agent_session
 
 	uint64_t data_item_requested;
 
-	suit_processor_t suit_processor;
+	suit_context_t suit_context;
 	suit_runner_t suit_runner;
-	suit_platform_t suit_platform;
 };
 
 static suit_callbacks_t suit_callbacks;
@@ -146,9 +145,7 @@ teep_agent_session_create()
 	session->token = NULLUsefulBufC;
 	session->n_requests = 0;
 
-	suit_processor_init(&session->suit_processor);
-	session->suit_platform.user = NULL;
-	session->suit_platform.callbacks = &suit_callbacks;
+	suit_context_init(&session->suit_context);
 
 	return session;
 }
@@ -282,7 +279,7 @@ handle_tam_message(struct teep_agent_session *session, const void *buffer, size_
 				nocbor_range_t r = {
 					e.ptr, e.ptr + e.len
 				};
-				if (!suit_processor_load_envelope(&session->suit_processor, i, r)) {
+				if (!suit_context_add_envelope(&session->suit_context, r)) {
 					teep_error(session, "TODO");
 					goto err;
 				}
@@ -432,6 +429,7 @@ static void hexdump(nocbor_range_t r)
     }
 }
 
+/*
 static void severed(suit_severed_t s)
 {
     if (!s.has_value) {
@@ -445,7 +443,7 @@ static void severed(suit_severed_t s)
         hexdump(s.body);
     }
 }
-
+*/
 
 static bool check_vendor_id(suit_runner_t *runner)
 {
@@ -505,7 +503,8 @@ query_next_broker_task(struct teep_agent_session *session)
 			build_error(session, task->post_data, &task->post_data_len);
 			session->on_going_task = task;
 		} else if (session->state == AGENT_INIT_RUNNER) {
-			struct suit_envelope *ep = &session->suit_processor.envelope_buf[0];
+#if 0
+			struct suit_envelope *ep = &session->suit_context.envelope_buf[0];
 
 			printf("envelope:\n");
 			hexdump(ep->binary);
@@ -540,8 +539,9 @@ query_next_broker_task(struct teep_agent_session *session)
 			hexdump(ep->manifest.load);
 			printf("envelope.manifest.run:\n");
 			hexdump(ep->manifest.run);
-
-			suit_runner_init(&session->suit_runner, &session->suit_processor, &session->suit_platform, SUIT_INSTALL);
+#endif
+			suit_runner_init(&session->suit_runner, &session->suit_context,
+				SUIT_COMMAND_SEQUENCE_INSTALL, &suit_callbacks, session);
 
 			session->state = AGENT_RUN_SUIT_RUNNER;
 		} else if (session->state == AGENT_RUN_SUIT_RUNNER) {

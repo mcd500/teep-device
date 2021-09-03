@@ -1,6 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -11,6 +12,25 @@ typedef struct nocbor_range
     const uint8_t *begin;
     const uint8_t *end;
 } nocbor_range_t;
+
+static inline nocbor_range_t nocbor_range_null()
+{
+    return (nocbor_range_t){ NULL, NULL };
+}
+
+static inline bool nocbor_range_is_null(nocbor_range_t r)
+{
+    return r.begin == NULL;
+}
+
+static inline bool nocbor_range_equal(nocbor_range_t x, nocbor_range_t y)
+{
+    if (nocbor_range_is_null(x) || nocbor_range_is_null(y)) {
+        return nocbor_range_is_null(x) == nocbor_range_is_null(y);
+    }
+    if (x.end - x.begin != y.begin - y.end) return false;
+    return memcmp(x.begin, y.begin, x.end - x.begin) == 0;
+}
 
 typedef enum nocbor_error
 {

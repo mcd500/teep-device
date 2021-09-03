@@ -32,7 +32,7 @@ void hexdump(nocbor_range_t r)
     }
 }
 
-void print_severed(suit_severed_t s)
+void print_severable(suit_severable_t s)
 {
     if (!s.has_value) {
         printf(" (NULL)\n");
@@ -55,4 +55,12 @@ void print_digest(suit_digest_t d)
 void print_auth_wrapper(suit_authentication_wrapper w)
 {
     print_digest(w.digest);
+}
+
+void print_envelope_field(nocbor_range_t envelope_bstr, enum suit_cbor_label key)
+{
+    nocbor_range_t field;
+    if (suit_envelope_get_field_by_key(envelope_bstr, key, &field)) {
+        hexdump(field);
+    }
 }
