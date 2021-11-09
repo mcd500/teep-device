@@ -1,0 +1,60 @@
+variables:
+    GIT_SUBMODULE_STRATEGY: recursive
+
+
+stages:
+    - build
+    - test
+    - example
+
+
+default:
+    tags:
+        - docker
+    image: docker.io/trasioteam/ta_ref_teep_devel:keystone_qemu
+
+suit_build:
+    stage: build
+    script:
+        - mkdir suit/build
+        - cd suit/build
+        - cmake ..
+        - make
+
+suit_test:
+    script:
+        - echo OK
+
+suit_example:
+    stage: example
+    script:
+        - mkdir suit/build
+        - cd suit/build
+        - cmake ..
+        - make
+        - ./example/dump ../example/manifests/teep-I-D/ex1.suit
+        - ./example/dump ../example/manifests/teep-I-D/ex2.suit
+        - ./example/dump ../example/manifests/teep-I-D/ex3.suit
+        - ./example/run-install ../example/manifests/teep-I-D/ex1.suit
+        - ./example/run-install ../example/manifests/teep-I-D/ex2.suit
+        - ./example/run-install ../example/manifests/teep-I-D/ex3.suit
+
+teep_build:
+    stage: build
+    script:
+        - apt-get install -y libcap-dev
+        - export TEE=pc
+        - make
+
+teep_test:
+    stage: test
+    services:
+        - name: docker.io/trasioteam/tamproto:after_ietf109
+          alias: tamproto
+    script:
+        - apt-get install -y libcap-dev
+        - export TEE=pc
+        - make
+        - TAMIP=`python3 -c 'import socket;print(socket.gethostbyname("tamproto"))'`
+        - curl "http://$TAMIP:8888/api/tam"
+        - make test TAM_URL="http://$TAMIP:8888"
