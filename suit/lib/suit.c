@@ -12,18 +12,6 @@ static nocbor_range_t empty_array()
     return (nocbor_range_t){ array, array + 1 };
 }
 
-static bool read_rep_policy(nocbor_context_t *ctx)
-{
-    uint64_t policy;
-    if (nocbor_read_uint(ctx, &policy)) {
-        return true;
-    } else if (nocbor_read_null(ctx)) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
 static bool push_program_counter(suit_runner_t *runner)
 {
     if (runner->n_stack == SUIT_STACK_MAX) return false;
@@ -78,126 +66,18 @@ static bool call_command_sequence(suit_runner_t *runner, suit_manifest_t *manife
 
     if (!push_program_counter(runner)) return false;
     runner->program_counter.manifest = manifest;
-    runner->program_counter.next = SUIT_NEXT_EXECUTE_COMMAND;
-    runner->program_counter.command.common = common_array;
-    runner->program_counter.command.target = target_array;
+    runner->program_counter.next = SUIT_NEXT_EXECUTE_SEQUENCE;
+    runner->program_counter.sequence.common = common_array;
+    runner->program_counter.sequence.target = target_array;
 
     return true;
 }
-
-#if 0
-static bool read_component(nocbor_context_t *ctx, suit_component_t *cp)
-{
-    // TODO
-    return nocbor_skip(ctx, 1);
-}
-
-static bool read_dependency(nocbor_context_t *ctx, suit_dependency_t *dp)
-{
-    nocbor_context_t map;
-    if (!nocbor_read_map(ctx, &map)) goto err;
-
-    //if (!match_key(&map, SUIT_DEPENDENCY_DIGEST)) goto err;
-    //if (!read_digest(&map, &dp->digest)) goto err;
-
-    dp->component_id = (nocbor_range_t){ NULL, NULL };
-    //if (match_key(&map, SUIT_DEPENDENCY_PREFIX)) {
-    //    // TODO
-    //    if (!nocbor_skip(&map, 1)) goto err;
-    //}
-
-    if (!nocbor_skip_all(&map)) goto err;
-    if (!nocbor_close(ctx, map)) goto err;
-
-    return true;
-err:
-    return false;
-}
-#endif
 
 static bool digest_equal(suit_digest_t dx, suit_digest_t dy)
 {
     if (dx.algorithm_id != dy.algorithm_id) return false;
     return nocbor_range_equal(dx.bytes, dy.bytes);
 }
-
-static suit_component_t *get_or_alloc_component(suit_runner_t *runner, const suit_component_t *cp)
-{
-    // TODO
-    return &runner->component_buf[0];
-}
-
-static bool resolve_dependency(suit_runner_t *runner, suit_envelope_t *src, suit_digest_t digest, int dependency_index)
-{
-    if (runner->n_dependency >= SUIT_DEPENDENCY_MAX) return false;
-#if 0
-    suit_context_t *p = runner->context;
-    for (int i = 0; i < p->n_envelope; i++) {
-        suit_envelope_t *e = &p->envelope_buf[i];
-        suit_digest_t d = e->authentication_wrapper.digest;
-        if (digest_equal(digest, d)) {
-            suit_dependency_binder_t *p = &runner->dependency_map[runner->n_dependency];
-            p->source = src;
-            p->dependency_index = dependency_index;
-            p->target = e;
-            runner->n_dependency++;
-            return true;
-        }
-    }
-#endif
-    return false;
-}
-
-#if 0
-static bool load_common(suit_runner_t *runner, suit_envelope_t *ep, nocbor_range_t *commands)
-{
-    if (!ep) goto err;
-
-    nocbor_context_t ctx = nocbor_toplevel(nocbor_range_null()); // TODO
-    //nocbor_context_t ctx = nocbor_toplevel(ep->manifest.common);
-
-    nocbor_context_t map;
-    if (!nocbor_read_map(&ctx, &map)) goto err;
-
-    if (match_key(&map, SUIT_DEPENDENCIES)) {
-        nocbor_context_t array;
-        if (!nocbor_read_array(&map, &array)) goto err;
-        int dependency_index = 0;
-        while (!nocbor_is_end_of_context(array)) {
-            suit_dependency_t d;
-            if (!read_dependency(&array, &d)) goto err;
-            if (!resolve_dependency(runner, ep, d.digest, dependency_index)) goto err;
-            dependency_index++;
-        }
-        if (!nocbor_close(&map, array)) goto err;
-    }
-    if (match_key(&map, SUIT_COMPONENTS)) {
-        nocbor_range_t array_bstr;
-        if (nocbor_read_bstr(&map, &array_bstr)) {
-            // TODO
-        } else {
-        nocbor_context_t array;
-        if (!nocbor_read_array(&map, &array)) goto err;
-        while (!nocbor_is_end_of_context(array)) {
-            suit_component_t c;
-            if (!read_component(&array, &c)) goto err;
-            if (!get_or_alloc_component(runner, &c)) goto err;
-        }
-        if (!nocbor_close(&map, array)) goto err;
-        }
-    }
-    *commands = empty_array();
-    if (match_key(&map, SUIT_COMMON_SEQUENCE)) {
-        if (!nocbor_read_bstr(&map, commands)) goto err;
-    }
-    if (!nocbor_close(&ctx, map)) goto err;
-
-    return true;
-err:
-    suit_runner_mark_error(runner);
-    return false;
-}
-#endif
 
 static bool call_dependency(suit_runner_t *runner, suit_manifest_t *manifest)
 {
@@ -212,8 +92,14 @@ void suit_runner_init(suit_runner_t *runner, suit_context_t *context, enum suit_
     runner->callbacks = callbacks;
     runner->user = user;
     runner->sequence = sequence;
-    runner->selected_component_bits = ~(uint64_t)0;
-    runner->selected_dependency_bits = 0;
+    static const uint8_t cbor_true[] = {
+        0xF5
+    };
+    runner->selected_components = (nocbor_range_t) {
+        .begin = cbor_true,
+        .end = cbor_true + 1
+    };
+    runner->selected_dependencies = nocbor_range_null();
     suit_manifest_t *manifest = suit_context_get_root_manifest(runner->context);
     runner->program_counter.manifest = manifest;
     runner->program_counter.next = SUIT_NEXT_EXIT;
@@ -227,177 +113,151 @@ struct command_handler
 {
     enum suit_command command;
     bool allow_common;
-    bool (*handler)(suit_runner_t *runner, enum suit_command command, nocbor_context_t *ctx);
+    bool (*handler)(suit_runner_t *runner, const suit_object_t *target, enum suit_command command, nocbor_range_t param);
 };
 
-static bool condition_vendor_identifier(suit_runner_t *runner, enum suit_command command, nocbor_context_t *ctx)
+static bool read_rep_policy(nocbor_context_t *ctx)
 {
-    if (!read_rep_policy(ctx)) return false;
+    uint64_t policy;
+    if (nocbor_read_uint(ctx, &policy)) {
+        return true;
+    } else if (nocbor_read_null(ctx)) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+static bool parse_rep_policy(nocbor_range_t param)
+{
+    // TODO
+    return true;
+}
+
+static bool condition_vendor_identifier(suit_runner_t *runner, const suit_object_t *target, enum suit_command command, nocbor_range_t param)
+{
+    if (!parse_rep_policy(param)) return false;
     tee_log_trace("execute suit-condition-vendor-identifier\n");
     return true;
 }
 
-static bool condition_class_identifier(suit_runner_t *runner, enum suit_command command, nocbor_context_t *ctx)
+static bool condition_class_identifier(suit_runner_t *runner, const suit_object_t *target, enum suit_command command, nocbor_range_t param)
 {
-    if (!read_rep_policy(ctx)) return false;
+    if (!parse_rep_policy(param)) return false;
     tee_log_trace("execute suit-condition-class-identifier\n");
     return true;
 }
 
-static bool condition_image_match(suit_runner_t *runner, enum suit_command command, nocbor_context_t *ctx)
+static bool condition_image_match(suit_runner_t *runner, const suit_object_t *target, enum suit_command command, nocbor_range_t param)
 {
-    if (!read_rep_policy(ctx)) return false;
+    if (!parse_rep_policy(param)) return false;
     tee_log_trace("execute suit-condition-image-match\n");
     return true;
 }
 
-static bool directive_set_index(suit_runner_t *runner, enum suit_command command, nocbor_context_t *ctx)
-{
-    uint64_t selected = 0;
-
-    bool flag;
-    uint64_t index;
-    nocbor_context_t array;
-    if (nocbor_read_bool(ctx, &flag)) {
-        if (flag) {
-            selected = ~selected;
-        }
-    } else if (nocbor_read_uint(ctx, &index)) {
-        if (index >= 64) return false;
-        selected = 1 << index;
-    } else if (nocbor_read_array(ctx, &array)) {
-        while (!nocbor_is_end_of_context(array)) {
-            if (!nocbor_read_uint(&array, &index)) {
-                if (index >= 64) return false;
-                // TODO: preserve order???
-                selected |= 1 << index;
-            }
-        }
-        if (!nocbor_close(ctx, array)) return false;
-    } else {
-        return false;
-    }
-    if (command == SUIT_DIRECTIVE_SET_COMPONENT_INDEX) {
-        runner->selected_component_bits = selected;
-    } else {
-        runner->selected_dependency_bits = selected;
-    }
-    return true;
-}
-
-static suit_binder_t *lookup_binder(suit_runner_t *runner, suit_component_t *component, uint64_t key)
+static suit_binder_t *lookup_binder(suit_runner_t *runner, const suit_object_t *target, uint64_t key)
 {
     for (int i = 0; i < runner->n_binder; i++) {
         suit_binder_t *binder = &runner->bindings[i];
-        if (binder->component == component && binder->key == key) {
+        // TODO: compare target by component_id
+        if (binder->target == target && binder->key == key) {
             return binder;
         }
     }
     return NULL;
 }
 
-static suit_binder_t *alloc_binder(suit_runner_t *runner, suit_component_t *component, uint64_t key)
+static suit_binder_t *alloc_binder(suit_runner_t *runner, const suit_object_t *target, uint64_t key)
 {
     if (runner->n_binder == SUIT_BINDER_MAX) return NULL;
     suit_binder_t *binder = &runner->bindings[runner->n_binder++];
-    binder->component = component;
+    binder->target = target;
     binder->key = key;
     return binder;
 }
 
-static bool set_parameter(suit_runner_t *runner, uint64_t key, nocbor_any_t value, bool override)
+static bool set_parameter(suit_runner_t *runner, const suit_object_t *target, uint64_t key, nocbor_range_t value, bool override)
 {
-    suit_component_t *component = NULL; // TODO: use component index
-    suit_binder_t *binder = lookup_binder(runner, component, key);
+    suit_binder_t *binder = lookup_binder(runner, target, key);
     if (binder && !override) return true;
     if (!binder) {
-        binder = alloc_binder(runner, component, key);
+        binder = alloc_binder(runner, target, key);
         if (!binder) return false;
     }
-    binder->value = value;
+    binder->value_cbor = value;
     return true;
 }
 
-bool suit_runner_get_parameter(suit_runner_t *runner, uint64_t key, nocbor_any_t *any)
+bool suit_runner_get_parameter(suit_runner_t *runner, const suit_object_t *target, uint64_t key, nocbor_range_t *dst)
 {
-    suit_component_t *component = NULL; // TODO: use component index
-    suit_binder_t *binder = lookup_binder(runner, component, key);
+    suit_binder_t *binder = lookup_binder(runner, target, key);
     if (!binder) {
         return false;
     }
-    *any = binder->value;
+    *dst = binder->value_cbor;
     return true;
 }
 
-static bool directive_set_parameters(suit_runner_t *runner, enum suit_command command, nocbor_context_t *ctx)
+static bool directive_set_parameters(suit_runner_t *runner, const suit_object_t *target, enum suit_command command, nocbor_range_t param)
 {
     tee_log_trace("execute suit-set-parameters\n");
     bool is_override = command == SUIT_DIRECTIVE_OVERRIDE_PARAMETERS;
     
+    nocbor_context_t ctx = nocbor_toplevel(param);
+
     nocbor_context_t map;
-    if (!nocbor_read_map(ctx, &map)) goto err;
+    if (!nocbor_read_map(&ctx, &map)) goto err;
     while (!nocbor_is_end_of_context(map)) {
         uint64_t key;
-        nocbor_any_t value;
+        nocbor_range_t value;
         if (!nocbor_read_uint(&map, &key)) goto err;
-        // TODO: cbor-pen tag
-        if (!nocbor_read_any(&map, &value)) goto err;
-
-        if (!(nocbor_is_uint(value)
-            || nocbor_is_nint(value)
-            || nocbor_is_bool(value)
-            || nocbor_is_bstr(value)
-            || nocbor_is_tstr(value))) goto err;
-
-        if (!set_parameter(runner, key, value, is_override)) goto err;
+        if (!nocbor_read_subobject(&map, &value)) goto err;
+        if (!set_parameter(runner, target, key, value, is_override)) goto err;
     }
-    if (!nocbor_close(ctx, map)) goto err;
+    if (!nocbor_close(&ctx, map)) goto err;
 
     return true;
 err:
     return false;
 }
 
-static bool directive_process_dependency(suit_runner_t *runner, enum suit_command command, nocbor_context_t *ctx)
+static bool directive_process_dependency(suit_runner_t *runner, const suit_object_t *target, enum suit_command command, nocbor_range_t param)
 {
-    if (!read_rep_policy(ctx)) return false;
+    if (!parse_rep_policy(param)) return false;
     tee_log_trace("execute suit-directive-process-dependency\n");
-
-    suit_manifest_t *manifest = runner->program_counter.manifest;
-    uint64_t selected = runner->selected_dependency_bits;
-
-    if (!push_program_counter(runner)) return false;
-    runner->program_counter.manifest = manifest;
-    runner->program_counter.next = SUIT_NEXT_EXECUTE_DEPENDENCY;
-    runner->program_counter.dependency.selected = selected;
+    // TODO
     return true;
 }
 
-static bool directive_fetch(suit_runner_t *runner, enum suit_command command, nocbor_context_t *ctx)
+static bool directive_fetch(suit_runner_t *runner, const suit_object_t *target, enum suit_command command, nocbor_range_t param)
 {
-    if (!read_rep_policy(ctx)) return false;
+    if (!parse_rep_policy(param)) return false;
     tee_log_trace("execute suit-directive-fetch\n");
     
-    nocbor_any_t uri;
-    if (!suit_runner_get_parameter(runner, SUIT_PARAMETER_URI, &uri)) {
+    nocbor_range_t uri_cbor;
+    if (!suit_runner_get_parameter(runner, target, SUIT_PARAMETER_URI, &uri_cbor)) {
         tee_log_trace("uri is not set\n");
-    } else if (!nocbor_is_tstr(uri)) {
+        return false;
+    }
+    nocbor_context_t ctx = nocbor_toplevel(uri_cbor);
+    nocbor_range_t uri;
+    if (!nocbor_read_tstr(&ctx, &uri)) {
         tee_log_trace("uri not tstr\n");
-    } else {
-        nocbor_range_t str = uri.bytes;
-        if (str.begin == str.end) {
-            tee_log_trace("uri is empty\n");
-        } else if (str.begin[0] == '#') {
-            tee_log_trace("local uri\n");
-            nocbor_range_t binary;
-            if (!suit_envelope_get_field_by_name(runner->program_counter.manifest->envelope_bstr, str, &binary)) {
-                tee_log_trace("local uri not found\n");
-                return false;
-            }
-            return true;
-        } else {
-            return runner->callbacks->fetch(runner, runner->user);
+        return false;
+    }
+
+    if (uri.begin == uri.end) {
+        tee_log_trace("uri is empty\n");
+    } else if (uri.begin[0] == '#') {
+        tee_log_trace("local uri\n");
+        nocbor_range_t binary;
+        if (!suit_envelope_get_field_by_name(runner->program_counter.manifest->envelope_bstr, uri, &binary)) {
+            tee_log_trace("local uri not found\n");
+            return false;
         }
+        return true;
+    } else {
+        return runner->callbacks->fetch(runner, runner->user);
     }
     return false;
 }
@@ -408,8 +268,6 @@ static const struct command_handler command_handlers[] = {
     { SUIT_CONDITION_CLASS_IDENTIFIER, true, condition_class_identifier },
     { SUIT_CONDITION_IMAGE_MATCH, true, condition_image_match },
 
-    { SUIT_DIRECTIVE_SET_COMPONENT_INDEX, true, directive_set_index },
-    { SUIT_DIRECTIVE_SET_DEPENDENCY_INDEX, true, directive_set_index },
     { SUIT_DIRECTIVE_SET_PARAMETERS, true, directive_set_parameters },
     { SUIT_DIRECTIVE_OVERRIDE_PARAMETERS, true, directive_set_parameters },
 
@@ -433,16 +291,35 @@ find_handler(uint64_t command, bool is_common)
     return NULL;
 }
 
-static void run_command_step(suit_runner_t *runner, bool *pop_pc)
+static bool get_object(suit_runner_t *runner, uint64_t index, bool is_component, suit_object_t *dst)
+{
+    suit_continuation_t *pc = &runner->program_counter;
+    if (is_component) {
+        if (index < pc->manifest->common.n_components) {
+            dst->is_component = true;
+            dst->component = &pc->manifest->common.components[index];
+            return true;
+        }
+    } else {
+        if (index < pc->manifest->common.n_dependencies) {
+            dst->is_component = false;
+            dst->component = &pc->manifest->common.dependencies[index];
+            return true;
+        }
+    }
+    return false;
+}
+
+static void run_sequence_step(suit_runner_t *runner, bool *pop_pc)
 {
     suit_continuation_t *pc = &runner->program_counter;
     nocbor_context_t *ctx;
     bool is_common;
-    if (!nocbor_is_end_of_context(pc->command.common)) {
-        ctx = &pc->command.common;
+    if (!nocbor_is_end_of_context(pc->sequence.common)) {
+        ctx = &pc->sequence.common;
         is_common = true;
-    } else if (!nocbor_is_end_of_context(pc->command.target)) {
-        ctx = &pc->command.target;
+    } else if (!nocbor_is_end_of_context(pc->sequence.target)) {
+        ctx = &pc->sequence.target;
         is_common = false;
     } else {
         *pop_pc = true;
@@ -451,16 +328,66 @@ static void run_command_step(suit_runner_t *runner, bool *pop_pc)
     }
 
     uint64_t command;
+    nocbor_range_t param;
 
     if (!nocbor_read_uint(ctx, &command)) goto err;
-    tee_log_trace("command %lu\n", command);
+    if (!nocbor_read_subobject(ctx, &param)) goto err;
+
+    tee_log_trace("command: %lu\n", command);
+
+    if (command == SUIT_DIRECTIVE_SET_COMPONENT_INDEX) {
+        runner->selected_components = param;
+        runner->selected_dependencies = nocbor_range_null();
+        return;
+    } else if (command == SUIT_DIRECTIVE_SET_DEPENDENCY_INDEX) {
+        runner->selected_components = nocbor_range_null();
+        runner->selected_dependencies = param;
+        return;
+    }
 
     const struct command_handler *h = find_handler(command, is_common);
     if (!h) {
         tee_log_trace("unknown command %lu\n", command);
         goto err;
     }
-    if (!h->handler(runner, command, ctx)) goto err;
+
+    bool is_component = !nocbor_range_is_null(runner->selected_components);
+    bool is_dependency = !nocbor_range_is_null(runner->selected_dependencies);
+    if (is_component == is_dependency) goto err;
+
+    suit_continuation_t newpc;
+    newpc.manifest = pc->manifest;
+    newpc.next = SUIT_NEXT_EXECUTE_COMMAND;
+    newpc.command.command = command;
+    newpc.command.param = param;
+    newpc.command.is_component = is_component;
+
+    nocbor_range_t selected = is_component ? runner->selected_components : runner->selected_dependencies;
+    nocbor_context_t selected_ctx = nocbor_toplevel(selected);
+    bool flag;
+    uint64_t index;
+    nocbor_context_t array;
+    if (nocbor_read_bool(&selected_ctx, &flag)) {
+        if (flag) {
+            newpc.command.selected_all = true;
+            newpc.command.index = 0;
+        } else {
+            return; // no object selected
+        }
+    } else if (nocbor_read_uint(&selected_ctx, &index)) {
+        suit_object_t target;
+        if (!get_object(runner, index, is_component, &target)) goto err;
+        if (!h->handler(runner, &target, command, param)) goto err;
+        return;
+    } else if (nocbor_read_array(&selected_ctx, &array)) {
+        newpc.command.selected_all = false;
+        newpc.command.array = array;
+    } else {
+        goto err;
+    }
+
+    if (!push_program_counter(runner)) goto err;
+    runner->program_counter = newpc;
 
     return;
 err:
@@ -472,23 +399,35 @@ static void run_try_step(suit_runner_t *runner, bool *pop_pc)
     // TODO
 }
 
-static void run_call_step(suit_runner_t *runner, bool *pop_pc)
+static void run_command_step(suit_runner_t *runner, bool *pop_pc)
 {
     suit_continuation_t *pc = &runner->program_counter;
-    suit_manifest_t *manifest = runner->program_counter.manifest;
-    int i;
-    for (i = 0; i < runner->n_dependency; i++) {
-        suit_dependency_binder_t *p = &runner->dependency_map[i];
-        if (p->source == manifest) {
-            uint64_t bit = (uint64_t)1 << p->dependency_index;
-            if (pc->dependency.selected & bit) {
-                pc->dependency.selected &= ~bit;
-                call_dependency(runner, p->target);
-                return;
-            }
+
+    const struct command_handler *h = find_handler(pc->command.command, false);
+
+    if (pc->command.selected_all) {
+        suit_object_t target;
+        if (!get_object(runner, pc->command.index, pc->command.is_component, &target)) {
+            *pop_pc = true;
+            return;
         }
+        if (!h->handler(runner, &target, pc->command.command, pc->command.param)) goto err;
+        pc->command.index++;
+    } else {
+        if (nocbor_is_end_of_context(pc->command.array)) {
+            *pop_pc = true;
+            return;
+        }
+        uint64_t index;
+        if (!nocbor_read_uint(&pc->command.array, &index)) goto err;
+        suit_object_t target;
+        if (!get_object(runner, index, pc->command.is_component, &target)) goto err;
+        if (!h->handler(runner, &target, pc->command.command, pc->command.param)) goto err;
     }
-    *pop_pc = true;
+    return;
+err:
+    suit_runner_mark_error(runner);
+    return;
 }
 
 void suit_runner_run(suit_runner_t *runner)
@@ -503,12 +442,12 @@ void suit_runner_run(suit_runner_t *runner)
         bool pop_pc = false;
         if (pc->next == SUIT_NEXT_EXIT) {
             break;
-        } else if (pc->next == SUIT_NEXT_EXECUTE_COMMAND) {
-            run_command_step(runner, &pop_pc);
+        } else if (pc->next == SUIT_NEXT_EXECUTE_SEQUENCE) {
+            run_sequence_step(runner, &pop_pc);
         } else if (pc->next == SUIT_NEXT_EXECUTE_TRY_ENTRY) {
             run_try_step(runner, &pop_pc);
-        } else if (pc->next == SUIT_NEXT_EXECUTE_DEPENDENCY) {
-            run_call_step(runner, &pop_pc);
+        } else if (pc->next == SUIT_NEXT_EXECUTE_COMMAND) {
+            run_command_step(runner, &pop_pc);
         } else {
             goto err;
         }

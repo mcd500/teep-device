@@ -43,6 +43,15 @@ typedef struct suit_dependency
     nocbor_range_t prefix[SUIT_COMONENT_ID_LEN];
 } suit_dependency_t;
 
+typedef struct suit_object
+{
+    bool is_component;
+    union {
+        suit_component_t *component;
+        suit_dependency_t *dependency;
+    };
+} suit_object_t;
+
 #define SUIT_COMPONENT_MAX 8   // max # of component in single manifest
 #define SUIT_DEPENDENCY_MAX 8  // max # of dependencies in single manifest
 
@@ -151,6 +160,13 @@ typedef struct suit_callbacks
     bool (*fetch)(suit_runner_t *runner, void *user);
 } suit_callbacks_t;
 
+typedef struct suit_binder
+{
+    const suit_object_t *target;
+    suit_parameter_key_t key;
+    nocbor_range_t value_cbor;
+} suit_binder_t;
+
 
 #define SUIT_BINDER_MAX 32
 #define SUIT_STACK_MAX 8
@@ -162,15 +178,10 @@ struct suit_runner
     void *user;
     enum suit_command_sequence sequence;
 
-    int n_component;
-    suit_component_t component_buf[SUIT_COMPONENT_MAX];
-    int n_dependency;
-    suit_dependency_binder_t dependency_map[SUIT_DEPENDENCY_MAX];
+    // TODO: move into program counter
+    nocbor_range_t selected_components;
+    nocbor_range_t selected_dependencies;
 
-    uint64_t selected_component_bits;
-    uint64_t selected_dependency_bits;
-
-    // TODO: use component indexed structure
     int n_binder;
     suit_binder_t bindings[SUIT_BINDER_MAX];
 
@@ -204,7 +215,7 @@ bool suit_runner_get_error(const suit_runner_t *r, void *error_enum_todo);
 void suit_runner_suspend(suit_runner_t *r, void (*on_resume)(suit_runner_t *, void *));
 void suit_runner_resume(suit_runner_t *r, void *user);
 
-bool suit_runner_get_parameter(suit_runner_t *r, uint64_t key, nocbor_any_t *any);
+bool suit_runner_get_parameter(suit_runner_t *r, const suit_object_t *target, uint64_t key, nocbor_range_t *dst);
 
 #ifdef __cplusplus
 }
