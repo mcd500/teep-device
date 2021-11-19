@@ -300,6 +300,22 @@ static inline bool nocbor_skip_all(nocbor_context_t *ctx)
     return nocbor_skip(ctx, ctx->count - ctx->index);
 }
 
+//
+// like nocbor_read_any, except returns value as cbor parseable binary string.
+//
+static inline bool nocbor_read_subobject(nocbor_context_t *ctx, nocbor_range_t *dst)
+{
+    nocbor_context_t saved = *ctx;
+    if (!nocbor_skip(ctx, 1)) {
+        return false;
+    }
+    *dst = (nocbor_range_t) {
+        .begin = saved.r.begin,
+        .end = ctx->r.begin
+    };
+    return true;
+}
+
 static inline bool nocbor_read_uint(nocbor_context_t *ctx, uint64_t *dst)
 {
     nocbor_context_t saved = *ctx;
