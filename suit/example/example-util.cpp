@@ -32,6 +32,28 @@ void hexdump(nocbor_range_t r)
     }
 }
 
+void print_tstr(nocbor_range_t r)
+{
+    if (!r.begin) {
+        printf("(NULL)");
+        return;
+    }
+    for (const uint8_t *p = r.begin; p != r.end; p++) {
+        printf("%c", *p);
+    }
+}
+
+void print_bstr(nocbor_range_t r)
+{
+    if (!r.begin) {
+        printf("(NULL)");
+        return;
+    }
+    for (const uint8_t *p = r.begin; p != r.end; p++) {
+        printf("%2.2X", *p);
+    }
+}
+
 void print_severable(suit_severable_t s)
 {
     if (!s.has_value) {
@@ -62,5 +84,18 @@ void print_envelope_field(nocbor_range_t envelope_bstr, enum suit_cbor_label key
     nocbor_range_t field;
     if (suit_envelope_get_field_by_key(envelope_bstr, key, &field)) {
         hexdump(field);
+    }
+}
+
+void pirnt_object(const suit_object_t *target)
+{
+    if (target->is_component) {
+        suit_component_t *c = target->component;
+        printf("component: id=");
+        print_bstr(c->id_cbor);
+        printf("\n");
+    } else {
+        printf("dependency: id=");
+
     }
 }

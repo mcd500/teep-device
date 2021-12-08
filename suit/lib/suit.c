@@ -257,7 +257,7 @@ static bool directive_fetch(suit_runner_t *runner, const suit_object_t *target, 
         }
         return true;
     } else {
-        return runner->callbacks->fetch(runner, runner->user);
+        return runner->callbacks->fetch_and_store(runner, runner->user, target, uri);
     }
     return false;
 }

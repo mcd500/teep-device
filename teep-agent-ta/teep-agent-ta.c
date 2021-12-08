@@ -129,6 +129,8 @@ struct teep_agent_session
 
 	suit_context_t suit_context;
 	suit_runner_t suit_runner;
+
+	nocbor_range_t fetch_uri;
 };
 
 static suit_callbacks_t suit_callbacks;
@@ -155,9 +157,6 @@ teep_agent_session_destroy(struct teep_agent_session *session)
 {
 	if (!session) {
 		return;
-	}
-	if (session->manifests) {
-		free(session->manifests);
 	}
 	free((void *)session->token.ptr);
 	free(session);
@@ -445,9 +444,16 @@ static void severed(suit_severed_t s)
 }
 */
 
-static bool check_vendor_id(suit_runner_t *runner)
+
+static bool check_vendor_id(suit_runner_t *runner, void *user, const suit_object_t *target, nocbor_range_t id)
 {
     printf("check vendor id\n");
+    return true;
+}
+
+static bool store(suit_runner_t *runner, void *user, const suit_object_t *target, nocbor_range_t body)
+{
+    printf("store\n");
     return true;
 }
 
@@ -456,16 +462,20 @@ static void fetch_complete(suit_runner_t *runner, void *user)
     printf("finish fetch\n");
 }
 
-static bool fetch(suit_runner_t *runner)
+static bool fetch_and_store(suit_runner_t *runner, void *user, const suit_object_t *target, nocbor_range_t uri)
 {
-    printf("start fetch\n");
-    suit_runner_suspend(runner, fetch_complete);
+    printf("fetch_and_store\n");
+	struct teep_agent_session *session = (struct teep_agent_session *)user;
+	session->fetch_uri = uri;
+	suit_runner_suspend(runner, fetch_complete);
     return true;
 }
 
+
 static suit_callbacks_t suit_callbacks = {
     .check_vendor_id = check_vendor_id,
-    .fetch = fetch,
+    .store = store,
+    .fetch_and_store = fetch_and_store,
 };
 
 static struct broker_task *
@@ -555,21 +565,13 @@ query_next_broker_task(struct teep_agent_session *session)
 				teep_error(session, "suit error");
 			}
 		} else if (session->state == AGENT_FETCH_COMPONENT) {
-			nocbor_any_t any;
-			if (!suit_runner_get_parameter(&session->suit_runner, SUIT_PARAMETER_URI, &any)) {
-				printf("url error\n");
-				teep_error(session, "suit error");
-			} else if (!nocbor_is_tstr(any)) {
-				printf("url error\n");
-				teep_error(session, "suit error");
-			} else {
-				task->command = BROKER_HTTP_GET;
-				memset(task->uri, 0, sizeof task->uri);
-				// TODO
-				memcpy(task->uri, any.bytes.begin, any.bytes.end - any.bytes.begin);
-				task->post_data_len = 0;
-				session->on_going_task = task;
-			}
+			nocbor_range_t uri = session->fetch_uri;
+			task->command = BROKER_HTTP_GET;
+			memset(task->uri, 0, sizeof task->uri);
+			// TODO: length
+			memcpy(task->uri, uri.begin, uri.end - uri.begin);
+			task->post_data_len = 0;
+			session->on_going_task = task;
 		} else {
 			task->command = BROKER_FINISH;
 			strcpy(task->uri, "");

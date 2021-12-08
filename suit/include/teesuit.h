@@ -32,8 +32,7 @@ typedef struct suit_severable
 
 typedef struct suit_component
 {
-    size_t id_len;
-    nocbor_range_t id[SUIT_COMONENT_ID_LEN];
+    nocbor_range_t id_cbor;
 } suit_component_t;
 
 typedef struct suit_dependency
@@ -156,8 +155,9 @@ typedef struct suit_runner suit_runner_t;
 /* call back functions user supplies */
 typedef struct suit_callbacks
 {
-    bool (*check_vendor_id)(suit_runner_t *runner, void *user);
-    bool (*fetch)(suit_runner_t *runner, void *user);
+    bool (*check_vendor_id)(suit_runner_t *runner, void *user, const suit_object_t *target, nocbor_range_t id);
+    bool (*store)(suit_runner_t *runner, void *user, const suit_object_t *target, nocbor_range_t body);
+    bool (*fetch_and_store)(suit_runner_t *runner, void *user, const suit_object_t *target, nocbor_range_t uri);
 } suit_callbacks_t;
 
 typedef struct suit_binder

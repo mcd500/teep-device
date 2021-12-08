@@ -69,8 +69,10 @@ static bool read_severed(nocbor_context_t *ctx, suit_severable_t *ret)
 
 static bool read_component(nocbor_context_t *ctx, suit_component_t *cp)
 {
-    // TODO
-    return nocbor_skip(ctx, 1);
+    if (!nocbor_read_subobject(ctx, &cp->id_cbor)) {
+        return false;
+    }
+    return true;
 }
 
 static bool read_dependency(nocbor_context_t *ctx, suit_dependency_t *dp)

@@ -1,21 +1,34 @@
 #include <cstdio>
 #include "example-util.h"
 
-static bool check_vendor_id(suit_runner_t *runner, void *user)
+static bool check_vendor_id(suit_runner_t *runner, void *user, const suit_object_t *target, nocbor_range_t id)
 {
     printf("check vendor id\n");
+    pirnt_object(target);
     return true;
 }
 
-static bool fetch(suit_runner_t *runner, void *user)
+static bool store(suit_runner_t *runner, void *user, const suit_object_t *target, nocbor_range_t body)
 {
-    printf("fetch\n");
+    printf("store\n");
+    pirnt_object(target);
+    return true;
+}
+
+static bool fetch_and_store(suit_runner_t *runner, void *user, const suit_object_t *target, nocbor_range_t uri)
+{
+    printf("fetch_and_store\n");
+    pirnt_object(target);
+    printf("uri=");
+    print_tstr(uri);
+    printf("\n");
     return true;
 }
 
 static suit_callbacks_t callbacks = {
     .check_vendor_id = check_vendor_id,
-    .fetch = fetch,
+    .store = store,
+    .fetch_and_store = fetch_and_store,
 };
 
 int main(int argc, char **argv)
