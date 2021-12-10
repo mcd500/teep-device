@@ -451,9 +451,56 @@ static bool check_vendor_id(suit_runner_t *runner, void *user, const suit_object
     return true;
 }
 
+struct component_path {
+	const char *device;
+	const char *storage;
+	char uuid[17];
+	char filename[32];
+};
+
+static bool parse_component_id(suit_component_t *component, struct component_path *dst)
+{
+	nocbor_range_t id_cbor = component->id_cbor;
+	nocbor_context_t ctx = nocbor_toplevel(id_cbor);
+	nocbor_context_t array;
+	if (!nocbor_read_array(&ctx, &array)) return false;
+	nocbor_range_t bstr;
+	if (!nocbor_read_bstr(&array, &bstr)) return false;
+	if (memcmp(bstr.begin, "TEEP-Device", bstr.end - bstr.begin) != 0) return false;
+	dst->device = "TEEP-Device";
+
+	if (!nocbor_read_bstr(&array, &bstr)) return false;
+	if (memcmp(bstr.begin, "SecureFS", bstr.end - bstr.begin) != 0) return false;
+	dst->storage = "SecureFS";
+
+	if (!nocbor_read_bstr(&array, &bstr)) return false;
+	if (bstr.end - bstr.begin != 16) return false;
+	memcpy(dst->uuid, bstr.begin, 16);
+	dst->uuid[16] = 0;
+
+	if (!nocbor_read_bstr(&array, &bstr)) return false;
+	if (memcmp(bstr.begin, "ta", bstr.end - bstr.begin) != 0) return false;
+	snprintf(dst->filename, "%s.ta", dst->uuid);
+
+	if (!nocbor_close(&ctx, array)) return false;
+
+	return true;
+}
+
 static bool store(suit_runner_t *runner, void *user, const suit_object_t *target, nocbor_range_t body)
 {
-    printf("store\n");
+	if (target->is_component) {
+		printf("store component\n");
+		struct component_path path;
+		if (!parse_component_id(target->component, &path)) return false;
+		printf("  device   = %s", path.device);
+		printf("  storage  = %s", path.storage);
+		printf("  uuid     = %s", path.uuid);
+		printf("  filename = %s", path.filename);
+	} else {
+		printf("store dependency\n");
+
+	}
     return true;
 }
 
