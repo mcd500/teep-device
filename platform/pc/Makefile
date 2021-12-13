@@ -88,23 +88,24 @@ scripts:
 
 upload_encfile_to_tamproto:
 	echo 'hello, world!' >$(BUILD)/$(HELLO_TA_UUID).ta
-	cd $(SOURCE)/scripts/keygen && npm install
-	node $(SOURCE)/scripts/keygen/sign-then-enc.js \
-		$(SOURCE)/key/test-jw_tee_sds_xbank_spaik-priv.jwk \
-		$(SOURCE)/key/test-jw_tee_identity_tee-mytee-public.jwk \
-		$(BUILD)/$(HELLO_TA_UUID).ta
+#	cd $(SOURCE)/scripts/keygen && npm install
+#	node $(SOURCE)/scripts/keygen/sign-then-enc.js \
+#		$(SOURCE)/key/test-jw_tee_sds_xbank_spaik-priv.jwk \
+#		$(SOURCE)/key/test-jw_tee_identity_tee-mytee-public.jwk \
+#		$(BUILD)/$(HELLO_TA_UUID).ta
 	curl $(TAM_URL)/api/
-	curl $(TAM_URL)/panel/upload \
-		-F "file=@$(BUILD)/$(HELLO_TA_UUID).ta.sign.enc;filename=$(HELLO_TA_UUID).ta"
-	sed "s@http://localhost:8888@$(TAM_URL)@" manifest/hello-ta.json >$(BUILD)/hello-ta.json
+#	curl $(TAM_URL)/panel/upload \
+#		-F "file=@$(BUILD)/$(HELLO_TA_UUID).ta.sign.enc;filename=$(HELLO_TA_UUID).ta"
+	sed "s@http://localhost:8888@#tc@" manifest/hello-ta.json >$(BUILD)/hello-ta.json
 	suit-tool create -i $(BUILD)/hello-ta.json -o $(BUILD)/hello-ta.suit
 	suit-tool sign -m $(BUILD)/hello-ta.suit -k ../../key/tc-provider-priv.pem -o $(BUILD)/signed-hello-ta.suit
-	#curl $(TAM_URL)/panel/upload \
-	#	-F "file=@$(BUILD)/signed-hello-ta.suit;filename=suit_manifest_exp1.cbor"
-	curl --location --request POST '$(TAM_URL)/panel/upload_manifest_and_TC' \
-		--form 'uuid="$(HELLO_TA_UUID_2)"' \
-		--form 'file=@"$(BUILD)/signed-hello-ta.suit";filename=$(HELLO_TA_UUID_2).cbor' \
-		--form 'file=@"$(BUILD)/$(HELLO_TA_UUID).ta.sign.enc";filename=$(HELLO_TA_UUID_2).ta'
+	$(SOURCE)/scripts/add-payload.py --key "#tc" --payload $(BUILD)/$(HELLO_TA_UUID).ta --in $(BUILD)/signed-hello-ta.suit --out $(BUILD)/signed-hello-ta-payload.suit
+	curl $(TAM_URL)/panel/upload \
+		-F "file=@$(BUILD)/signed-hello-ta-payload.suit;filename=suit_manifest_exp1.cbor"
+#	curl --location --request POST '$(TAM_URL)/panel/upload_manifest_and_TC' \
+#		--form 'uuid="$(HELLO_TA_UUID_2)"' \
+#		--form 'file=@"$(BUILD)/signed-hello-ta.suit";filename=$(HELLO_TA_UUID_2).cbor' \
+#		--form 'file=@"$(BUILD)/$(HELLO_TA_UUID).ta.sign.enc";filename=$(HELLO_TA_UUID_2).ta'
 
 
 test: upload_encfile_to_tamproto

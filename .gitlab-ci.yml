@@ -53,6 +53,10 @@ teep_test:
           alias: tamproto
     script:
         - apt-get install -y libcap-dev
+        - pip3 uninstall ietf-suit-tool -y
+        - git clone https://git.gitlab.arm.com/research/ietf-suit/suit-tool.git
+        - (cd suit-tool && pip3 install --upgrade .)
+        - pip3 install cbor2
         - export TEE=pc
         - make
         - TAMIP=`python3 -c 'import socket;print(socket.gethostbyname("tamproto"))'`
