@@ -36,8 +36,7 @@ export APP_LDFLAGS = \
 	-L$(BUILD)/libteep/ree/lib
 
 export APP_LIBS = \
-	-lkeystone-host -lkeystone-edge -lEnclave_u -lflatccrt -lmbedcrypto -lmbedx509 -lmbedtls -lwebsockets \
-	-ltee_api
+	-lkeystone-host -lkeystone-edge -lEnclave_u -lflatccrt -lmbedcrypto -lmbedx509 -lmbedtls -lwebsockets
 
 export TEE_CFLAGS = \
 	-I$(BUILD)/libteep/tee/QCBOR/inc
