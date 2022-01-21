@@ -35,6 +35,7 @@
 #include "ta-interface.h"
 #include "teep-agent-ta.h"
 #include "ta-store.h"
+#include "teelog.h"
 
 #ifdef IMSG
 #define printf(...) IMSG(__VA_ARGS__)
@@ -225,6 +226,7 @@ set_dev_option(struct teep_agent_session *session, enum agent_dev_option option,
 static void
 teep_error(struct teep_agent_session *session, const char *message)
 {
+	tee_log_trace("%s\n", message);
 	session->state = AGENT_POSTING_ERROR;
 }
 
@@ -930,6 +932,16 @@ void EAPP_ENTRY eapp_entry()
 	TA_CloseSessionEntryPoint(session_ctx);
 
 	EAPP_RETURN(0);
+}
+
+void tee_log(enum tee_log_level level, const char *msg, ...)
+{
+	char buf[256];
+	va_list list;
+	va_start(list, msg);
+	vsnprintf(buf, 256, msg, list);
+	va_end(list);
+	ocall_print_string(buf);
 }
 
 #endif

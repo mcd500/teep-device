@@ -53,6 +53,7 @@ export TA_CFLAGS = \
 	-I$(KEYSTONE_SDK_DIR)/include/edge \
 	-I$(BUILD)/libteep/tee/libwebsockets/include \
 	-I$(BUILD)/libteep/tee/QCBOR/inc \
+	-I$(SOURCE)/suit/include \
 	-I$(SOURCE)/libteep/lib \
 	-I$(SOURCE)/key/include \
 	-DKEYSTONE \
@@ -64,6 +65,7 @@ export TA_LDFLAGS = \
 	-L$(BUILD)/libteep/tee/libwebsockets/lib \
 	-L$(BUILD)/libteep/tee/QCBOR \
 	-L$(BUILD)/libteep/tee/lib \
+	-L$(BUILD)/libteep/tee/libteesuit/lib \
 	-T $(CURDIR)/Enclave.lds
 
 export TA_LIBS = \
@@ -74,8 +76,8 @@ export TA_LIBS = \
 	-lflatccrt \
 	-lteep \
 	-lqcbor \
-	-lkeystone-eapp
-
+	-lkeystone-eapp \
+	-lteesuit
 
 TA_CFLAGS += -I../libteep/mbedtls/include # XXX: use ta-ref/crypto/include
 
@@ -166,6 +168,12 @@ libteep-libwebsockets-tee-FLAGS = \
 	-DCMAKE_C_FLAGS="-Wno-unused-variable -I$(TAREF_DIR)/build/include -I$(TAREF_DIR)/include -DCRYPTLIB=MBEDCRYPT -DPLAT_KEYSTONE"
 
 libteep-QCBOR-tee-FLAGS = CC=$(CROSS_COMPILE)gcc
+
+libteesuit-tee-FLAGS = \
+	-DCMAKE_TOOLCHAIN_FILE=$(TOOLCHAIN-tee) \
+	-DCMAKE_BUILD_TYPE=DEBUG \
+	-DENABLE_LOG_STDOUT=OFF \
+	-DENABLE_EXAMPLE=OFF
 
 all: libteep hello teep
 
