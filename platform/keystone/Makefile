@@ -7,7 +7,7 @@ export KEYSTONE_SDK_DIR ?= $(KEYSTONE_DIR)/sdk
 export HELLO_TA_UUID  ?= 8d82573a-926d-4754-9353-32dc29997f74
 export TEE_AGENT_UUID ?= 68373894-5bb3-403c-9eec-3114a1f5d3fc
 
-export TEE_REF_TA_DIR ?= $(CURDIR)/../../..
+export TAREF_DIR ?= $(CURDIR)/../../..
 
 export APP_CFLAGS = \
 	-Wall \
@@ -15,10 +15,10 @@ export APP_CFLAGS = \
 	-I$(KEYSTONE_SDK_DIR)/lib/host/include \
 	-I$(KEYSTONE_SDK_DIR)/lib/edge/include \
 	-I$(KEYSTONE_SDK_DIR)/lib/verifier \
-	-I$(TEE_REF_TA_DIR)/build/include \
-	-I$(TEE_REF_TA_DIR)/include \
+	-I$(TAREF_DIR)/build/include \
+	-I$(TAREF_DIR)/include \
 	-I./ \
-	-I$(TEE_REF_TA_DIR)/ref-ta/profiler \
+	-I$(TAREF_DIR)/ref-ta/profiler \
 	-I$(SOURCE)/libteep/lib \
 	-I$(BUILD)/libteep/ree/libwebsockets/include \
 	-I$(SOURCE)/libteep/libwebsockets/include \
@@ -29,7 +29,7 @@ export APP_CFLAGS = \
 export APP_LDFLAGS = \
 	-L$(KEYSTONE_SDK_DIR)/lib \
 	-L$(KEYSTONE_SDK_DIR)/sdk/lib \
-	-L$(TEE_REF_TA_DIR)/build/lib \
+	-L$(TAREF_DIR)/build/lib \
 	-L$(BUILD)/libteep/ree/mbedtls/library \
 	-Xlinker -rpath-link -Xlinker $(BUILD)/libteep/ree/mbedtls/library \
 	-L$(BUILD)/libteep/ree/libwebsockets/lib \
@@ -45,10 +45,10 @@ export TA_CFLAGS = \
 	-Wall -fno-builtin-printf -DEDGE_IGNORE_EGDE_RESULT -DCRYPTLIB=MBEDCRYPT \
 	-I. \
 	-I$(SOURCE)/include \
-	-I$(TEE_REF_TA_DIR)/api/include \
-	-I$(TEE_REF_TA_DIR)/api/keystone \
-	-I$(TEE_REF_TA_DIR)/build/include \
-	-I$(TEE_REF_TA_DIR)/keyedge/target/include \
+	-I$(TAREF_DIR)/api/include \
+	-I$(TAREF_DIR)/api/keystone \
+	-I$(TAREF_DIR)/build/include \
+	-I$(TAREF_DIR)/keyedge/target/include \
 	-I$(KEYSTONE_SDK_DIR)/include/app \
 	-I$(KEYSTONE_SDK_DIR)/include/edge \
 	-I$(BUILD)/libteep/tee/libwebsockets/include \
@@ -59,7 +59,7 @@ export TA_CFLAGS = \
 	-DPLAT_KEYSTONE
 
 export TA_LDFLAGS = \
-	-L$(TEE_REF_TA_DIR)/build/lib \
+	-L$(TAREF_DIR)/build/lib \
 	-L$(KEYSTONE_SDK_DIR)/lib \
 	-L$(BUILD)/libteep/tee/libwebsockets/lib \
 	-L$(BUILD)/libteep/tee/QCBOR \
@@ -86,8 +86,8 @@ REE_CFLAGS = -Wall -Werror -fPIC \
 	      -I$(BUILD)/libteep/ree/libwebsockets/include \
 		  -I$(SOURCE)/libteep/libwebsockets/include \
 	      -I$(SOURCE)/libteep/mbedtls/include $(INCLUDES) \
-	      -I$(TEE_REF_TA_DIR)/build/include \
-	      -I$(TEE_REF_TA_DIR)/include \
+	      -I$(TAREF_DIR)/build/include \
+	      -I$(TAREF_DIR)/include \
 	      -DPLAT_KEYSTONE
 
 REE_LDFLAGS = \
@@ -163,7 +163,7 @@ libteep-libwebsockets-tee-FLAGS = \
 	-DLWS_WITH_DIR=0 \
 	-DLWS__INCLUDE_DIRS=$(INCLUDES) \
 	-DCMAKE_BUILD_TYPE=Release \
-	-DCMAKE_C_FLAGS="-Wno-unused-variable -I$(TEE_REF_TA_DIR)/build/include -I$(TEE_REF_TA_DIR)/include -DCRYPTLIB=MBEDCRYPT -DPLAT_KEYSTONE"
+	-DCMAKE_C_FLAGS="-Wno-unused-variable -I$(TAREF_DIR)/build/include -I$(TAREF_DIR)/include -DCRYPTLIB=MBEDCRYPT -DPLAT_KEYSTONE"
 
 libteep-QCBOR-tee-FLAGS = CC=$(CROSS_COMPILE)gcc
 
