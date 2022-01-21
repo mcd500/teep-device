@@ -255,7 +255,7 @@ static bool directive_fetch(suit_runner_t *runner, const suit_object_t *target, 
             tee_log_trace("local uri not found\n");
             return false;
         }
-        return true;
+        return runner->callbacks->store(runner, runner->user, target, binary);
     } else {
         return runner->callbacks->fetch_and_store(runner, runner->user, target, uri);
     }

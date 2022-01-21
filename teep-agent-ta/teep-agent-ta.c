@@ -495,10 +495,10 @@ static bool store(suit_runner_t *runner, void *user, const suit_object_t *target
 		printf("store component\n");
 		struct component_path path;
 		if (!parse_component_id(target->component, &path)) return false;
-		printf("  device   = %s", path.device);
-		printf("  storage  = %s", path.storage);
-		printf("  uuid     = %s", path.uuid);
-		printf("  filename = %s", path.filename);
+		printf("  device   = %s\n", path.device);
+		printf("  storage  = %s\n", path.storage);
+		printf("  uuid     = %s\n", path.uuid);
+		printf("  filename = %s\n", path.filename);
 	} else {
 		printf("store dependency\n");
 
