@@ -101,7 +101,7 @@ upload_encfile_to_tamproto:
 	suit-tool sign -m $(BUILD)/hello-ta.suit -k ../../key/tc-provider-priv.pem -o $(BUILD)/signed-hello-ta.suit
 	$(SOURCE)/scripts/add-payload.py --key "#tc" --payload $(BUILD)/$(HELLO_TA_UUID).ta --in $(BUILD)/signed-hello-ta.suit --out $(BUILD)/signed-hello-ta-payload.suit
 	curl $(TAM_URL)/panel/upload \
-		-F "file=@$(BUILD)/signed-hello-ta-payload.suit;filename=suit_manifest_exp1.cbor"
+		-F "file=@$(BUILD)/signed-hello-ta-payload.suit;filename=integrated-payload-manifest.cbor"
 #	curl --location --request POST '$(TAM_URL)/panel/upload_manifest_and_TC' \
 #		--form 'uuid="$(HELLO_TA_UUID_2)"' \
 #		--form 'file=@"$(BUILD)/signed-hello-ta.suit";filename=$(HELLO_TA_UUID_2).cbor' \

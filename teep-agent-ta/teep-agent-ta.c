@@ -456,8 +456,8 @@ static bool check_vendor_id(suit_runner_t *runner, void *user, const suit_object
 struct component_path {
 	const char *device;
 	const char *storage;
-	char uuid[17];
-	char filename[32];
+	uint8_t uuid[16];
+	char filename[64];
 };
 
 static bool parse_component_id(suit_component_t *component, struct component_path *dst)
@@ -478,11 +478,19 @@ static bool parse_component_id(suit_component_t *component, struct component_pat
 	if (!nocbor_read_bstr(&array, &bstr)) return false;
 	if (bstr.end - bstr.begin != 16) return false;
 	memcpy(dst->uuid, bstr.begin, 16);
-	dst->uuid[16] = 0;
 
 	if (!nocbor_read_bstr(&array, &bstr)) return false;
 	if (memcmp(bstr.begin, "ta", bstr.end - bstr.begin) != 0) return false;
-	snprintf(dst->filename, "%s.ta", dst->uuid);
+	char *p = dst->filename;
+	for (int i = 0; i < 16; i++) {
+		snprintf(p, 3, "%2.2x", dst->uuid[i]);
+		p += 2;
+		if (i == 3 || i == 5 || i == 7 || i == 9) {
+			*p = '-';
+			p++;
+		}
+	}
+	snprintf(p, 4, ".ta");
 
 	if (!nocbor_close(&ctx, array)) return false;
 
@@ -497,7 +505,7 @@ static bool store(suit_runner_t *runner, void *user, const suit_object_t *target
 		if (!parse_component_id(target->component, &path)) return false;
 		printf("  device   = %s\n", path.device);
 		printf("  storage  = %s\n", path.storage);
-		printf("  uuid     = %s\n", path.uuid);
+		//printf("  uuid     = %s\n", path.uuid);
 		printf("  filename = %s\n", path.filename);
 	} else {
 		printf("store dependency\n");
