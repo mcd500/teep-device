@@ -246,19 +246,26 @@ run-qemu:
 TAM_URL ?= http://tamproto_tam_api_1:8888
 
 upload_encfile_to_tamproto:
-	cd $(SOURCE)/scripts/keygen && npm install
-	node $(SOURCE)/scripts/keygen/sign-then-enc.js \
-		$(SOURCE)/key/test-jw_tee_sds_xbank_spaik-priv.jwk \
-		$(SOURCE)/key/test-jw_tee_identity_tee-mytee-public.jwk \
-		$(BUILD)/hello-ta/hello-ta
+	#cd $(SOURCE)/scripts/keygen && npm install
+	#node $(SOURCE)/scripts/keygen/sign-then-enc.js \
+	#	$(SOURCE)/key/test-jw_tee_sds_xbank_spaik-priv.jwk \
+	#	$(SOURCE)/key/test-jw_tee_identity_tee-mytee-public.jwk \
+	#	$(BUILD)/hello-ta/hello-ta
 	curl $(TAM_URL)/api/
-	curl $(TAM_URL)/panel/upload \
-		-F "file=@$(BUILD)/hello-ta/hello-ta.sign.enc;filename=$(HELLO_TA_UUID).ta"
-	sed "s@http://localhost:8888@$(TAM_URL)@" manifest/hello-ta.json >$(BUILD)/hello-ta.json
+	#curl $(TAM_URL)/panel/upload \
+	#	-F "file=@$(BUILD)/hello-ta/hello-ta.sign.enc;filename=$(HELLO_TA_UUID).ta"
+	sed "s@http://localhost:8888@#tc@" manifest/hello-ta.json >$(BUILD)/hello-ta.json
 	suit-tool create -i $(BUILD)/hello-ta.json -o $(BUILD)/hello-ta.suit
 	suit-tool sign -m $(BUILD)/hello-ta.suit -k ../../key/tc-provider-priv.pem -o $(BUILD)/signed-hello-ta.suit
+	$(SOURCE)/scripts/add-payload.py --key "#tc" --payload $(BUILD)/hello-ta/hello-ta --in $(BUILD)/signed-hello-ta.suit --out $(BUILD)/signed-hello-ta-payload.suit
 	curl $(TAM_URL)/panel/upload \
-		-F "file=@$(BUILD)/signed-hello-ta.suit;filename=suit_manifest_exp1.cbor"
+		-F "file=@$(BUILD)/signed-hello-ta-payload.suit;filename=integrated-payload-manifest.cbor"
+
+	#sed "s@http://localhost:8888@$(TAM_URL)@" manifest/hello-ta.json >$(BUILD)/hello-ta.json
+	#suit-tool create -i $(BUILD)/hello-ta.json -o $(BUILD)/hello-ta.suit
+	#suit-tool sign -m $(BUILD)/hello-ta.suit -k ../../key/tc-provider-priv.pem -o $(BUILD)/signed-hello-ta.suit
+	#curl $(TAM_URL)/panel/upload \
+	#	-F "file=@$(BUILD)/signed-hello-ta.suit;filename=suit_manifest_exp1.cbor"
 
 test-trvsim: upload_encfile_to_tamproto
 	PORT=$(PORT) TAM_URL=$(TAM_URL) expect ./script/test_trvsim.expect

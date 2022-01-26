@@ -10,7 +10,7 @@ parser.add_argument('--in')
 parser.add_argument('--out')
 args = parser.parse_args()
 
-with open(args.payload) as fp:
+with open(args.payload, "rb") as fp:
     payload = fp.read()
 
 with open(vars(args)["in"], "rb") as fp:
