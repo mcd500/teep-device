@@ -166,13 +166,13 @@ install_qemu: all
 	mkdir -p $(prefix)/rootfs/root/teep-device
 	cd $(prefix)/rootfs; \
 	sudo gzip -dc ../rootfs.cpio.gz | sudo cpio -i
-	install $(BUILD)/hello-ta/$(HELLO_TA_UUID).ta $(prefix)/rootfs/lib/optee_armtz
-	install $(BUILD)/hello-app/hello-app $(prefix)/rootfs/root/teep-device
-	install $(BUILD)/teep-agent-ta/$(TEE_AGENT_UUID).ta $(prefix)/rootfs/lib/optee_armtz
-	install $(BUILD)/teep-broker-app/teep-broker-app $(prefix)/rootfs/root/teep-device
+	sudo install $(BUILD)/hello-ta/$(HELLO_TA_UUID).ta $(prefix)/rootfs/lib/optee_armtz
+	sudo install $(BUILD)/hello-app/hello-app $(prefix)/rootfs/root/teep-device
+	sudo install $(BUILD)/teep-agent-ta/$(TEE_AGENT_UUID).ta $(prefix)/rootfs/lib/optee_armtz
+	sudo install $(BUILD)/teep-broker-app/teep-broker-app $(prefix)/rootfs/root/teep-device
 	mkdir -p $(prefix)/rootfs/usr/lib
-	install $(BUILD)/libteep/ree/mbedtls/library/lib* $(prefix)/rootfs/usr/lib
-	install $(BUILD)/libteep/ree/libwebsockets/lib/lib* $(prefix)/rootfs/usr/lib
+	sudo install $(BUILD)/libteep/ree/mbedtls/library/lib* $(prefix)/rootfs/usr/lib
+	sudo install $(BUILD)/libteep/ree/libwebsockets/lib/lib* $(prefix)/rootfs/usr/lib
 #	install $(BUILD)/libteep/ree/lib/lib* $(prefix)/rootfs/usr/lib
 	cd $(prefix)/rootfs; \
 	sudo find . | sudo cpio -o -H newc 2> /dev/null | gzip -c9 > ../rootfs.cpio.gz
@@ -203,7 +203,8 @@ test_integrated_payload:
 	suit-tool sign -m $(BUILD)/hello-ta.suit -k ../../key/tc-provider-priv.pem -o $(BUILD)/signed-hello-ta.suit
 	$(SOURCE)/scripts/add-payload.py --key "#tc" --payload $(BUILD)/hello-ta/$(HELLO_TA_UUID).ta --in $(BUILD)/signed-hello-ta.suit --out $(BUILD)/signed-hello-ta-payload.suit
 	curl $(TAM_URL)/panel/upload \
-		-F "file=@$(BUILD)/hello-ta/$(HELLO_TA_UUID).ta.sign.enc;filename=$(HELLO_TA_UUID).ta"
+		-F "file=@$(BUILD)/signed-hello-ta-payload.suit;filename=integrated-payload-manifest.cbor"
+
 	cd $(OPTEE_DIR)/out/bin && \
 		QEMU=$(OPTEE_DIR)/qemu/aarch64-softmmu/qemu-system-aarch64 \
 		QEMU_SMP=2 \

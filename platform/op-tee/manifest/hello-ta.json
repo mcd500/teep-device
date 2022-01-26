@@ -1,0 +1,22 @@
+{
+    "components" : [
+        {
+            "install-id" : [
+                "544545502d446576696365",
+                "5365637572654653",
+                "8d82573a926d4754935332dc29997f74",
+                "7461"
+            ],
+            "install-digest": {
+                "algorithm-id": "sha256",
+                "digest-bytes": "00112233445566778899aabbccddeeff0123456789abcdeffedcba9876543210"
+            },
+            "vendor-id" : "fa6b4a53-d5ad-5fdf-be9d-e663e4d41ffe",
+            "class-id" : "1492af14-2569-5e48-bf42-9b2d51f2ab45",
+            "install-size" : 34768,
+            "uri": "http://localhost:8888/TAs/8d82573a-926d-4754-9353-32dc29997f74.ta"
+        }
+    ],
+    "manifest-version": 1,
+    "manifest-sequence-number": 1
+}
