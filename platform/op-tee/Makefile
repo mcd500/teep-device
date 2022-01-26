@@ -113,6 +113,9 @@ libteep-libwebsockets-ree-FLAGS = \
 	-DLWS_WITHOUT_EXTENSIONS=1 \
 	-DLWS_WITH_ZLIB=0
 
+libteep-mbedtls-tee-DISABLE = y
+libteep-libwebsockets-tee-DISABLE = y
+
 libteep-libwebsockets-tee-FLAGS = \
 	-DCMAKE_TOOLCHAIN_FILE=$(TOOLCHAIN-tee) \
 	CMAKE_SYSTEM_PROCESSOR=aarch64 \
@@ -143,8 +146,9 @@ libteep-QCBOR-tee-FLAGS = CC=$(CROSS_COMPILE)gcc
 
 libteesuit-tee-FLAGS = \
 	-DCMAKE_TOOLCHAIN_FILE=$(TOOLCHAIN-tee) \
-	-DLWS_OPTEE_DIR=$(OPTEE_DIR)/optee_os \
-	-DLWS_OPTEE_DEV_KIT_DIR=$(OPTEE_DEV_KIT_DIR) \
+	-DCMAKE_BUILD_TYPE=DEBUG \
+	-DENABLE_LOG_STDOUT=OFF \
+	-DENABLE_EXAMPLE=OFF
 
 all: libteep hello teep
 
@@ -191,14 +195,13 @@ run-qemu:
 
 TAM_URL ?= http://tamproto_tam_api_1:8888
 
-test:
+test_integrated_payload:
 	ln -sf $(prefix)/rootfs.cpio.gz $(OPTEE_DIR)/out/bin
-	cd $(SOURCE)/scripts/keygen && npm install
-	node $(SOURCE)/scripts/keygen/sign-then-enc.js \
-		$(SOURCE)/key/test-jw_tee_sds_xbank_spaik-priv.jwk \
-		$(SOURCE)/key/test-jw_tee_identity_tee-mytee-public.jwk \
-		$(BUILD)/hello-ta/$(HELLO_TA_UUID).ta
 	curl $(TAM_URL)/api/
+	sed "s@http://localhost:8888@#tc@" manifest/hello-ta.json >$(BUILD)/hello-ta.json
+	suit-tool create -i $(BUILD)/hello-ta.json -o $(BUILD)/hello-ta.suit
+	suit-tool sign -m $(BUILD)/hello-ta.suit -k ../../key/tc-provider-priv.pem -o $(BUILD)/signed-hello-ta.suit
+	$(SOURCE)/scripts/add-payload.py --key "#tc" --payload $(BUILD)/hello-ta/$(HELLO_TA_UUID).ta --in $(BUILD)/signed-hello-ta.suit --out $(BUILD)/signed-hello-ta-payload.suit
 	curl $(TAM_URL)/panel/upload \
 		-F "file=@$(BUILD)/hello-ta/$(HELLO_TA_UUID).ta.sign.enc;filename=$(HELLO_TA_UUID).ta"
 	cd $(OPTEE_DIR)/out/bin && \
@@ -206,3 +209,23 @@ test:
 		QEMU_SMP=2 \
 		TAM_URL=$(TAM_URL) \
 		expect $(CURDIR)/script/test.expect
+
+test_download_payload:
+	ln -sf $(prefix)/rootfs.cpio.gz $(OPTEE_DIR)/out/bin
+	curl $(TAM_URL)/api/
+	sed "s@http://localhost:8888@$(TAM_URL)@" manifest/hello-ta.json >$(BUILD)/hello-ta.json
+	suit-tool create -i $(BUILD)/hello-ta.json -o $(BUILD)/hello-ta.suit
+	suit-tool sign -m $(BUILD)/hello-ta.suit -k ../../key/tc-provider-priv.pem -o $(BUILD)/signed-hello-ta.suit
+	curl $(TAM_URL)/panel/upload \
+		-F "file=@$(BUILD)/signed-hello-ta.suit;filename=integrated-payload-manifest.cbor"
+	curl $(TAM_URL)/panel/upload \
+		-F "file=@$(BUILD)/hello-ta/$(HELLO_TA_UUID).ta;filename=$(HELLO_TA_UUID).ta"
+
+	cd $(OPTEE_DIR)/out/bin && \
+		QEMU=$(OPTEE_DIR)/qemu/aarch64-softmmu/qemu-system-aarch64 \
+		QEMU_SMP=2 \
+		TAM_URL=$(TAM_URL) \
+		expect $(CURDIR)/script/test.expect
+
+
+test: test_download_payload

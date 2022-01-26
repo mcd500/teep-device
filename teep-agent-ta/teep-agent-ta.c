@@ -27,8 +27,11 @@
  */
 
 #include <inttypes.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdarg.h>
 #include <tee_internal_api.h>
-#include <libwebsockets.h>
+//#include <libwebsockets.h>
 #include <libteep.h>
 #include <teesuit.h>
 
@@ -649,6 +652,7 @@ query_next_broker_task(struct teep_agent_session *session)
  */
 TEE_Result TA_CreateEntryPoint(void)
 {
+#if 0
 	lws_set_log_level(0
 		| LLL_USER
 		| LLL_ERR
@@ -657,6 +661,7 @@ TEE_Result TA_CreateEntryPoint(void)
 		| LLL_NOTICE
 //		| LLL_DEBUG
 		, NULL);
+#endif
 	return TEE_SUCCESS;
 }
 
@@ -942,6 +947,8 @@ void EAPP_ENTRY eapp_entry()
 	EAPP_RETURN(0);
 }
 
+#endif
+
 void tee_log(enum tee_log_level level, const char *msg, ...)
 {
 	char buf[256];
@@ -949,7 +956,10 @@ void tee_log(enum tee_log_level level, const char *msg, ...)
 	va_start(list, msg);
 	vsnprintf(buf, 256, msg, list);
 	va_end(list);
+#ifdef KEYSTONE
 	ocall_print_string(buf);
+#else
+	IMSG("%s", buf);
+#endif
 }
 
-#endif

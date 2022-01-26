@@ -8,7 +8,7 @@
 
 #ifdef PLAT_OPTEE
 #include <time.h>
-#include <libwebsockets.h>
+//#include <libwebsockets.h>
 #endif
 
 /**
@@ -222,7 +222,7 @@ time_t time(time_t *tloc)
 	return t.seconds;
 }
 
-
+#if 0
 int gettimeofday(struct timeval *tv, struct timezone *tz)
 {
 	TEE_Time t;
@@ -236,3 +236,4 @@ int gettimeofday(struct timeval *tv, struct timezone *tz)
 
 	return 0;
 }
+#endif
