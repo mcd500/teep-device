@@ -1,7 +1,12 @@
 {
     "components" : [
         {
-            "install-id" : ["00"],
+            "install-id" : [
+                "544545502d446576696365",
+                "5365637572654653",
+                "8d82573a926d4754935332dc29997f74",
+                "7461"
+            ],
             "install-digest": {
                 "algorithm-id": "sha256",
                 "digest-bytes": "00112233445566778899aabbccddeeff0123456789abcdeffedcba9876543210"
