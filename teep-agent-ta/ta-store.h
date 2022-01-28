@@ -38,10 +38,4 @@ struct component_path {
 
 bool store_component(const struct component_path *path, const void *image, size_t image_len);
 
-/* install given a TA Image into secure storage */
-int ta_store_install(const char *ta_image, size_t ta_image_len, const char *ta_name, size_t ta_name_len);
-
-/* delete a TA Image corresponds to UUID from secure storage */
-int ta_store_delete(const char *uuid_string, size_t uuid_string_len);
-
 #endif /* TA_STORE_H */
