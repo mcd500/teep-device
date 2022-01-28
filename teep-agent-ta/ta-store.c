@@ -39,6 +39,7 @@
 //#include <libwebsockets.h>
 #include "teep-agent-ta.h"
 #include "ta-store.h"
+#include "teelog.h"
 
 #define TEMP_BUF_SIZE (800 * 1024)
 static char temp_buf[TEMP_BUF_SIZE];
@@ -474,4 +475,15 @@ ta_store_delete(const char *uuid_string, size_t uuid_string_len)
 	//lwsl_notice("Deleted TA from secure storage\n");
 	return 0;
 #endif
+}
+
+
+bool store_component(const struct component_path *path, const void *image, size_t image_len)
+{
+	tee_log_trace("store component\n");
+	tee_log_trace("  device   = %s\n", path->device);
+	tee_log_trace("  storage  = %s\n", path->storage);
+	//tee_log_trace("  uuid     = %s\n", path.uuid);
+	tee_log_trace("  filename = %s\n", path->filename);
+	install_plain(path->filename, image, image_len);
 }
