@@ -210,6 +210,7 @@ test_integrated_payload:
 		QEMU_SMP=2 \
 		TAM_URL=$(TAM_URL) \
 		expect $(CURDIR)/script/test.expect
+	cat $(OPTEE_DIR)/out/bin/serial1.log
 
 test_download_payload:
 	ln -sf $(prefix)/rootfs.cpio.gz $(OPTEE_DIR)/out/bin
@@ -227,6 +228,7 @@ test_download_payload:
 		QEMU_SMP=2 \
 		TAM_URL=$(TAM_URL) \
 		expect $(CURDIR)/script/test.expect
+	cat $(OPTEE_DIR)/out/bin/serial1.log
 
 
 test: test_download_payload

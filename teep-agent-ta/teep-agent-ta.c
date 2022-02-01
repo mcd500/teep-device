@@ -944,7 +944,7 @@ void tee_log(enum tee_log_level level, const char *msg, ...)
 #ifdef KEYSTONE
 	ocall_print_string(buf);
 #else
-	IMSG("%s", buf);
+	MSG("%s", buf);
 #endif
 }
 
