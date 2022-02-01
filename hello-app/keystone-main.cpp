@@ -61,8 +61,6 @@ int main(int argc, char** argv)
 
 EDGE_EXTERNC_BEGIN
 
-nonce_t ocall_import_nonce(void) {}
-
 /**
  * ocall_pull_invoke_command() - Invokes the pull command.
  */

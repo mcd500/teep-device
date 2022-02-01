@@ -239,8 +239,6 @@ void ocall_put_invoke_command_result(invoke_command_t cmd, unsigned int result)
     return queue.put_invoke_command_result(cmd, result);
 }
 
-nonce_t ocall_import_nonce(void) {}
-
 int ocall_invoke_command_callback(invoke_command_t cb_cmd) {}
 
 EDGE_EXTERNC_END
