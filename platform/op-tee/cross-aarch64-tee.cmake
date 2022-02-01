@@ -15,12 +15,9 @@ set(CMAKE_C_COMPILER "aarch64-linux-gnu-gcc")
 set(CMAKE_CXX_COMPILER "aarch64-linux-gnu-g++")
 
 #-nostdlib
-SET(CMAKE_C_FLAGS "-DGCC_VER=\"\\\"$(GCC_VER)\\\"\" -DARM64=1 -D__LP64__=1 -Os -g3 -fpie -mstrict-align -DOPTEE_DEV_KIT=${LWS_OPTEE_DEV_KIT_DIR}/export-ta_arm64/include -I${LWS_OPTEE_DIR}/lib/libutee/include  -fPIC -ffunction-sections -fdata-sections -I${LWS_OPTEE_DIR}/core/include ${CMAKE_C_FLAGS} -I${LWS_OPTEE_DIR}/lib/libutils/isoc/include -I${LWS_OPTEE_DIR}/lib/libutils/ext/include" CACHE STRING "" FORCE)
+SET(CMAKE_C_FLAGS "-DGCC_VER=\"\\\"$(GCC_VER)\\\"\" -DARM64=1 -D__LP64__=1 -Os -g3 -fpie -mstrict-align -I$ENV{TA_DEV_DIR}/include  -fPIC -ffunction-sections -fdata-sections ${CMAKE_C_FLAGS}" CACHE STRING "" FORCE)
 
-set(CMAKE_SYSROOT_COMPILE "${LWS_OPTEE_DIR}/lib/libutils/isoc/include" CACHE STRING "" FORCE)
-
-# Where to look for the target environment. (More paths can be added here)
-set(CMAKE_FIND_ROOT_PATH "/projects/aist-tb/arm64-tc/" "~/arm64-tc-8/")
+set(CMAKE_SYSROOT_COMPILE "ENV{TA_DEV_DIR}/include" CACHE STRING "" FORCE)
 
 # Adjust the default behavior of the FIND_XXX() commands:
 # search programs in the host environment only.
