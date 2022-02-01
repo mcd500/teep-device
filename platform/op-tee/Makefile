@@ -39,8 +39,7 @@ export APP_LIBS ?= \
 
 export TEE_CFLAGS = \
 	-I$(BUILD)/libteep/tee/QCBOR/inc \
-	-I$(SOURCE)/include \
-	-I$(SOURCE)/platform/op-tee/early
+	-I$(SOURCE)/include
 
 export TA_CFLAGS = $(TEE_CFLAGS) \
 	-nostdinc -DPLAT_OPTEE=1  \
