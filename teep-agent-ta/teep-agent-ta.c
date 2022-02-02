@@ -934,6 +934,7 @@ void EAPP_ENTRY eapp_entry()
 
 #endif
 
+#if defined(PLAT_KEYSTONE) || defined(PLAT_OPTEE)
 void tee_log(enum tee_log_level level, const char *msg, ...)
 {
 	char buf[256];
@@ -941,10 +942,11 @@ void tee_log(enum tee_log_level level, const char *msg, ...)
 	va_start(list, msg);
 	vsnprintf(buf, 256, msg, list);
 	va_end(list);
-#ifdef KEYSTONE
+#ifdef PLAT_KEYSTONE
 	ocall_print_string(buf);
 #else
 	MSG("%s", buf);
 #endif
 }
+#endif
 

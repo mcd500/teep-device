@@ -111,5 +111,5 @@ upload_encfile_to_tamproto:
 test: upload_encfile_to_tamproto
 	$(BROKER) --tamurl $(TAM_URL)/api/tam_cbor --talist $(HELLO_TA_UUID_2) 2>&1 | tee $(BUILD)/pctest.log
 	! fgrep 'ERR:' $(BUILD)/pctest.log
-	fgrep 'ta_store_install: stub called' $(BUILD)/pctest.log
+	fgrep 'store component' $(BUILD)/pctest.log
 

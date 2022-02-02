@@ -49,7 +49,7 @@ teep_build:
 teep_test:
     stage: test
     services:
-        - name: docker.io/trasioteam/tamproto:after_ietf109
+        - name: docker.io/trasioteam/tamproto:latest
           alias: tamproto
     script:
         - apt-get install -y libcap-dev
@@ -62,3 +62,28 @@ teep_test:
         - TAMIP=`python3 -c 'import socket;print(socket.gethostbyname("tamproto"))'`
         - curl "http://$TAMIP:8888/api/tam"
         - make test TAM_URL="http://$TAMIP:8888"
+
+teep_test_keystone:
+    stage: test
+    image: docker.io/trasioteam/taref-dev:keystone
+    services:
+        - name: docker.io/trasioteam/tamproto:latest
+          alias: tamproto
+    script:
+        - make
+        - TAMIP=`python3 -c 'import socket;print(socket.gethostbyname("tamproto"))'`
+        - curl "http://$TAMIP:8888/api/tam"
+        - make test TAM_URL="http://$TAMIP:8888" | tr -d "\r"
+
+teep_test_optee:
+    stage: test
+    image: docker.io/trasioteam/taref-dev:optee
+    services:
+        - name: docker.io/trasioteam/tamproto:latest
+          alias: tamproto
+    script:
+        - make
+        - make optee_install_qemu
+        - TAMIP=`python3 -c 'import socket;print(socket.gethostbyname("tamproto"))'`
+        - curl "http://$TAMIP:8888/api/tam"
+        - make test TAM_URL="http://$TAMIP:8888" | tr -d "\r"
