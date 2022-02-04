@@ -856,7 +856,7 @@ WARN_LOGFILE           =
 # spaces. See also FILE_PATTERNS and EXTENSION_MAPPING
 # Note: If this tag is empty the current directory is searched.
 
-INPUT		       = ./docs/overview_of_teep-device.md ./docs/teep-device_operations.md ./docs/cloning_and_building.md ./hello-app ./hello-ta ./libteep/lib ./teep-agent-ta ./teep-broker-app
+INPUT		       = ./docs/overview_of_teep-device.md ./docs/teep-device_operations.md ./docs/cloning_and_building.md 
 
 
 # This tag can be used to specify the character encoding of the source files
