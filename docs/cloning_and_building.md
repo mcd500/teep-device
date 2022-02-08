@@ -1,4 +1,4 @@
-# Clone and Building
+# Clone and Building teep-device without docker
 
 Clone the teep-device source code and build it for Keystone, OPTEE and SGX. To build please refer to ta-ref.pdf->preparation section
 - https://192.168.100.100/rinkai/ta-ref/-/blob/teep-device-tb-slim/docs/ta-ref.pdf
