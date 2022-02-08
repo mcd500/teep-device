@@ -1,7 +1,4 @@
 # TEEP-DEVICE Operations
 
-## Step1
-- TO DO by Arun after getting refence from Tsukamoto-san
-
-## Step2
-- TO DO by Arun after getting refence from Tsukamoto-san
+@image html docs/images/teep-operations.png
+@image latex docs/images/teep-operations.png width=\textwidth
