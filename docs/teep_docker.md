@@ -104,6 +104,11 @@ The details are mentioned below.
 
 Following commands are to be executed on Ubuntu 20.04.
 
+To run teep-device, first we need to run tamproto inside the same
+host. Lets clone the tamproto and start it.
+
+**tamproto**
+
 ```sh
 # Clone the tamproto repo and checkout master branch
 $ git clone https://192.168.100.100/rinkai/tamproto.git
@@ -112,465 +117,63 @@ $ git checkout master
 $ docker-compose build
 $ docker-compose up &
 $ cd ..
+```
 
+Trimmed output of starting tamproto
+```console
+tam_api_1  |   TEE_pub: 'teep.jwk' }
+tam_api_1  | Load key TAM_priv
+tam_api_1  | Load key TAM_pub
+tam_api_1  | Load key TEE_priv
+tam_api_1  | Load key TEE_pub
+tam_api_1  | Key binary loaded
+tam_api_1  | 192.168.11.4
+tam_api_1  | Express HTTP  server listening on port 8888
+tam_api_1  | Express HTTPS server listening on port 8443
+```
+
+
+**teep-device**
+
+```sh
 # Clone the teep-device repo and checkout suit-dev branch
 $ git clone https://192.168.100.100/rinkai/teep-device.git
 $ cd teep-device
 $ git checkout suit-dev
-
+    
 # Sync and update the submodules
 $ git submodule sync --recursive
 $ git submodule update --init --recursive
-$ cd ..
+```
 
+**Start the docker**
 
-	
+```sh	
 # Start the docker
-$ docker run --network tamproto_default -it --rm -v $(pwd)/teep-device:/home/user/teep-device trasioteam/taref-dev:keystone-1.0.0
-```  
+$ docker run --network tamproto_default -it --rm -v $(pwd):/home/user/teep-device trasioteam/taref-dev:keystone 
+```
 
 After you start the docker command, you will be logged-in inside the docker container.
 Following are the  commands to be executed inside the docker
 
 ```sh
 # [Inside docker image]
-	
-$ export TAREF_DIR=/home/user/ta-ref
-$ . env/keystone.sh 
-$ make clean
+    
+# Change to teep-device
+$ cd ~/teep-device/
+    
+# make the teep-device
 $ make
-$ cd ..
-	
-# Build and test
-$ cd teep-device/
-$ make
+    
+# After the successful build
+# Test the teep-device
 $ make test
 	
 ```
 
+Trimmed output printing 'hello TA'
+
 ```sh
-make -C platform/keystone test
-make[1]: Entering directory '/home/user/teep-device/platform/keystone'
-curl http://tamproto_tam_api_1:8888/api/
-{"key":"This is sample"}sed "s@http://localhost:8888@http://tamproto_tam_api_1:8888@" manifest/hello-ta.json >/home/user/teep-device/platform/keystone/build/hello-ta.json
-suit-tool create -i /home/user/teep-device/platform/keystone/build/hello-ta.json -o /home/user/teep-device/platform/keystone/build/hello-ta.suit
-create done. Serializing
-suit-tool sign -m /home/user/teep-device/platform/keystone/build/hello-ta.suit -k ../../key/tc-provider-priv.pem -o /home/user/teep-device/platform/keystone/build/signed-hello-ta.suit
-curl http://tamproto_tam_api_1:8888/panel/upload \
-	-F "file=@/home/user/teep-device/platform/keystone/build/signed-hello-ta.suit;filename=integrated-payload-manifest.cbor"
-<!-- /*
-* Copyright (c) 2020 SECOM CO., LTD. All Rights reserved.
-*
-* SPDX-License-Identifier: BSD-2-Clause
-*/-->
-<!DOCTYPE html>
-<html>
-
-<head>
-    <meta charset="UTF-8">
-    <title>TAM UI</title>
-</head>
-<style>
-    table {
-        border-collapse: collapse;
-    }
-
-    tr {
-        border-bottom: dashed #c8c8cb;
-    }
-
-    th {
-        background: #b4ebfa;
-        padding: 0 1em;
-    }
-
-    td {
-        text-align: center;
-        padding: 0.5em;
-    }
-</style>
-
-<body>
-    <h1>TAM UI</h1>
-    <hr>
-    <!-- [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object] -->
-    <h2>TA Images</h2>
-    <table>
-        <tr>
-            <th>File Name</th>
-            <th>Download</th>
-            <th>Delete</th>
-        </tr>
-        
-        <tr>
-            <td>dummy</td>
-            <td><a href="http://tamproto_tam_api_1:8888/TAs/dummy">Get</a></td>
-            <td><a href="http://tamproto_tam_api_1:8888/panel/delete?taname=dummy">Delete</a></td>
-        </tr>
-        
-        <tr>
-            <td>dummy2.ta</td>
-            <td><a href="http://tamproto_tam_api_1:8888/TAs/dummy2.ta">Get</a></td>
-            <td><a href="http://tamproto_tam_api_1:8888/panel/delete?taname=dummy2.ta">Delete</a></td>
-        </tr>
-        
-        <tr>
-            <td>integrated-payload-manifest.cbor</td>
-            <td><a href="http://tamproto_tam_api_1:8888/TAs/integrated-payload-manifest.cbor">Get</a></td>
-            <td><a href="http://tamproto_tam_api_1:8888/panel/delete?taname=integrated-payload-manifest.cbor">Delete</a></td>
-        </tr>
-        
-        <tr>
-            <td>integrated-payload-manifest_hex.txt</td>
-            <td><a href="http://tamproto_tam_api_1:8888/TAs/integrated-payload-manifest_hex.txt">Get</a></td>
-            <td><a href="http://tamproto_tam_api_1:8888/panel/delete?taname=integrated-payload-manifest_hex.txt">Delete</a></td>
-        </tr>
-        
-        <tr>
-            <td>suit_manifest_exp1.cbor</td>
-            <td><a href="http://tamproto_tam_api_1:8888/TAs/suit_manifest_exp1.cbor">Get</a></td>
-            <td><a href="http://tamproto_tam_api_1:8888/panel/delete?taname=suit_manifest_exp1.cbor">Delete</a></td>
-        </tr>
-        
-        <tr>
-            <td>suit_manifest_expX.cbor</td>
-            <td><a href="http://tamproto_tam_api_1:8888/TAs/suit_manifest_expX.cbor">Get</a></td>
-            <td><a href="http://tamproto_tam_api_1:8888/panel/delete?taname=suit_manifest_expX.cbor">Delete</a></td>
-        </tr>
-        
-        <tr>
-            <td>tamproto.md</td>
-            <td><a href="http://tamproto_tam_api_1:8888/TAs/tamproto.md">Get</a></td>
-            <td><a href="http://tamproto_tam_api_1:8888/panel/delete?taname=tamproto.md">Delete</a></td>
-        </tr>
-        
-        <!--
-            <tr>
-                <td>AAA</td>
-                <td>Link</td>
-                <td>Delete</td>
-            </tr>
-            -->
-    </table>
-    <h2>Upload Image</h2>
-    <div>
-        <form action="http://tamproto_tam_api_1:8888/panel//upload" method="POST" enctype="multipart/form-data">
-            <input type="file" name="file">
-            <button type="submit">Upload</button>
-        </form>
-    </div>
-</body>
-
-</html>curl http://tamproto_tam_api_1:8888/panel/upload \
-	-F "file=@/home/user/teep-device/platform/keystone/build/hello-ta/hello-ta;filename=8d82573a-926d-4754-9353-32dc29997f74.ta"
-<!-- /*
-* Copyright (c) 2020 SECOM CO., LTD. All Rights reserved.
-*
-* SPDX-License-Identifier: BSD-2-Clause
-*/-->
-<!DOCTYPE html>
-<html>
-
-<head>
-    <meta charset="UTF-8">
-    <title>TAM UI</title>
-</head>
-<style>
-    table {
-        border-collapse: collapse;
-    }
-
-    tr {
-        border-bottom: dashed #c8c8cb;
-    }
-
-    th {
-        background: #b4ebfa;
-        padding: 0 1em;
-    }
-
-    td {
-        text-align: center;
-        padding: 0.5em;
-    }
-</style>
-
-<body>
-    <h1>TAM UI</h1>
-    <hr>
-    <!-- [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object] -->
-    <h2>TA Images</h2>
-    <table>
-        <tr>
-            <th>File Name</th>
-            <th>Download</th>
-            <th>Delete</th>
-        </tr>
-        
-        <tr>
-            <td>8d82573a-926d-4754-9353-32dc29997f74.ta</td>
-            <td><a href="http://tamproto_tam_api_1:8888/TAs/8d82573a-926d-4754-9353-32dc29997f74.ta">Get</a></td>
-            <td><a href="http://tamproto_tam_api_1:8888/panel/delete?taname=8d82573a-926d-4754-9353-32dc29997f74.ta">Delete</a></td>
-        </tr>
-        
-        <tr>
-            <td>dummy</td>
-            <td><a href="http://tamproto_tam_api_1:8888/TAs/dummy">Get</a></td>
-            <td><a href="http://tamproto_tam_api_1:8888/panel/delete?taname=dummy">Delete</a></td>
-        </tr>
-        
-        <tr>
-            <td>dummy2.ta</td>
-            <td><a href="http://tamproto_tam_api_1:8888/TAs/dummy2.ta">Get</a></td>
-            <td><a href="http://tamproto_tam_api_1:8888/panel/delete?taname=dummy2.ta">Delete</a></td>
-        </tr>
-        
-        <tr>
-            <td>integrated-payload-manifest.cbor</td>
-            <td><a href="http://tamproto_tam_api_1:8888/TAs/integrated-payload-manifest.cbor">Get</a></td>
-            <td><a href="http://tamproto_tam_api_1:8888/panel/delete?taname=integrated-payload-manifest.cbor">Delete</a></td>
-        </tr>
-        
-        <tr>
-            <td>integrated-payload-manifest_hex.txt</td>
-            <td><a href="http://tamproto_tam_api_1:8888/TAs/integrated-payload-manifest_hex.txt">Get</a></td>
-            <td><a href="http://tamproto_tam_api_1:8888/panel/delete?taname=integrated-payload-manifest_hex.txt">Delete</a></td>
-        </tr>
-        
-        <tr>
-            <td>suit_manifest_exp1.cbor</td>
-            <td><a href="http://tamproto_tam_api_1:8888/TAs/suit_manifest_exp1.cbor">Get</a></td>
-            <td><a href="http://tamproto_tam_api_1:8888/panel/delete?taname=suit_manifest_exp1.cbor">Delete</a></td>
-        </tr>
-        
-        <tr>
-            <td>suit_manifest_expX.cbor</td>
-            <td><a href="http://tamproto_tam_api_1:8888/TAs/suit_manifest_expX.cbor">Get</a></td>
-            <td><a href="http://tamproto_tam_api_1:8888/panel/delete?taname=suit_manifest_expX.cbor">Delete</a></td>
-        </tr>
-        
-        <tr>
-            <td>tamproto.md</td>
-            <td><a href="http://tamproto_tam_api_1:8888/TAs/tamproto.md">Get</a></td>
-            <td><a href="http://tamproto_tam_api_1:8888/panel/delete?taname=tamproto.md">Delete</a></td>
-        </tr>
-        
-        <!--
-            <tr>
-                <td>AAA</td>
-                <td>Link</td>
-                <td>Delete</td>
-            </tr>
-            -->
-    </table>
-    <h2>Upload Image</h2>
-    <div>
-        <form action="http://tamproto_tam_api_1:8888/panel//upload" method="POST" enctype="multipart/form-data">
-            <input type="file" name="file">
-            <button type="submit">Upload</button>
-        </form>
-    </div>
-</body>
-
-</html>TAM_URL=http://tamproto_tam_api_1:8888 expect ./script/test.expect
-spawn qemu-system-riscv64 -m 4G -bios /home/user/keystone/build/bootrom.build/bootrom.bin -nographic -machine virt -kernel /home/user/keystone/build/sm.build/platform/generic/firmware/fw_payload.elf -append console=ttyS0 ro root=/dev/vda cma=256M@0x00000000C0000000 -device virtio-blk-device,drive=hd0 -drive file=/home/user/keystone/build/buildroot.build/images/rootfs.ext2,format=raw,id=hd0 -netdev user,id=net0,net=192.168.100.1/24,dhcpstart=192.168.100.128,hostfwd=tcp::10032-:22 -device virtio-net-device,netdev=net0 -device virtio-rng-pci
-overriding secure boot ROM (file: /home/user/keystone/build/bootrom.build/bootrom.bin)
-boot ROM size: 53869
-fdt dumped at 57968
-
-OpenSBI v0.8
-   ____                    _____ ____ _____
-  / __ \                  / ____|  _ \_   _|
- | |  | |_ __   ___ _ __ | (___ | |_) || |
- | |  | | '_ \ / _ \ '_ \ \___ \|  _ < | |
- | |__| | |_) |  __/ | | |____) | |_) || |_
-  \____/| .__/ \___|_| |_|_____/|____/_____|
-        | |
-        |_|
-
-Platform Name             : riscv-virtio,qemu
-Platform Features         : timer,mfdeleg
-Platform HART Count       : 1
-Firmware Base             : 0x80000000
-Firmware Size             : 204 KB
-Runtime SBI Version       : 0.2
-
-Domain0 Name              : root
-Domain0 Boot HART         : 0
-Domain0 HARTs             : 0*
-Domain0 Region00          : 0x0000000080000000-0x000000008003ffff ()
-Domain0 Region01          : 0x0000000000000000-0xffffffffffffffff (R,W,X)
-Domain0 Next Address      : 0x0000000080200000
-Domain0 Next Arg1         : 0x0000000082200000
-Domain0 Next Mode         : S-mode
-Domain0 SysReset          : yes
-
-[SM] Initializing ... hart [0]
-[SM] Keystone security monitor has been initialized!
-Boot HART ID              : 0
-Boot HART Domain          : root
-Boot HART ISA             : rv64imafdcsu
-Boot HART Features        : scounteren,mcounteren,time
-Boot HART PMP Count       : 16
-Boot HART PMP Granularity : 4
-Boot HART PMP Address Bits: 54
-Boot HART MHPM Count      : 0
-Boot HART MHPM Count      : 0
-Boot HART MIDELEG         : 0x0000000000000222
-Boot HART MEDELEG         : 0x000000000000b109
-[    0.000000] OF: fdt: Ignoring memory range 0x80000000 - 0x80200000
-[    0.000000] Linux version 5.7.0-dirty (build-user@0285aa096bcc) (gcc version 10.2.0 (GCC), GNU ld (GNU Binutils) 2.35) #1 SMP Mon Jan 31 07:22:50 UTC 2022
-[    0.000000] initrd not found or empty - disabling initrd
-[    0.000000] Zone ranges:
-[    0.000000]   DMA32    [mem 0x0000000080200000-0x00000000ffffffff]
-[    0.000000]   Normal   [mem 0x0000000100000000-0x000000017fffffff]
-[    0.000000] Movable zone start for each node
-[    0.000000] Early memory node ranges
-[    0.000000]   node   0: [mem 0x0000000080200000-0x000000017fffffff]
-[    0.000000] Initmem setup node 0 [mem 0x0000000080200000-0x000000017fffffff]
-[    0.000000] cma: Reserved 256 MiB at 0x00000000c0000000
-[    0.000000] software IO TLB: mapped [mem 0xfbfff000-0xfffff000] (64MB)
-[    0.000000] SBI specification v0.2 detected
-[    0.000000] SBI implementation ID=0x1 Version=0x8
-[    0.000000] SBI v0.2 TIME extension detected
-[    0.000000] SBI v0.2 IPI extension detected
-[    0.000000] SBI v0.2 RFENCE extension detected
-[    0.000000] SBI v0.2 HSM extension detected
-[    0.000000] riscv: ISA extensions acdfimsu
-[    0.000000] riscv: ELF capabilities acdfim
-[    0.000000] percpu: Embedded 17 pages/cpu s31784 r8192 d29656 u69632
-[    0.000000] Built 1 zonelists, mobility grouping on.  Total pages: 1033735
-[    0.000000] Kernel command line: console=ttyS0 ro root=/dev/vda cma=256M@0x00000000C0000000
-[    0.000000] Dentry cache hash table entries: 524288 (order: 10, 4194304 bytes, linear)
-[    0.000000] Inode-cache hash table entries: 262144 (order: 9, 2097152 bytes, linear)
-[    0.000000] Sorting __ex_table...
-[    0.000000] mem auto-init: stack:off, heap alloc:off, heap free:off
-[    0.000000] Memory: 3783452K/4192256K available (6486K kernel code, 4184K rwdata, 4096K rodata, 235K init, 318K bss, 146660K reserved, 262144K cma-reserved)
-[    0.000000] Virtual kernel memory layout:
-[    0.000000]       fixmap : 0xffffffcefee00000 - 0xffffffceff000000   (2048 kB)
-[    0.000000]       pci io : 0xffffffceff000000 - 0xffffffcf00000000   (  16 MB)
-[    0.000000]      vmemmap : 0xffffffcf00000000 - 0xffffffcfffffffff   (4095 MB)
-[    0.000000]      vmalloc : 0xffffffd000000000 - 0xffffffdfffffffff   (65535 MB)
-[    0.000000]       lowmem : 0xffffffe000000000 - 0xffffffe0ffe00000   (4094 MB)
-[    0.000000] SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
-[    0.000000] rcu: Hierarchical RCU implementation.
-[    0.000000] rcu: 	RCU restricting CPUs from NR_CPUS=8 to nr_cpu_ids=1.
-[    0.000000] rcu: 	RCU debug extended QS entry/exit.
-[    0.000000] rcu: RCU calculated value of scheduler-enlistment delay is 25 jiffies.
-[    0.000000] rcu: Adjusting geometry for rcu_fanout_leaf=16, nr_cpu_ids=1
-[    0.000000] NR_IRQS: 0, nr_irqs: 0, preallocated irqs: 0
-[    0.000000] plic: mapped 53 interrupts with 1 handlers for 2 contexts.
-[    0.000000] riscv_timer_init_dt: Registering clocksource cpuid [0] hartid [0]
-[    0.000000] clocksource: riscv_clocksource: mask: 0xffffffffffffffff max_cycles: 0x24e6a1710, max_idle_ns: 440795202120 ns
-[    0.000139] sched_clock: 64 bits at 10MHz, resolution 100ns, wraps every 4398046511100ns
-[    0.003268] Console: colour dummy device 80x25
-[    0.004510] Calibrating delay loop (skipped), value calculated using timer frequency.. 20.00 BogoMIPS (lpj=40000)
-[    0.004648] pid_max: default: 32768 minimum: 301
-[    0.008142] Mount-cache hash table entries: 8192 (order: 4, 65536 bytes, linear)
-[    0.008251] Mountpoint-cache hash table entries: 8192 (order: 4, 65536 bytes, linear)
-[    0.032748] rcu: Hierarchical SRCU implementation.
-[    0.034792] smp: Bringing up secondary CPUs ...
-[    0.034885] smp: Brought up 1 node, 1 CPU
-[    0.043732] devtmpfs: initialized
-[    0.048633] random: get_random_u32 called from bucket_table_alloc.isra.0+0x4e/0x154 with crng_init=0
-[    0.050882] clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 7645041785100000 ns
-[    0.051029] futex hash table entries: 256 (order: 2, 16384 bytes, linear)
-[    0.058032] NET: Registered protocol family 16
-[    0.106766] vgaarb: loaded
-[    0.108138] SCSI subsystem initialized
-[    0.109627] usbcore: registered new interface driver usbfs
-[    0.109985] usbcore: registered new interface driver hub
-[    0.110126] usbcore: registered new device driver usb
-[    0.119911] clocksource: Switched to clocksource riscv_clocksource
-[    0.133399] NET: Registered protocol family 2
-[    0.137106] tcp_listen_portaddr_hash hash table entries: 2048 (order: 4, 81920 bytes, linear)
-[    0.137406] TCP established hash table entries: 32768 (order: 6, 262144 bytes, linear)
-[    0.138176] TCP bind hash table entries: 32768 (order: 8, 1048576 bytes, linear)
-[    0.140751] TCP: Hash tables configured (established 32768 bind 32768)
-[    0.141743] UDP hash table entries: 2048 (order: 5, 196608 bytes, linear)
-[    0.142333] UDP-Lite hash table entries: 2048 (order: 5, 196608 bytes, linear)
-[    0.143909] NET: Registered protocol family 1
-[    0.146746] RPC: Registered named UNIX socket transport module.
-[    0.146794] RPC: Registered udp transport module.
-[    0.146810] RPC: Registered tcp transport module.
-[    0.146826] RPC: Registered tcp NFSv4.1 backchannel transport module.
-[    0.146913] PCI: CLS 0 bytes, default 64
-[    0.152595] workingset: timestamp_bits=62 max_order=20 bucket_order=0
-[    0.171645] NFS: Registering the id_resolver key type
-[    0.172381] Key type id_resolver registered
-[    0.172422] Key type id_legacy registered
-[    0.172521] nfs4filelayout_init: NFSv4 File Layout Driver Registering...
-[    0.173077] 9p: Installing v9fs 9p2000 file system support
-[    0.174388] NET: Registered protocol family 38
-[    0.174639] Block layer SCSI generic (bsg) driver version 0.4 loaded (major 253)
-[    0.174745] io scheduler mq-deadline registered
-[    0.174819] io scheduler kyber registered
-[    0.182005] pci-host-generic 30000000.pci: host bridge /soc/pci@30000000 ranges:
-[    0.182673] pci-host-generic 30000000.pci:       IO 0x0003000000..0x000300ffff -> 0x0000000000
-[    0.183162] pci-host-generic 30000000.pci:      MEM 0x0040000000..0x007fffffff -> 0x0040000000
-[    0.185545] pci-host-generic 30000000.pci: ECAM at [mem 0x30000000-0x3fffffff] for [bus 00-ff]
-[    0.186497] pci-host-generic 30000000.pci: PCI host bridge to bus 0000:00
-[    0.186684] pci_bus 0000:00: root bus resource [bus 00-ff]
-[    0.186807] pci_bus 0000:00: root bus resource [io  0x0000-0xffff]
-[    0.186827] pci_bus 0000:00: root bus resource [mem 0x40000000-0x7fffffff]
-[    0.187630] pci 0000:00:00.0: [1b36:0008] type 00 class 0x060000
-[    0.190793] pci 0000:00:01.0: [1af4:1005] type 00 class 0x00ff00
-[    0.191116] pci 0000:00:01.0: reg 0x10: [io  0x0000-0x001f]
-[    0.191293] pci 0000:00:01.0: reg 0x20: [mem 0x00000000-0x00003fff 64bit pref]
-[    0.193360] pci 0000:00:01.0: BAR 4: assigned [mem 0x40000000-0x40003fff 64bit pref]
-[    0.193639] pci 0000:00:01.0: BAR 0: assigned [io  0x0000-0x001f]
-[    0.199034] virtio-pci 0000:00:01.0: enabling device (0000 -> 0003)
-[    0.261614] Serial: 8250/16550 driver, 4 ports, IRQ sharing disabled
-[    0.267751] printk: console [ttyS0] disabled
-[    0.268616] 10000000.uart: ttyS0 at MMIO 0x10000000 (irq = 2, base_baud = 230400) is a 16550A
-[    0.295219] printk: console [ttyS0] enabled
-[    0.301931] [drm] radeon kernel modesetting enabled.
-[    0.310973] random: fast init done
-[    0.312161] random: crng init done
-[    0.322438] loop: module loaded
-[    0.336498] virtio_blk virtio0: [vda] 122880 512-byte logical blocks (62.9 MB/60.0 MiB)
-[    0.336799] vda: detected capacity change from 0 to 62914560
-[    0.359644] libphy: Fixed MDIO Bus: probed
-[    0.365061] e1000e: Intel(R) PRO/1000 Network Driver - 3.2.6-k
-[    0.365247] e1000e: Copyright(c) 1999 - 2015 Intel Corporation.
-[    0.365739] ehci_hcd: USB 2.0 'Enhanced' Host Controller (EHCI) Driver
-[    0.365959] ehci-pci: EHCI PCI platform driver
-[    0.366248] ehci-platform: EHCI generic platform driver
-[    0.366614] ohci_hcd: USB 1.1 'Open' Host Controller (OHCI) Driver
-[    0.366916] ohci-pci: OHCI PCI platform driver
-[    0.367265] ohci-platform: OHCI generic platform driver
-[    0.369838] usbcore: registered new interface driver uas
-[    0.370177] usbcore: registered new interface driver usb-storage
-[    0.371710] mousedev: PS/2 mouse device common for all mice
-[    0.373699] usbcore: registered new interface driver usbhid
-[    0.373889] usbhid: USB HID core driver
-[    0.375880] NET: Registered protocol family 10
-[    0.382090] Segment Routing with IPv6
-[    0.382604] sit: IPv6, IPv4 and MPLS over IPv4 tunneling driver
-[    0.384985] NET: Registered protocol family 17
-[    0.386370] 9pnet: Installing 9P2000 support
-[    0.386758] Key type dns_resolver registered
-[    0.402943] EXT4-fs (vda): mounting ext2 file system using the ext4 subsystem
-[    0.411203] EXT4-fs (vda): mounted filesystem without journal. Opts: (null)
-[    0.411696] VFS: Mounted root (ext2 filesystem) readonly on device 254:0.
-[    0.414508] devtmpfs: mounted
-[    0.451434] Freeing unused kernel memory: 232K
-[    0.452285] Run /sbin/init as init process
-[    0.616587] EXT4-fs (vda): re-mounted. Opts: (null)
-Starting syslogd: OK
-Starting klogd: OK
-Running sysctl: OK
-Saving random seed: OK
-Starting network: udhcpc: started, v1.32.0
-udhcpc: sending discover
-udhcpc: sending select for 192.168.100.128
-udhcpc: lease of 192.168.100.128 obtained, lease time 86400
-deleting routers
-adding dns 192.168.100.3
-OK
-Starting dropbear sshd: OK
-
-Welcome to Buildroot
 buildroot login: root
 Password: sifive
 PS1='##''## '
@@ -594,7 +197,8 @@ total 1359
 [debug] eyrie boot finished. drop to the user land ... (boot.c:172)
 hello TA
 #### ./hello-app 8d82573a-926d-4754-9353-32dc29997f74.ta eyrie-rt
-[Keystone SDK] /home/user/keystone/sdk/src/host/ElfFile.cpp:26 : file does not exist - 8d82573a-926d-4754-9353-32dc29997f74.ta
+[Keystone SDK] /home/user/keystone/sdk/src/host/ElfFile.cpp:26 : file does not exist 
+- 8d82573a-926d-4754-9353-32dc29997f74.ta
 [Keystone SDK] /home/user/keystone/sdk/src/host/Enclave.cpp:209 : Invalid enclave ELF
 
 ./hello-app: Unable to start enclave
@@ -697,8 +301,10 @@ cmp: 8d82573a-926d-4754-9353-32dc29997f74.ta.secstor.plain: No such file or dire
 
 ### Building teep-device for Optee with docker
 
-Following commands are to be executed on Ubuntu 20.04.  
-The following commands will run a server in the current terminal session.
+To run teep-device, first we need to run tamproto inside the same
+host. Lets clone the tamproto and start it.
+
+**tamproto**
 
 ```sh
 # Clone the tamproto repo and checkout master branch
@@ -709,7 +315,24 @@ $ docker-compose build
 $ docker-compose up &
 $ cd ..
 ```
-The following commands run on new terminal will clone teep-device and to run docker.
+
+Trimmed output of starting tamproto
+```console
+tam_api_1  |   TEE_pub: 'teep.jwk' }
+tam_api_1  | Load key TAM_priv
+tam_api_1  | Load key TAM_pub
+tam_api_1  | Load key TEE_priv
+tam_api_1  | Load key TEE_pub
+tam_api_1  | Key binary loaded
+tam_api_1  | 192.168.11.4
+tam_api_1  | Express HTTP  server listening on port 8888
+tam_api_1  | Express HTTPS server listening on port 8443
+```
+
+Copy the IP address of the tamproto which will be passed in the 
+next section.
+
+**teep-device**
 
 ```sh
 # Clone the teep-device repo and checkout suit-dev branch
@@ -720,11 +343,13 @@ $ git checkout suit-dev
 # Sync and update the submodules
 $ git submodule sync --recursive
 $ git submodule update --init --recursive
-$ cd ..
+```
 
-	
+**Start the docker**
+
+```sh	
 # Start the docker
-$ docker run --network tamproto_default -it --rm -v $(pwd)/teep-device:/home/user/teep-device trasioteam/taref-dev:optee
+$ docker run --network tamproto_default -it --rm -v $(pwd):/home/user/teep-device trasioteam/taref-dev:optee
 ```  
 
 After you start the docker command, you will be logged-in inside the docker container.
@@ -733,24 +358,163 @@ Following are the commands to be executed inside the docker
 ```sh
 # [Inside docker image]
 	
-$ export TAREF_DIR=/home/user/ta-ref
-$ PATH=/home/user/optee/toolchains/aarch64/bin:$PATH
-$ . env/optee_qemu.sh 
-$ make clean
+# Change to teep-device
+$ cd ~/teep-device/
+    
+# Build the teep device
 $ make
-$ cd ..
-	
-# Build and test
-$ cd teep-device/
-$ make
+    
+# Install the TA on qemu
+$ make optee_install_qemu
+    
+# After the successful build
+# Test the teep-device
 $ make test
-	
+    
 ```
 
-```sh
-======= OUTPUT TO BE PUT HERE =======
+Trimmed output of the test 
+
+```console
+cat /home/user/optee/out/bin/serial1.log
+D/TC:0   add_phys_mem:586 TEE_SHMEM_START type NSEC_SHM 0x42000000 size 0x00200000
+D/TC:0   add_phys_mem:586 TA_RAM_START type TA_RAM 0x0e300000 size 0x00d00000
+D/TC:0   add_phys_mem:586 VCORE_UNPG_RW_PA type TEE_RAM_RW 0x0e160000 size 0x001a0000
+D/TC:0   add_phys_mem:586 VCORE_UNPG_RX_PA type TEE_RAM_RX 0x0e100000 size 0x00060000
+D/TC:0   add_phys_mem:586 ROUNDDOWN(0x09040000, CORE_MMU_PGDIR_SIZE) type IO_SEC 0x09000000 size 0x00200000
+D/TC:0   verify_special_mem_areas:524 No NSEC DDR memory area defined
+D/TC:0   add_va_space:625 type RES_VASPACE size 0x00a00000
+D/TC:0   add_va_space:625 type SHM_VASPACE size 0x02000000
+D/TC:0   init_mem_map:1129 Mapping core at 0xd3ab6000 offs 0xc59b6000
+D/TC:0   dump_mmap_table:737 type IDENTITY_MAP_RX va 0x0e100000..0x0e101fff pa 0x0e100000..0x0e101fff size 0x00002000 (smallpg)
+D/TC:0   dump_mmap_table:737 type TEE_RAM_RX   va 0xd3ab6000..0xd3b15fff pa 0x0e100000..0x0e15ffff size 0x00060000 (smallpg)
+D/TC:0   dump_mmap_table:737 type TEE_RAM_RW   va 0xd3b16000..0xd3cb5fff pa 0x0e160000..0x0e2fffff size 0x001a0000 (smallpg)
+D/TC:0   dump_mmap_table:737 type TA_RAM       va 0xd3d00000..0xd49fffff pa 0x0e300000..0x0effffff size 0x00d00000 (smallpg)
+D/TC:0   dump_mmap_table:737 type RES_VASPACE  va 0xd4a00000..0xd53fffff pa 0x00000000..0x009fffff size 0x00a00000 (pgdir)
+D/TC:0   dump_mmap_table:737 type SHM_VASPACE  va 0xd5400000..0xd73fffff pa 0x00000000..0x01ffffff size 0x02000000 (pgdir)
+D/TC:0   dump_mmap_table:737 type IO_SEC       va 0xd7400000..0xd75fffff pa 0x09000000..0x091fffff size 0x00200000 (pgdir)
+D/TC:0   dump_mmap_table:737 type NSEC_SHM     va 0xd7600000..0xd77fffff pa 0x42000000..0x421fffff size 0x00200000 (pgdir)
+D/TC:0   core_mmu_entry_to_finer_grained:762 xlat tables used 1 / 7
+D/TC:0   core_mmu_entry_to_finer_grained:762 xlat tables used 2 / 7
+D/TC:0   core_mmu_entry_to_finer_grained:762 xlat tables used 3 / 7
+D/TC:0   core_mmu_entry_to_finer_grained:762 xlat tables used 4 / 7
+D/TC:0   core_mmu_entry_to_finer_grained:762 xlat tables used 5 / 7
+I/TC: 
+D/TC:0 0 init_canaries:188 #Stack canaries for stack_tmp[0] with top at 0xd3b4aab8
+D/TC:0 0 init_canaries:188 watch *0xd3b4aabc
+D/TC:0 0 init_canaries:188 #Stack canaries for stack_tmp[1] with top at 0xd3b4b2f8
+D/TC:0 0 init_canaries:188 watch *0xd3b4b2fc
+D/TC:0 0 init_canaries:188 #Stack canaries for stack_tmp[2] with top at 0xd3b4bb38
+D/TC:0 0 init_canaries:188 watch *0xd3b4bb3c
+D/TC:0 0 init_canaries:188 #Stack canaries for stack_tmp[3] with top at 0xd3b4c378
+D/TC:0 0 init_canaries:188 watch *0xd3b4c37c
+D/TC:0 0 init_canaries:189 #Stack canaries for stack_abt[0] with top at 0xd3b43d38
+D/TC:0 0 init_canaries:189 watch *0xd3b43d3c
+D/TC:0 0 init_canaries:189 #Stack canaries for stack_abt[1] with top at 0xd3b44978
+D/TC:0 0 init_canaries:189 watch *0xd3b4497c
+D/TC:0 0 init_canaries:189 #Stack canaries for stack_abt[2] with top at 0xd3b455b8
+D/TC:0 0 init_canaries:189 watch *0xd3b455bc
+D/TC:0 0 init_canaries:189 #Stack canaries for stack_abt[3] with top at 0xd3b461f8
+D/TC:0 0 init_canaries:189 watch *0xd3b461fc
+D/TC:0 0 init_canaries:191 #Stack canaries for stack_thread[0] with top at 0xd3b48238
+D/TC:0 0 init_canaries:191 watch *0xd3b4823c
+D/TC:0 0 init_canaries:191 #Stack canaries for stack_thread[1] with top at 0xd3b4a278
+D/TC:0 0 init_canaries:191 watch *0xd3b4a27c
+D/TC:0 0 select_vector:1118 SMCCC_ARCH_WORKAROUND_1 (0x80008000) available
+D/TC:0 0 select_vector:1119 SMC Workaround for CVE-2017-5715 used
+I/TC: Non-secure external DT found
+D/TC:0 0 carve_out_phys_mem:286 No need to carve out 0xe100000 size 0x200000
+D/TC:0 0 carve_out_phys_mem:286 No need to carve out 0xe300000 size 0xd00000
+I/TC: Switching console to device: /pl011@9040000
+I/TC: OP-TEE version: 3.10.0 (gcc version 8.3.0 (GNU Toolchain for the A-profile Architecture 8.3-2019.03 (arm-rel-8.36))) #1 Tue 01 Feb 2022 02:37:47 PM UTC aarch64
+I/TC: Primary CPU initializing
+D/TC:0 0 paged_init_primary:1188 Executing at offset 0xc59b6000 with virtual load address 0xd3ab6000
+D/TC:0 0 call_initcalls:21 level 1 register_time_source()
+D/TC:0 0 call_initcalls:21 level 1 teecore_init_pub_ram()
+D/TC:0 0 call_initcalls:21 level 3 check_ta_store()
+D/TC:0 0 check_ta_store:636 TA store: "Secure Storage TA"
+D/TC:0 0 check_ta_store:636 TA store: "REE"
+D/TC:0 0 call_initcalls:21 level 3 init_user_ta()
+D/TC:0 0 call_initcalls:21 level 3 verify_pseudo_tas_conformance()
+D/TC:0 0 call_initcalls:21 level 3 mobj_mapped_shm_init()
+D/TC:0 0 mobj_mapped_shm_init:434 Shared memory address range: d5400000, d7400000
+D/TC:0 0 call_initcalls:21 level 3 tee_cryp_init()
+D/TC:0 0 call_initcalls:21 level 4 tee_fs_init_key_manager()
+D/TC:0 0 call_initcalls:21 level 6 mobj_init()
+D/TC:0 0 call_initcalls:21 level 6 default_mobj_init()
+D/TC:0 0 call_finalcalls:40 level 1 release_external_dt()
+I/TC: Primary CPU switching to normal world boot
+I/TC: Secondary CPU 1 initializing
+D/TC:1   select_vector:1118 SMCCC_ARCH_WORKAROUND_1 (0x80008000) available
+D/TC:1   select_vector:1119 SMC Workaround for CVE-2017-5715 used
+I/TC: Secondary CPU 1 switching to normal world boot
+D/TC:1   tee_entry_exchange_capabilities:102 Dynamic shared memory is enabled
+D/TC:1 0 core_mmu_entry_to_finer_grained:762 xlat tables used 6 / 7
+D/TC:? 0 tee_ta_init_pseudo_ta_session:283 Lookup pseudo TA 7011a688-ddde-4053-a5a9-7b3c4ddf13b8
+D/TC:? 0 tee_ta_init_pseudo_ta_session:296 Open device.pta
+D/TC:? 0 tee_ta_init_pseudo_ta_session:310 device.pta : 7011a688-ddde-4053-a5a9-7b3c4ddf13b8
+D/TC:? 0 tee_ta_close_session:499 csess 0xd3b32a00 id 1
+D/TC:? 0 tee_ta_close_session:518 Destroy session
+D/TC:? 0 tee_ta_init_pseudo_ta_session:283 Lookup pseudo TA 8d82573a-926d-4754-9353-32dc29997f74
+D/TC:? 0 load_ldelf:704 ldelf load address 0x40006000
+D/LD:  ldelf:134 Loading TA 8d82573a-926d-4754-9353-32dc29997f74
+D/TC:? 0 tee_ta_init_pseudo_ta_session:283 Lookup pseudo TA 3a2f8978-5dc0-11e8-9c2d-fa7ae01bbebc
+D/TC:? 0 tee_ta_init_pseudo_ta_session:296 Open system.pta
+D/TC:? 0 tee_ta_init_pseudo_ta_session:310 system.pta : 3a2f8978-5dc0-11e8-9c2d-fa7ae01bbebc
+D/TC:? 0 system_open_ta_binary:257 Lookup user TA ELF 8d82573a-926d-4754-9353-32dc29997f74 (Secure Storage TA)
+D/TC:? 0 system_open_ta_binary:260 res=0xffff0008
+D/TC:? 0 system_open_ta_binary:257 Lookup user TA ELF 8d82573a-926d-4754-9353-32dc29997f74 (REE)
+D/TC:? 0 system_open_ta_binary:260 res=0x0
+D/LD:  ldelf:169 ELF (8d82573a-926d-4754-9353-32dc29997f74) at 0x40035000
+D/TC:? 0 tee_ta_close_session:499 csess 0xd3b32060 id 1
+D/TC:? 0 tee_ta_close_session:518 Destroy session
+D/TC:? 0 tee_ta_invoke_command:773 Error: ffff0009 of 4
+D/TC:? 0 tee_ta_close_session:499 csess 0xd3b32860 id 1
+D/TC:? 0 tee_ta_close_session:518 Destroy session
+D/TC:? 0 destroy_context:298 Destroy TA ctx (0xd3b32800)
+D/TC:? 0 tee_ta_init_pseudo_ta_session:283 Lookup pseudo TA 68373894-5bb3-403c-9eec-3114a1f5d3fc
+D/TC:? 0 load_ldelf:704 ldelf load address 0x40006000
+D/LD:  ldelf:134 Loading TA 68373894-5bb3-403c-9eec-3114a1f5d3fc
+D/TC:? 0 tee_ta_init_session_with_context:573 Re-open TA 3a2f8978-5dc0-11e8-9c2d-fa7ae01bbebc
+D/TC:? 0 system_open_ta_binary:257 Lookup user TA ELF 68373894-5bb3-403c-9eec-3114a1f5d3fc (Secure Storage TA)
+D/TC:? 0 system_open_ta_binary:260 res=0xffff0008
+D/TC:? 0 system_open_ta_binary:257 Lookup user TA ELF 68373894-5bb3-403c-9eec-3114a1f5d3fc (REE)
+D/TC:? 0 system_open_ta_binary:260 res=0x0
+D/LD:  ldelf:169 ELF (68373894-5bb3-403c-9eec-3114a1f5d3fc) at 0x4002f000
+D/TC:? 0 tee_ta_close_session:499 csess 0xd3b31340 id 1
+D/TC:? 0 tee_ta_close_session:518 Destroy session
+M/TA: command: 20
+M/TA: execute suit-set-parameters
+M/TA: command: 1
+M/TA: execute suit-condition-vendor-identifier
+M/TA: command: 2
+M/TA: execute suit-condition-class-identifier
+M/TA: command: 19
+M/TA: execute suit-set-parameters
+M/TA: command: 21
+M/TA: execute suit-directive-fetch
+M/TA: fetch_and_store component
+M/TA: component download 55976
+M/TA: store component
+M/TA:   device   = TEEP-Device
+M/TA:   storage  = SecureFS
+M/TA:   filename = 8d82573a-926d-4754-9353-32dc29997f74.ta
+D/TC:? 0 tee_ta_init_pseudo_ta_session:283 Lookup pseudo TA 6e256cba-fc4d-4941-ad09-2ca1860342dd
+D/TC:? 0 tee_ta_init_pseudo_ta_session:296 Open secstor_ta_mgmt
+D/TC:? 0 tee_ta_init_pseudo_ta_session:310 secstor_ta_mgmt : 6e256cba-fc4d-4941-ad09-2ca1860342dd
+D/TC:? 0 install_ta:99 Installing 8d82573a-926d-4754-9353-32dc29997f74
+D/TC:? 0 tee_ta_close_session:499 csess 0xd3b301c0 id 1
+D/TC:? 0 tee_ta_close_session:518 Destroy session
+M/TA: finish fetch
+M/TA: command: 3
+M/TA: execute suit-condition-image-match
+M/TA: end of command seq
+D/TC:? 0 tee_ta_close_session:499 csess 0xd3b31b40 id 1
+D/TC:? 0 tee_ta_close_session:518 Destroy session
+D/TC:? 0 destroy_context:298 Destroy TA ctx (0xd3b31ae0)
+make[1]: Leaving directory '/home/user/teep-device/platform/op-tee'
 ```
 
-### Building teep-device for Keystone with docker
+### Building teep-device for SGX with docker
 
 
