@@ -14,17 +14,13 @@ export APP_CFLAGS = \
 	-I$(SOURCE)/include \
 	-I$(KEYSTONE_SDK_DIR)/lib/host/include \
 	-I$(KEYSTONE_SDK_DIR)/lib/edge/include \
-	-I$(KEYSTONE_SDK_DIR)/lib/verifier \
 	-I$(TAREF_DIR)/build/include \
-	-I$(TAREF_DIR)/include \
-	-I./ \
-	-I$(TAREF_DIR)/ref-ta/profiler \
 	-I$(SOURCE)/libteep/lib \
 	-I$(BUILD)/libteep/ree/libwebsockets/include \
 	-I$(SOURCE)/submodule/libwebsockets/include \
 	-I$(SOURCE)/submodule/mbedtls/include \
 	-I$(BUILD)/libteep/ree/QCBOR/inc \
-	-DKEYSTONE -DPLAT_KEYSTONE -DAPP_VERBOSE -Wall
+	-DPLAT_KEYSTONE
 
 export APP_LDFLAGS = \
 	-L$(KEYSTONE_SDK_DIR)/lib \
@@ -42,21 +38,15 @@ export TEE_CFLAGS = \
 	-I$(BUILD)/libteep/tee/QCBOR/inc
 
 export TA_CFLAGS = \
-	-Wall -fno-builtin-printf -DEDGE_IGNORE_EGDE_RESULT -DCRYPTLIB=MBEDCRYPT \
+	-Wall -fno-builtin-printf -DEDGE_IGNORE_EGDE_RESULT \
 	-I. \
 	-I$(SOURCE)/include \
-	-I$(TAREF_DIR)/api/include \
-	-I$(TAREF_DIR)/api/keystone \
 	-I$(TAREF_DIR)/build/include \
-	-I$(TAREF_DIR)/keyedge/target/include \
 	-I$(KEYSTONE_SDK_DIR)/include/app \
 	-I$(KEYSTONE_SDK_DIR)/include/edge \
-	-I$(BUILD)/libteep/tee/libwebsockets/include \
 	-I$(BUILD)/libteep/tee/QCBOR/inc \
 	-I$(SOURCE)/suit/include \
 	-I$(SOURCE)/libteep/lib \
-	-I$(SOURCE)/key/include \
-	-DKEYSTONE \
 	-DPLAT_KEYSTONE
 
 export TA_LDFLAGS = \
@@ -75,10 +65,7 @@ export TA_LIBS = \
 	-lteep \
 	-lqcbor \
 	-lkeystone-eapp \
-	-lmbedtls \
 	-lteesuit
-
-TA_CFLAGS += -I../libteep/mbedtls/include # XXX: use ta-ref/crypto/include
 
 TOOLCHAIN-ree = $(CURDIR)/cross-riscv64.cmake
 TOOLCHAIN-tee = $(CURDIR)/cross-riscv64.cmake
@@ -103,8 +90,6 @@ libteep-libwebsockets-host-DISABLE = y
 libteep-QCBOR-host-DISABLE = y
 
 libteep-QCBOR-ree-FLAGS = CC=$(CROSS_COMPILE)gcc
-
-#libteep-mbedtls-tee-DISABLE = y
 
 libteep-mbedtls-ree-FLAGS = \
 	-DCMAKE_TOOLCHAIN_FILE=$(TOOLCHAIN-ree) \
@@ -132,41 +117,6 @@ libteep-libwebsockets-ree-FLAGS = \
 	-DLWS_WITHOUT_TESTAPPS=1 \
 	-DLWS_WITHOUT_EXTENSIONS=1 \
 	-DLWS_WITH_ZLIB=0
-
-libteep-mbedtls-tee-FLAGS = \
-	-DCMAKE_TOOLCHAIN_FILE=$(TOOLCHAIN-tee) \
-	-DCMAKE_INSTALL_PREFIX:PATH=staging \
-	-DENABLE_TESTING=0  \
-	-DCMAKE_BUILD_TYPE=RELEASE \
-	-DUSE_SHARED_MBEDTLS_LIBRARY=1
-
-libteep-libwebsockets-tee-DISABLE = y
-
-libteep-libwebsockets-tee-FLAGS = \
-	-DCMAKE_TOOLCHAIN_FILE=$(TOOLCHAIN-tee) \
-	-DLWS_PLAT_OPTEE=1 \
-	-DLWS_PLAT_KEYSTONE=1 \
-	-DLWS_ROLE_WS=0 \
-	-DLWS_WITH_SSL=1 \
-	-DLWS_WITH_MBEDTLS=1 \
-	-DMBEDTLS_LIBRARY=$(BUILD)/libteep/tee/mbedtls/library/libmbedtls.a \
-	-DMBEDX509_LIBRARY=$(BUILD)/libteep/tee/mbedtls/library/libmbedx509.a \
-	-DMBEDCRYPTO_LIBRARY=$(BUILD)/libteep/tee/mbedtls/library/libmbedcrypto.a \
-	-DLWS_MBEDTLS_INCLUDE_DIRS="$(SOURCE)/submodule/mbedtls/include" \
-	-DLWS_WITH_JOSE=1 \
-	-DLWS_WITHOUT_SERVER=1 \
-	-DLWS_WITH_STATIC=1 \
-	-DLWS_WITH_SHARED=0 \
-	-DLWS_STATIC_PIC=1 \
-	-DLWS_MAX_SMP=1 \
-	-DCMAKE_BUILD_TYPE=RELEASE \
-	-DLWS_WITHOUT_TESTAPPS=1 \
-	-DLWS_WITHOUT_EXTENSIONS=1 \
-	-DLWS_WITH_ZLIB=0 \
-	-DLWS_WITH_DIR=0 \
-	-DLWS__INCLUDE_DIRS=$(INCLUDES) \
-	-DCMAKE_BUILD_TYPE=Release \
-	-DCMAKE_C_FLAGS="-Wno-unused-variable -I$(TAREF_DIR)/build/include -I$(TAREF_DIR)/include -DCRYPTLIB=MBEDCRYPT -DPLAT_KEYSTONE"
 
 libteep-QCBOR-tee-FLAGS = CC=$(CROSS_COMPILE)gcc
 
@@ -207,23 +157,6 @@ install: all
 		sed -i 's/3000/$$TAM_PORT/' $(prefix)/root/$$f.sh; \
 	done
 
-SHIP_BINS = \
-	$(BUILD)/hello-ta/hello-ta \
-	$(BUILD)/hello-app/hello-app \
-	$(BUILD)/teep-agent-ta/teep-agent-ta \
-	$(BUILD)/teep-broker-app/teep-broker-app \
-	$(KEYSTONE_DIR)/sdk/rts/eyrie/eyrie-rt \
-	$(KEYSTONE_DIR)/buildroot_overlay/root/keystone-driver.ko
-
-SHIP_LIBS = \
-	$(BUILD)/libteep/ree/mbedtls/library/lib* \
-	$(BUILD)/libteep/ree/libwebsockets/lib/lib*
-
-ship-trvsim: all
-	sshpass -p sifive ssh -p $(PORT) -o "StrictHostKeyChecking no" root@trvsim mkdir -p /root/teep-device /usr/lib
-	sshpass -p sifive scp -P $(PORT) -o "StrictHostKeyChecking no" $(SHIP_BINS) root@trvsim:/root/teep-device/
-	sshpass -p sifive scp -P $(PORT) -o "StrictHostKeyChecking no" $(SHIP_LIBS) root@trvsim:/usr/lib/
-
 image: install
 	make -C $(KEYSTONE_DIR)/build image
 
@@ -244,31 +177,6 @@ run-qemu:
 		-device virtio-rng-pci
 
 TAM_URL ?= http://tamproto_tam_api_1:8888
-
-upload_encfile_to_tamproto:
-	#cd $(SOURCE)/scripts/keygen && npm install
-	#node $(SOURCE)/scripts/keygen/sign-then-enc.js \
-	#	$(SOURCE)/key/test-jw_tee_sds_xbank_spaik-priv.jwk \
-	#	$(SOURCE)/key/test-jw_tee_identity_tee-mytee-public.jwk \
-	#	$(BUILD)/hello-ta/hello-ta
-	curl $(TAM_URL)/api/
-	#curl $(TAM_URL)/panel/upload \
-	#	-F "file=@$(BUILD)/hello-ta/hello-ta.sign.enc;filename=$(HELLO_TA_UUID).ta"
-	sed "s@http://localhost:8888@#tc@" manifest/hello-ta.json >$(BUILD)/hello-ta.json
-	suit-tool create -i $(BUILD)/hello-ta.json -o $(BUILD)/hello-ta.suit
-	suit-tool sign -m $(BUILD)/hello-ta.suit -k ../../key/tc-provider-priv.pem -o $(BUILD)/signed-hello-ta.suit
-	$(SOURCE)/scripts/add-payload.py --key "#tc" --payload $(BUILD)/hello-ta/hello-ta --in $(BUILD)/signed-hello-ta.suit --out $(BUILD)/signed-hello-ta-payload.suit
-	curl $(TAM_URL)/panel/upload \
-		-F "file=@$(BUILD)/signed-hello-ta-payload.suit;filename=integrated-payload-manifest.cbor"
-
-	#sed "s@http://localhost:8888@$(TAM_URL)@" manifest/hello-ta.json >$(BUILD)/hello-ta.json
-	#suit-tool create -i $(BUILD)/hello-ta.json -o $(BUILD)/hello-ta.suit
-	#suit-tool sign -m $(BUILD)/hello-ta.suit -k ../../key/tc-provider-priv.pem -o $(BUILD)/signed-hello-ta.suit
-	#curl $(TAM_URL)/panel/upload \
-	#	-F "file=@$(BUILD)/signed-hello-ta.suit;filename=suit_manifest_exp1.cbor"
-
-test-trvsim: upload_encfile_to_tamproto
-	PORT=$(PORT) TAM_URL=$(TAM_URL) expect ./script/test_trvsim.expect
 
 test_integrated_payload:
 	curl $(TAM_URL)/api/

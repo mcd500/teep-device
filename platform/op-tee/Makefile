@@ -25,12 +25,10 @@ export APP_LDFLAGS ?= \
 	-L$(OPTEE_DIR)/out-br/target/usr/lib \
 	-L$(OPTEE_DIR)/optee_client/out/libteec \
 	-L$(BUILD)/libteep/ree/lib \
-	-L$(BUILD)/libteep/tee/lib \
 	-L$(BUILD)/libteep/ree/mbedtls/library \
 	-L$(BUILD)/libteep/ree/libwebsockets/lib
 
 export APP_LIBS ?= \
-	-lteep \
 	-lteec \
 	-lwebsockets \
 	-lmbedtls \
@@ -46,14 +44,12 @@ export TA_CFLAGS = $(TEE_CFLAGS) \
 	-Wall \
 	-Wno-overlength-strings \
 	-I$(TA_DEV_KIT_DIR) \
-	-L$(TA_DEV_KIT_DIR)/lib \
 	-I$(BUILD)/libteep/tee/libwebsockets/include \
 	-I$(SOURCE)/libteep/lib \
 	-I$(SOURCE)/suit/include \
 	-I$(SOURCE)/key/include
 
 export TA_LDFLAGS = \
-	-L$(BUILD)/libteep/tee/libwebsockets/lib \
 	-L$(BUILD)/libteep/tee/lib \
 	-L$(BUILD)/libteep/tee/QCBOR \
 	-L$(BUILD)/libteep/tee/libteesuit/lib
@@ -82,8 +78,6 @@ libteep-QCBOR-host-DISABLE = y
 
 libteep-QCBOR-ree-DISABLE = y
 
-libteep-mbedtls-tee-DISABLE = y
-
 libteep-mbedtls-ree-FLAGS = \
 	-DCMAKE_TOOLCHAIN_FILE=$(TOOLCHAIN-ree) \
 	-DCMAKE_INSTALL_PREFIX:PATH=staging \
@@ -111,35 +105,6 @@ libteep-libwebsockets-ree-FLAGS = \
 	-DLWS_WITHOUT_TESTAPPS=1 \
 	-DLWS_WITHOUT_EXTENSIONS=1 \
 	-DLWS_WITH_ZLIB=0
-
-libteep-mbedtls-tee-DISABLE = y
-libteep-libwebsockets-tee-DISABLE = y
-
-libteep-libwebsockets-tee-FLAGS = \
-	-DCMAKE_TOOLCHAIN_FILE=$(TOOLCHAIN-tee) \
-	CMAKE_SYSTEM_PROCESSOR=aarch64 \
-	-DLWS_ROLE_WS=0 \
-	-DLWS_WITH_SSL=1 \
-	-DLWS_WITH_MBEDTLS=1 \
-	-DLWS_MBEDTLS_LIBRARIES=libmbedtls.a \
-	-DLWS_MBEDTLS_INCLUDE_DIRS="$(OPTEE_DEV_KIT_DIR)/export-ta_arm64/include;$(OPTEE_DIR)/optee_os/lib/libmbedtls/mbedtls/include;$(OPTEE_DIR)/optee_os/lib/libmbedtls/include" \
-	-DLWS_WITH_JOSE=1 \
-	-DLWS_WITHOUT_SERVER=1 \
-	-DLWS_WITH_STATIC=1 \
-	-DLWS_WITH_SHARED=0 \
-	-DLWS_STATIC_PIC=1 \
-	-DLWS_MAX_SMP=1 \
-	-DLWS_PLAT_OPTEE=1 \
-	-DLWS_OPTEE_DIR=$(OPTEE_DIR)/optee_os \
-	-DLWS_OPTEE_DEV_KIT_DIR=$(OPTEE_DEV_KIT_DIR) \
-	-DCMAKE_BUILD_TYPE=RELEASE \
-	-DLWS_WITHOUT_TESTAPPS=1 \
-	-DLWS_WITHOUT_EXTENSIONS=1 \
-	-DLWS_WITH_ZLIB=0 \
-	-DLWS_WITH_DIR=0 \
-	-DLWS__INCLUDE_DIRS=$(INCLUDES) \
-	-DCMAKE_BUILD_TYPE=Release \
-	-DCMAKE_C_FLAGS="-Wno-unused-variable -I$(CURDIR)/early" \
 
 libteep-QCBOR-tee-FLAGS = CC=$(CROSS_COMPILE)gcc
 

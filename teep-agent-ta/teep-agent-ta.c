@@ -820,7 +820,7 @@ TA_InvokeCommandEntryPoint(void *sess_ctx,
 	}
 }
 
-#ifdef KEYSTONE
+#ifdef PLAT_KEYSTONE
 #include <eapp_utils.h>
 #include <edger/Enclave_t.h>
 // TODO: should implemet in ref-ta/api???

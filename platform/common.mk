@@ -5,7 +5,7 @@ teep: teep-agent-ta teep-broker-app
 
 libteep-host: libteep-mbedtls-host libteep-libwebsockets-host libteep-QCBOR-host
 libteep-ree: libteep-mbedtls-ree libteep-libwebsockets-ree libteep-QCBOR-ree
-libteep-tee: libteep-mbedtls-tee libteep-libwebsockets-tee libteep-QCBOR-tee libteep-libteep-tee libteesuit-tee
+libteep-tee: libteep-QCBOR-tee libteep-libteep-tee libteesuit-tee
 
 libteep-mbedtls-host:
 	if [ -z "$($@-DISABLE)" ]; then \
@@ -23,14 +23,6 @@ libteep-mbedtls-ree:
 		make -j `nproc`; \
 	fi
 
-libteep-mbedtls-tee:
-	if [ -z "$($@-DISABLE)" ]; then \
-		mkdir -p $(BUILD)/libteep/tee/mbedtls && \
-		cd $(BUILD)/libteep/tee/mbedtls && \
-		cmake $($@-FLAGS) $(SOURCE)/submodule/mbedtls && \
-		make -j `nproc`; \
-	fi
-
 libteep-libwebsockets-host:
 	if [ -z "$($@-DISABLE)" ]; then \
 		mkdir -p $(BUILD)/libteep/host/libwebsockets && \
@@ -43,14 +35,6 @@ libteep-libwebsockets-ree:
 	if [ -z "$($@-DISABLE)" ]; then \
 		mkdir -p $(BUILD)/libteep/ree/libwebsockets && \
 		cd $(BUILD)/libteep/ree/libwebsockets && \
-		cmake $($@-FLAGS) $(SOURCE)/submodule/libwebsockets && \
-		make -j `nproc`; \
-	fi
-
-libteep-libwebsockets-tee:
-	if [ -z "$($@-DISABLE)" ]; then \
-		mkdir -p $(BUILD)/libteep/tee/libwebsockets && \
-		cd $(BUILD)/libteep/tee/libwebsockets && \
 		cmake $($@-FLAGS) $(SOURCE)/submodule/libwebsockets && \
 		make -j `nproc`; \
 	fi
@@ -79,7 +63,7 @@ libteep-QCBOR-tee:
 		make -C $(BUILD)/libteep/tee/QCBOR $($@-FLAGS); \
 	fi
 
-libteep-libteep-tee: libteep-mbedtls-tee libteep-libwebsockets-tee libteep-QCBOR-tee
+libteep-libteep-tee: libteep-QCBOR-tee
 	if [ -z "$($@-DISABLE)" ]; then \
 		mkdir -p $(BUILD)/libteep/tee/lib && \
 		make -C $(SOURCE)/libteep/lib build=$(BUILD)/libteep/tee/lib CFLAGS=$(TEE_CFLAGS); \
