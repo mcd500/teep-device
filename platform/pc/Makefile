@@ -11,8 +11,8 @@ export APP_CFLAGS = -g \
 	-I$(SOURCE)/include \
 	-I$(SOURCE)/libteep/lib \
 	-I$(BUILD)/libteep/host/libwebsockets/include \
-	-I$(SOURCE)/libteep/libwebsockets/include \
-	-I$(SOURCE)/libteep/mbedtls/include \
+	-I$(SOURCE)/submodule/libwebsockets/include \
+	-I$(SOURCE)/submodule/mbedtls/include \
 	-I$(BUILD)/libteep/host/QCBOR/inc \
 	-I$(SOURCE)/suit/include \
 	-I$(CURDIR)/include \

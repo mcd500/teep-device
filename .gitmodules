@@ -1,12 +1,12 @@
 [submodule "libaistotrp/libwebsockets"]
-	path = libteep/libwebsockets
+	path = submodule/libwebsockets
 	url = https://192.168.100.100/rinkai/libwebsockets
 [submodule "libaistotrp/mbedtls"]
-	path = libteep/mbedtls
+	path = submodule/mbedtls
 	url = https://192.168.100.100/rinkai/mbedtls
 [submodule "libteep/QCBOR"]
-	path = libteep/QCBOR
+	path = submodule/QCBOR
 	url = https://github.com/laurencelundblade/QCBOR.git
 [submodule "libteep/t_cose"]
-	path = libteep/t_cose
+	path = submodule/t_cose
 	url = https://github.com/laurencelundblade/t_cose.git

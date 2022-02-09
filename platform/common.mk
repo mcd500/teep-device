@@ -11,7 +11,7 @@ libteep-mbedtls-host:
 	if [ -z "$($@-DISABLE)" ]; then \
 		mkdir -p $(BUILD)/libteep/host/mbedtls && \
 		cd $(BUILD)/libteep/host/mbedtls && \
-		cmake $($@-FLAGS) $(SOURCE)/libteep/mbedtls && \
+		cmake $($@-FLAGS) $(SOURCE)/submodule/mbedtls && \
 		make -j `nproc`; \
 	fi
 
@@ -19,7 +19,7 @@ libteep-mbedtls-ree:
 	if [ -z "$($@-DISABLE)" ]; then \
 		mkdir -p $(BUILD)/libteep/ree/mbedtls && \
 		cd $(BUILD)/libteep/ree/mbedtls && \
-		cmake $($@-FLAGS) $(SOURCE)/libteep/mbedtls && \
+		cmake $($@-FLAGS) $(SOURCE)/submodule/mbedtls && \
 		make -j `nproc`; \
 	fi
 
@@ -27,7 +27,7 @@ libteep-mbedtls-tee:
 	if [ -z "$($@-DISABLE)" ]; then \
 		mkdir -p $(BUILD)/libteep/tee/mbedtls && \
 		cd $(BUILD)/libteep/tee/mbedtls && \
-		cmake $($@-FLAGS) $(SOURCE)/libteep/mbedtls && \
+		cmake $($@-FLAGS) $(SOURCE)/submodule/mbedtls && \
 		make -j `nproc`; \
 	fi
 
@@ -35,7 +35,7 @@ libteep-libwebsockets-host:
 	if [ -z "$($@-DISABLE)" ]; then \
 		mkdir -p $(BUILD)/libteep/host/libwebsockets && \
 		cd $(BUILD)/libteep/host/libwebsockets && \
-		cmake $($@-FLAGS) $(SOURCE)/libteep/libwebsockets && \
+		cmake $($@-FLAGS) $(SOURCE)/submodule/libwebsockets && \
 		make -j `nproc`; \
 	fi
 
@@ -43,7 +43,7 @@ libteep-libwebsockets-ree:
 	if [ -z "$($@-DISABLE)" ]; then \
 		mkdir -p $(BUILD)/libteep/ree/libwebsockets && \
 		cd $(BUILD)/libteep/ree/libwebsockets && \
-		cmake $($@-FLAGS) $(SOURCE)/libteep/libwebsockets && \
+		cmake $($@-FLAGS) $(SOURCE)/submodule/libwebsockets && \
 		make -j `nproc`; \
 	fi
 
@@ -51,7 +51,7 @@ libteep-libwebsockets-tee:
 	if [ -z "$($@-DISABLE)" ]; then \
 		mkdir -p $(BUILD)/libteep/tee/libwebsockets && \
 		cd $(BUILD)/libteep/tee/libwebsockets && \
-		cmake $($@-FLAGS) $(SOURCE)/libteep/libwebsockets && \
+		cmake $($@-FLAGS) $(SOURCE)/submodule/libwebsockets && \
 		make -j `nproc`; \
 	fi
 
@@ -59,7 +59,7 @@ libteep-QCBOR-host:
 	if [ -z "$($@-DISABLE)" ]; then \
 		mkdir -p $(BUILD)/libteep/host && \
 		rm -rf $(BUILD)/libteep/host/QCBOR && \
-		cp -r $(SOURCE)/libteep/QCBOR $(BUILD)/libteep/host && \
+		cp -r $(SOURCE)/submodule/QCBOR $(BUILD)/libteep/host && \
 		make -C $(BUILD)/libteep/host/QCBOR $($@-FLAGS); \
 	fi
 
@@ -67,7 +67,7 @@ libteep-QCBOR-ree:
 	if [ -z "$($@-DISABLE)" ]; then \
 		mkdir -p $(BUILD)/libteep/ree && \
 		rm -rf $(BUILD)/libteep/ree/QCBOR && \
-		cp -r $(SOURCE)/libteep/QCBOR $(BUILD)/libteep/ree; \
+		cp -r $(SOURCE)/submodule/QCBOR $(BUILD)/libteep/ree; \
 		make -C $(BUILD)/libteep/ree/QCBOR $($@-FLAGS); \
 	fi
 
@@ -75,7 +75,7 @@ libteep-QCBOR-tee:
 	if [ -z "$($@-DISABLE)" ]; then \
 		mkdir -p $(BUILD)/libteep/tee && \
 		rm -rf $(BUILD)/libteep/tee/QCBOR && \
-		cp -r $(SOURCE)/libteep/QCBOR $(BUILD)/libteep/tee; \
+		cp -r $(SOURCE)/submodule/QCBOR $(BUILD)/libteep/tee; \
 		make -C $(BUILD)/libteep/tee/QCBOR $($@-FLAGS); \
 	fi
 

@@ -12,8 +12,8 @@ export APP_CFLAGS ?= \
 	-Wall \
 	-DPLAT_OPTEE=1 \
 	-I$(SOURCE)/libteep/lib \
-	-I$(SOURCE)/libteep/libwebsockets/include \
-	-I$(SOURCE)/libteep/mbedtls/include \
+	-I$(SOURCE)/submodule/libwebsockets/include \
+	-I$(SOURCE)/submodule/mbedtls/include \
 	-I$(SOURCE)/include \
 	-I$(OPTEE_DIR)/optee_client/public \
 	-I$(TEE_REF_TA_DIR)/include \
@@ -66,8 +66,8 @@ TOOLCHAIN-tee = $(CURDIR)/cross-aarch64-tee.cmake
 
 REE_CFLAGS ?= -Wall -Werror -fPIC \
 	      -I$(BUILD)/libteep/ree/libwebsockets/include \
-		  -I$(SOURCE)/libteep/libwebsockets/include \
-	      -I$(SOURCE)/libteep/mbedtls/include $(INCLUDES) \
+		  -I$(SOURCE)/submodule/libwebsockets/include \
+	      -I$(SOURCE)/submodule/mbedtls/include $(INCLUDES) \
 	      -I$(OPTEE_DIR)/optee_client/public \
 		  -I$(TA_DEV_KIT_DIR)/export-ta_arm64/include
 REE_LDFLAGS ?= \
@@ -100,7 +100,7 @@ libteep-libwebsockets-ree-FLAGS = \
 	-DMBEDTLS_LIBRARY=$(BUILD)/libteep/ree/mbedtls/library/libmbedtls.so \
 	-DMBEDX509_LIBRARY=$(BUILD)/libteep/ree/mbedtls/library/libmbedx509.so \
 	-DMBEDCRYPTO_LIBRARY=$(BUILD)/libteep/ree/mbedtls/library/libmbedcrypto.so \
-	-DLWS_MBEDTLS_INCLUDE_DIRS="$(SOURCE)/libteep/mbedtls/include" \
+	-DLWS_MBEDTLS_INCLUDE_DIRS="$(SOURCE)/submodule/mbedtls/include" \
 	-DLWS_WITH_JOSE=1 \
 	-DLWS_WITHOUT_SERVER=1 \
 	-DLWS_WITH_STATIC=0 \
