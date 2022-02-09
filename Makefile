@@ -54,6 +54,10 @@ docs:
 	@doxygen docs/doxygen/Doxyfile
 	make -C docs/doxygen/latex
 	cp docs/doxygen/latex/refman.pdf docs/teep-device.pdf	
+	rm -fr docs/html_readme
+	mv docs/doxygen/html docs/html_readme
+	cd docs; tar czf html_readme.tar.gz open-readme.html html_readme
+
 
 clean-docs:
 	rm -f -r docs/doxygen/html
