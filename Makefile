@@ -62,6 +62,9 @@ docs:
 clean-docs:
 	rm -f -r docs/doxygen/html
 	rm -f -r docs/doxygen/latex
+	rm -f -r docs/teep-device_readme_html
+	rm -f -r docs/teep-device_readme_html.tar.gz
+	rm -f -r docs/teep-device.pdf
 
 clean-optee:
 	$(MAKE) -C platform/op-tee clean
