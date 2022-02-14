@@ -54,7 +54,7 @@ docs:
 	@doxygen docs/doxygen/Doxyfile
 	make -C docs/doxygen/latex
 	cp docs/doxygen/latex/refman.pdf docs/teep-device.pdf	
-	rm -fr docs/html_readme
+	rm -fr docs/teep-device_readme_html
 	mv docs/doxygen/html docs/teep-device_readme_html
 	cd docs; tar czf teep-device_readme_html.tar.gz open-readme.html teep-device_readme_html
 
