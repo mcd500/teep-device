@@ -73,7 +73,7 @@ include ../common.mk
 clean:
 	rm -rf $(BUILD)
 
-TAM_URL ?= http://localhost:8888
+TAM_URL ?= http://tamproto_tam_api_1:8888
 BROKER = ./build/teep-broker-app/teep-broker-app
 
 .PHONY: scripts
