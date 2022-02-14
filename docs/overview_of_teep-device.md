@@ -14,6 +14,8 @@ The TEEP-Device is an implementation for defining the draft of Trusted Execution
 - TEEP Architecutre:
   * https://datatracker.ietf.org/doc/draft-ietf-teep-architecture/
 
+The terminology of Trusted Application (TA) in the old draft was changed to Trusted Component (TC) to express the files installed from TAM to devices that could have both binaries of trusted applications and data files of personalization data. The TA and TC are interchangeable in this documentation.
+
 ## Features of TEEP-Device
 
 - The TEEP Protocol defines the protocol format and interaction between the server called Trusted Application Managers (TAM) and the IoT/Edge devices. The TEEP-Device is an implementation of Trusted Execution Environment Provisioning (TEEP) Protocol on the IoT/Edge devices.
