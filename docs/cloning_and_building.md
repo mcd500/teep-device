@@ -1,32 +1,41 @@
 # Clone and Building teep-device without docker
 
-Clone the teep-device source code and build it for Keystone, OPTEE and SGX. To build please refer to ta-ref.pdf->preparation section
-- https://192.168.100.100/rinkai/ta-ref/-/blob/teep-device-tb-slim/docs/ta-ref.pdf
+Clone the teep-device source code and build it for Keystone, OPTEE and SGX. 
 
-## Install Doxygen-1.9.2
+To build teep-device for any targets, the preparation and building 
+of ta-ref sdk has to be done already and the path of ta-ref has to be exported
+in the following environment variable.
 
-This PDF was generated using Doxygen version 1.9.2. To install `doxygen-1.9.2` following procedure is necessary.
+The detailed steps of preparation and building ta-ref can be found in ta-ref.pdf.
 
-### Install Required Packages
-
-Install following packages on Ubuntu 18.04
-
+```sh
+$ export TAREF_DIR=<ta-ref dir>
 ```
-sudo apt install doxygen-latex graphviz texlive-full texlive-latex-base latex-cjk-all
+
+## Doxygen
+
+This PDF (ta-ref.pdf) was generated using Doxygen version 1.9.2. To install `doxygen-1.9.2` following procedure is necessary.
+
+### Required Packages
+
+Install following packages on Ubuntu. Its better to install from package rather than using apt-install.
+
+```sh
+$ sudo apt install doxygen-latex graphviz texlive-full texlive-latex-base latex-cjk-all
 ```
 
 Above packages required to generate PDF using doxygen.
 
-### Build and Install 
+### Build and Install Doxygen
 
-```
-git clone https://github.com/doxygen/doxygen.git 
-cd doxygen
-mkdir build 
-cd build 
-cmake -G "Unix Makefiles" .. 
-make
-sudo make install 
+```sh
+$ git clone https://github.com/doxygen/doxygen.git 
+$ cd doxygen
+$ mkdir build 
+$ cd build 
+$ cmake -G "Unix Makefiles" .. 
+$ make
+$ sudo make install 
 ```
 
 ## Tamproto Setup
@@ -34,42 +43,45 @@ sudo make install
 To test teep-device, have to run TAM server on the PC.
 
 Prerequisites
+
 ```
-sudo apt install rustc npm
-sudo pip3 install --upgrade git+https://github.com/ARMmbed/suit-manifest-generator.git@v0.0.2
+$ sudo apt install rustc npm
+$ sudo pip3 install --upgrade git+https://github.com/ARMmbed/suit-manifest-generator.git@v0.0.2
 ```
 
 Build and Install
+
 ```
-git clone https://github.com/ko-isobe/tamproto.git
-cd tamproto
-git checkout cef99c07b669a49c2748b0c0ff0412ec1628b686 -b 2020-12-18
-npm install
+$ git clone https://github.com/ko-isobe/tamproto.git
+$ cd tamproto
+$ git checkout cef99c07b669a49c2748b0c0ff0412ec1628b686 -b 2020-12-18
+$ npm install
 ```
 
 Make sure your PC is configures with IP address for network connectivity with TEEP device for further testing.
 
 ## Keystone 
+
 Build `teep-device` with Keystone. Make sure Keystone and its supporting sources have been build already.
 
 ### Clone and Build
 
 Prepare the environment setup
 ```
-export TEE=keystone
-export KEYSTONE_DIR=<path to keystone dir>
-export PATH=$PATH:$KEYSTONE_DIR/riscv/bin
-export KEYEDGE_DIR=<path tokeyedge dir>
-export KEEDGER8R_DIR=<path to keedger8r dir>
+$ export TEE=keystone
+$ export KEYSTONE_DIR=<path to keystone dir>
+$ export PATH=$PATH:$KEYSTONE_DIR/riscv/bin
+$ export KEYEDGE_DIR=<path tokeyedge dir>
 ```
 
 Clone and Build
+
 ```
-git clone https://192.168.100.100/rinkai/teep-device.git
-cd teep-device
-git submodule sync --recursive
-git submodule update --init --recursive
-make
+$ git clone https://192.168.100.100/rinkai/teep-device.git
+$ cd teep-device
+$ git submodule sync --recursive
+$ git submodule update --init --recursive
+$ make
 ```
 
 ### Check teep-device by running hello-app and teep-broker-app
@@ -82,8 +94,8 @@ First start the TAM server on PC. Make sure IP address configured on PC and Unle
 
 
 ```
-cd tamproto
-npm app.js
+$ cd tamproto
+$ npm app.js
 
 JWKBaseKeyObject {
   keystore: JWKStore {},
@@ -107,19 +119,20 @@ Once TAM server is up, you see above messages
 - Copy the binaries from build PC over SSH (user:root, password: sifive)
 
 Here `192.168.0.6` is IP Address of Unleased board
+
 ```
-scp platform/keystone/build/hello-ta/hello-ta root@192.168.0.6:/root/teep-device
-scp platform/keystone/build/hello-app/hello-app root@192.168.0.6:/root/teep-device
-scp platform/keystone/build/teep-agent-ta/teep-agent-ta root@192.168.0.6:/root/teep-device
-scp platform/keystone/build/teep-broker-app/teep-broker-app root@192.168.0.6:/root/teep-device
-scp $KEYSTONE_DIR/sdk/rts/eyrie/eyrie-rt root@192.168.0.6:/root/teep-device
-scp platform/keystone/build/libteep/ree/mbedtls/library/lib* root@192.168.0.6:/usr/lib/
-scp platform/keystone/build/libteep/ree/libwebsockets/lib/lib* root@192.168.0.6:/usr/lib/
+$ scp platform/keystone/build/hello-ta/hello-ta root@192.168.0.6:/root/teep-device
+$ scp platform/keystone/build/hello-app/hello-app root@192.168.0.6:/root/teep-device
+$ scp platform/keystone/build/teep-agent-ta/teep-agent-ta root@192.168.0.6:/root/teep-device
+$ scp platform/keystone/build/teep-broker-app/teep-broker-app root@192.168.0.6:/root/teep-device
+$ scp $KEYSTONE_DIR/sdk/rts/eyrie/eyrie-rt root@192.168.0.6:/root/teep-device
+$ scp platform/keystone/build/libteep/ree/mbedtls/library/lib* root@192.168.0.6:/usr/lib/
+$ scp platform/keystone/build/libteep/ree/libwebsockets/lib/lib* root@192.168.0.6:/usr/lib/
 ```
 
 #### Write to SD card
 <br />
-Please follow below below steps to write the teep-device binaries to SD-card
+Please follow below steps to write the teep-device binaries to SD-card
 
 - Insert SD card to your PC for Unleashed
 - Edit `platform/keystone/script/sktinst.sh`
@@ -136,16 +149,17 @@ There are two methods to connect to Unleased.
 - Over SSH: `ssh root@192.168.0.6`; password is `sifive`
 
 Setup envrionment in Unleased (create /root/env.sh file and add following lines)
+
 ```
-export PATH=$PATH:/root/teep-device
-export TAM_HOST=tamproto_tam_api_1
-export TAM_PORT=8888
-insmod keystone-driver.ko
+$ export PATH=$PATH:/root/teep-device
+$ export TAM_HOST=tamproto_tam_api_1
+$ export TAM_PORT=8888
+$ insmod keystone-driver.ko
 ```
 
 #### Run hello-app
-<br />
-```
+
+```sh
 $ source env.sh 
 [ 2380.618514] keystone_driver: loading out-of-tree module taints kernel.
 [ 2380.625305] keystone_enclave: keystone enclave v0.2
@@ -246,24 +260,27 @@ ta_store_install: ta_image_len = 130552 ta_name=8d82573a-926d-4754-9353-32dc2999
 ```
 
 ## OPTEE 
+
 Build `teep-device` with OPTEE. So make sure OPTEE and its supporting sources have been build already.
 
 ### Clone and Build
 
 Prepare the environment setup
+
 ```
-export TEE=optee
-export OPTEE_DIR=<optee_3.9.0_rpi3 dir>
-export PATH=$PATH:$OPTEE_DIR/toolchains/aarch64/bin:$OPTEE_DIR/toolchains/aarch32/bin
+$ export TEE=optee
+$ export OPTEE_DIR=<optee_dir>
+$ export PATH=$PATH:$OPTEE_DIR/toolchains/aarch64/bin:$OPTEE_DIR/toolchains/aarch32/bin
 ```
 
 Clone and Build
+
 ```
-git clone https://192.168.100.100/rinkai/teep-device.git
-cd teep-device
-git submodule sync --recursive
-git submodule update --init --recursive
-make
+$ git clone https://192.168.100.100/rinkai/teep-device.git
+$ cd teep-device
+$ git submodule sync --recursive
+$ git submodule update --init --recursive
+$ make
 ```
 
 ### Check teep-device by running hello-app and teep-broker-app on RPI3
@@ -274,9 +291,9 @@ To check teep-device on RPI3, we need to run TAM server on PC and networking wit
 
 First start the TAM server on PC. Make sure IP address configured on PC and RPI3 board.
 
-```
-cd tamproto
-npm app.js
+```console
+$ cd tamproto
+$ npm app.js
 
 JWKBaseKeyObject {
   keystore: JWKStore {},
@@ -305,7 +322,7 @@ TODO - Further update required
 
 #### Write to SD card
 <br />
-Please follow below below steps to write the teep-device binaries to SD-card
+Please follow below steps to write the teep-device binaries to SD-card
 
 - Insert SD card to your PC for Unleashed
 - Copy the binaries to SD card
@@ -351,19 +368,20 @@ Build `teep-device` with SGX. Make sure SGX and its supporting sources have been
 ### Clone and Build on SGX
 
 Prepare the environment setup
-```
-export TEE=pc
-source /opt/intel/sgxsdk/environment
+
+```sh
+$ export TEE=pc
+$ source /opt/intel/sgxsdk/environment
 ```
 
 Clone and Build
 
-```
-git clone https://192.168.100.100/rinkai/teep-device.git
-cd teep-device
-git submodule sync --recursive
-git submodule update --init --recursive
-make
+```sh
+$ git clone https://192.168.100.100/rinkai/teep-device.git
+$ cd teep-device
+$ git submodule sync --recursive
+$ git submodule update --init --recursive
+$ make
 ```
 
 ### Check teep-device by running hello-app & teep-broker-app on SGX
@@ -374,10 +392,9 @@ To check teep-device on SGX, we need to run TAM server on PC and networking with
 
 First start the TAM server on PC. Make sure IP address configured on PC and SGX machine.
 
-```
-<p />
-cd tamproto
-npm app.js
+```console
+$ cd tamproto
+$ npm app.js
 
 JWKBaseKeyObject {
   keystore: JWKStore {},
@@ -415,6 +432,7 @@ TODO - Further update required
 
 #### Run hello-app
 <br />
+
 ```
 TODO - Further update required
 ```
@@ -423,7 +441,7 @@ TODO - Further update required
 <br />
 If your TAM server IP address is 192.168.0.3, then you 
 
-```
+```sh
 ./teep-broker-app --tamurl http://192.168.0.3:8888/api/tam_cbor
 ```
 
