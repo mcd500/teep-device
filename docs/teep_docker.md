@@ -136,10 +136,10 @@ tam_api_1  | Express HTTPS server listening on port 8443
 **teep-device**
 
 ```sh
-# Clone the teep-device repo and checkout suit-dev branch
+# Clone the teep-device repo and checkout master branch
 $ git clone https://192.168.100.100/rinkai/teep-device.git
 $ cd teep-device
-$ git checkout suit-dev
+$ git checkout master
     
 # Sync and update the submodules
 $ git submodule sync --recursive
@@ -335,10 +335,10 @@ next section.
 **teep-device**
 
 ```sh
-# Clone the teep-device repo and checkout suit-dev branch
+# Clone the teep-device repo and checkout master branch
 $ git clone https://192.168.100.100/rinkai/teep-device.git
 $ cd teep-device
-$ git checkout suit-dev
+$ git checkout master
     
 # Sync and update the submodules
 $ git submodule sync --recursive
@@ -552,7 +552,7 @@ next section.
 **teep-device**
 
 ```sh
-# Clone the teep-device repo and checkout suit-dev branch
+# Clone the teep-device repo and checkout master branch
 $ git clone https://192.168.100.100/rinkai/teep-device.git
 $ cd teep-device
 $ git checkout master
