@@ -165,7 +165,7 @@ install_qemu: all
 	mkdir -p $(prefix)/rootfs/root/teep-device
 	cd $(prefix)/rootfs; \
 	sudo gzip -dc ../rootfs.cpio.gz | sudo cpio -i
-	sudo install $(BUILD)/hello-ta/$(HELLO_TA_UUID).ta $(prefix)/rootfs/lib/optee_armtz
+#	sudo install $(BUILD)/hello-ta/$(HELLO_TA_UUID).ta $(prefix)/rootfs/lib/optee_armtz
 	sudo install $(BUILD)/hello-app/hello-app $(prefix)/rootfs/root/teep-device
 	sudo install $(BUILD)/teep-agent-ta/$(TEE_AGENT_UUID).ta $(prefix)/rootfs/lib/optee_armtz
 	sudo install $(BUILD)/teep-broker-app/teep-broker-app $(prefix)/rootfs/root/teep-device

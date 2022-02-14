@@ -77,11 +77,6 @@ sp_hello_app()
 		return n;
 	}
 
-	for (m = 0; m < op.params[3].value.a; m++)
-		fprintf(stderr, "%02X", result[m]);
-
-	fprintf(stderr, "\n");
-
 //	fprintf(stderr, "%s: done\n", __func__);
 
 	return n;

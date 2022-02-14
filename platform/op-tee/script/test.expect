@@ -44,4 +44,7 @@ expect {
 	"# "
 }
 
+send -- "./hello-app\r"
+expect "# "
+
 puts " done\n"

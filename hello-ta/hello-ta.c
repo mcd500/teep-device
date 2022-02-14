@@ -119,7 +119,14 @@ TEE_Result TA_InvokeCommandEntryPoint(void __maybe_unused *sess_ctx,
 	(void)cmd_id;
 	(void)param_types;
 	(void)params;
-	return TEE_ERROR_NOT_IMPLEMENTED;
+
+	switch (cmd_id) {
+	case 1:
+		printf("hello, world!\n");
+		return TEE_SUCCESS;
+	default:
+		return TEE_ERROR_NOT_IMPLEMENTED;
+	}
 }
 
 #ifdef KEYSTONE
