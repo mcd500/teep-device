@@ -29,6 +29,14 @@ The terminology of Trusted Application (TA) in the old draft was changed to Trus
 
 - Implemented on top of TA-Ref which provides a portable TEE programming environment among different TEEs on Intel CPU, ARM Cortex-A and RISC-V 64G to provide uniform source codes over OP-TEE on ARM-TrustZone for Cortex-A series and Keystone on RISC-V.
 
+- The required features of TEEP-Agent in devices in the draft is implemented as a Trusted Application inside TEE in this TEEP-Device to simplify the implementation. Therefore, some of the assumed requirements on the draft are not fulfilled with the TEEP-Devise. In the product, the features of TEEP-Agent must be enabled through root-of-trust from the boot up of the CPUs, the TCs must be saved in secure manner and protection of installed TCs.
+
+- Supports Concise Binary Object Representation (CBOR) for all TEEP messages.
+  * https://datatracker.ietf.org/doc/html/rfc7049
+
+- Supports SUIT-manifest inside the Update message.
+  * https://datatracker.ietf.org/doc/draft-ietf-suit-manifest/
+
 ## Components of TEEP-device and TA-Ref
 
 ### TEEP-device and TA-Ref Components on Keystone
