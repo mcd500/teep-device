@@ -87,7 +87,7 @@ scripts:
 	done
 
 upload_encfile_to_tamproto:
-	echo 'hello, world!' >$(BUILD)/$(HELLO_TA_UUID).ta
+	echo 'Hello TEEP from TEE!' >$(BUILD)/$(HELLO_TA_UUID).ta
 #	cd $(SOURCE)/scripts/keygen && npm install
 #	node $(SOURCE)/scripts/keygen/sign-then-enc.js \
 #		$(SOURCE)/key/test-jw_tee_sds_xbank_spaik-priv.jwk \

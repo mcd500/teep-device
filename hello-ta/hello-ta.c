@@ -122,7 +122,7 @@ TEE_Result TA_InvokeCommandEntryPoint(void __maybe_unused *sess_ctx,
 
 	switch (cmd_id) {
 	case 1:
-		printf("hello, world!\n");
+		printf("Hello TEEP from TEE!\n");
 		return TEE_SUCCESS;
 	default:
 		return TEE_ERROR_NOT_IMPLEMENTED;
