@@ -37,7 +37,7 @@ send -- "ls -l\r"
 expect "#### "
 
 send "./hello-app hello-ta eyrie-rt\r"
-expect "hello TA"
+expect "Hello TEEP from TEE!"
 expect "#### "
 
 set err 0
@@ -57,7 +57,7 @@ send -- "ls -l\r"
 expect "#### "
 
 send "./hello-app 8d82573a-926d-4754-9353-32dc29997f74.ta eyrie-rt\r"
-expect "hello TA"
+expect "Hello TEEP from TEE!"
 expect "#### "
 
 send "cmp 8d82573a-926d-4754-9353-32dc29997f74.ta 8d82573a-926d-4754-9353-32dc29997f74.ta.secstor.plain\r"

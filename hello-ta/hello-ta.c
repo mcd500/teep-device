@@ -135,14 +135,14 @@ TEE_Result TA_InvokeCommandEntryPoint(void __maybe_unused *sess_ctx,
 // TODO: should implemet in ref-ta/api???
 
 /**
- * eapp_entry() - Prints hello TA message when it is invoked.
+ * eapp_entry() - Prints 'Hello TEEP from TEE!' message when it is invoked.
  * 
  * This function just calls ocall_print_string() to print the string given in the
  * bracket.
  */ 
 void EAPP_ENTRY eapp_entry()
 {
-	ocall_print_string("hello TA\n");
+	ocall_print_string("Hello TEEP from TEE!\n");
 	EAPP_RETURN(0);
 }
 
