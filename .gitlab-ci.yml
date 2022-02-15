@@ -91,14 +91,14 @@ teep_test_optee:
 
 ### DOXYGEN - START ###
 teep_doxygen:
-    stage: test
+    stage: build
     image: docker.io/trasioteam/taref-dev:doxygen
     script:
         - make docs
     artifacts:
         paths:
             - docs/teep-device.pdf
-            - docs/ teep-device_readme_html.tar.gz
+            - docs/teep-device_readme_html.tar.gz
         expire_in: 1 week
 
 ### DOXYGEN - START ###
