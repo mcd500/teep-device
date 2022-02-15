@@ -45,7 +45,7 @@ To test teep-device, have to run TAM server on the PC.
 Prerequisites
 
 ```
-$ sudo apt install rustc npm
+$ sudo apt install rustc npm nodejs
 $ sudo pip3 install --upgrade git+https://github.com/ARMmbed/suit-manifest-generator.git@v0.0.2
 ```
 
@@ -363,24 +363,34 @@ TODO - Further update required
 ```
 
 ## SGX
+
 Build `teep-device` with SGX. Make sure SGX and its supporting sources have been build already.
 
 ### Clone and Build on SGX
 
-Prepare the environment setup
+As a preparation step, it is required to setup the Intel SGX SDK.
+Please refer the preparation steps for building without docker for SGX in ta-ref.pdf
+
 
 ```sh
 $ export TEE=pc
 $ source /opt/intel/sgxsdk/environment
+$ export TAREF_DIR=<ta-ref dir>
 ```
 
 Clone and Build
 
 ```sh
+# Clone the teep-device
 $ git clone https://192.168.100.100/rinkai/teep-device.git
 $ cd teep-device
+$ git checkout master
+
+# Sync and update the submodules
 $ git submodule sync --recursive
 $ git submodule update --init --recursive
+
+# Build the teep-device
 $ make
 ```
 
@@ -390,25 +400,76 @@ To check teep-device on SGX, we need to run TAM server on PC and networking with
 
 ### Run Tamproto (TAM Server)
 
-First start the TAM server on PC. Make sure IP address configured on PC and SGX machine.
+
+```sh
+# Clone the tamproto repo and checkout master branch
+$ git clone https://192.168.100.100/rinkai/tamproto.git
+$ cd tamproto
+$ git checkout master
+$ docker-compose build
+$ docker-compose up
+```
+
+Once TAM server is up, you see below messages
 
 ```console
-$ cd tamproto
-$ npm app.js
-
-JWKBaseKeyObject {
-  keystore: JWKStore {},
-  length: 4096,
-  kty: 'RSA',
-  kid: 'sWpWma0lDp_RfHKdtkGSVTYQaMIVQaKhESVmzjaW9jc',
-  use: '',
-  alg: '' }
-192.168.0.5
-Express HTTP  server listening on port 8888
-Express HTTPS server listening on port 8443
-<p />
+naga@smartie:~/Aist_Dev/test/tamproto$ docker-compose up
+Starting tamproto_tam_api_1 ... done
+Attaching to tamproto_tam_api_1
+tam_api_1  | { 'supported-cipher-suites': 1,
+tam_api_1  |   challenge: 2,
+tam_api_1  |   versions: 3,
+tam_api_1  |   'ocsp-data': 4,
+tam_api_1  |   'selected-cipher-suite': 5,
+tam_api_1  |   'selected-version': 6,
+tam_api_1  |   evidence: 7,
+tam_api_1  |   'tc-list': 8,
+tam_api_1  |   'ext-list': 9,
+tam_api_1  |   'manifest-list': 10,
+tam_api_1  |   msg: 11,
+tam_api_1  |   'err-msg': 12,
+tam_api_1  |   'evidence-format': 13,
+tam_api_1  |   'requested-tc-list': 14,
+tam_api_1  |   'unneeded-tc-list': 15,
+tam_api_1  |   'component-id': 16,
+tam_api_1  |   'tc-manifest-sequence-number': 17,
+tam_api_1  |   'have-binary': 18,
+tam_api_1  |   'suit-reports': 19,
+tam_api_1  |   token: 20,
+tam_api_1  |   'supported-freshness-mechanisms': 21 }
+tam_api_1  | Loading KeyConfig
+tam_api_1  | { TAM_priv: 'test-jw_tsm_identity_private_tam-mytam-private.jwk',
+tam_api_1  |   TAM_pub: 'test-jw_tsm_identity_tam-mytam-public.jwk',
+tam_api_1  |   TEE_priv: 'teep.jwk',
+tam_api_1  |   TEE_pub: 'teep.jwk' }
+tam_api_1  | Load key TAM_priv
+tam_api_1  | Load key TAM_pub
+tam_api_1  | Load key TEE_priv
+tam_api_1  | Load key TEE_pub
+tam_api_1  | Key binary loaded
+tam_api_1  | 192.168.11.4
+tam_api_1  | Express HTTP  server listening on port 8888
+tam_api_1  | Express HTTPS server listening on port 8443
+tam_api_1  | GET /api/ 200 5.239 ms - 24
 ```
-Once TAM server is up, you see above messages
+
+### Run the hello-app hello-app & teep-broker-app on SIM mode
+
+```sh
+$ cd ~/teep-device
+
+# make has to completed first before make test
+# tamproto has to be executed in another terminal
+$ make test
+```
+
+After the make test has been completed successfully, output can be found
+in the `teep-device/platform/pc/build/8d82573a-926d4754-9353-32dc29997f74.ta`
+
+```console
+$ cat ~/teep-device/platform/pc/build/8d82573a-926d-4754-9353-32dc29997f74.ta
+Hello TEEP from TEE!
+```
 
 ### Copy hello-app & teep-broker-app binaries to SGX
 
@@ -425,27 +486,6 @@ TODO - Further update required
 ```
 
 ### Check hello-app and teep-broker-app on SGX
-
-```
-TODO - Further update required
-```
-
-#### Run hello-app
-<br />
-
-```
-TODO - Further update required
-```
-
-#### Run teep-broker-app
-<br />
-If your TAM server IP address is 192.168.0.3, then you 
-
-```sh
-./teep-broker-app --tamurl http://192.168.0.3:8888/api/tam_cbor
-```
-
-Execution logs
 
 ```
 TODO - Further update required
