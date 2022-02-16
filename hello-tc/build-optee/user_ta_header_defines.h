@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Linaro Limited
+ * Copyright (c) 2016-2017, Linaro Limited
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,18 +32,36 @@
 #ifndef USER_TA_HEADER_DEFINES_H
 #define USER_TA_HEADER_DEFINES_H
 
+/* To get the TA UUID definition */
+#include "edger/Enclave.h"
+
 #define TA_UUID \
-	{ 0x8d82573a, 0x926d, 0x4754, \
-		{ 0x93, 0x53, 0x32, 0xdc, 0x29, 0x99, 0x7f, 0x74 } }
+  { 0x8d82573a, 0x926d, 0x4754, { 0x93, 0x53, 0x32, 0xdc, 0x29, 0x99, 0x7f, 0x74}}
 
+/*
+ * TA properties: multi-instance TA, no specific attribute
+ * TA_FLAG_EXEC_DDR is meaningless but mandated.
+ */
+#define TA_FLAGS			TA_FLAG_EXEC_DDR
 
-#define TA_FLAGS                    (TA_FLAG_MULTI_SESSION | TA_FLAG_EXEC_DDR)
-#define TA_STACK_SIZE               (48 * 1024)
-#define TA_DATA_SIZE                (64 * 1024)
+/* Provisioned stack size */
+#define TA_STACK_SIZE			(2 * 1024)
 
+/* Provisioned heap size for TEE_Malloc() and friends */
+#define TA_DATA_SIZE			(32 * 1024)
+
+/* The gpd.ta.version property */
+#define TA_VERSION	"1.0"
+
+/* The gpd.ta.description property */
+#define TA_DESCRIPTION	"Example of OP-TEE TEST Trusted Application"
+
+/* Extra properties */
 #define TA_CURRENT_TA_EXT_PROPERTIES \
-    { "gp.ta.description", USER_TA_PROP_TYPE_STRING, \
-        "AIST OTrP Test TA" }, \
-    { "gp.ta.version", USER_TA_PROP_TYPE_U32, &(const uint32_t){ 0x0010 } }
+    { "org.linaro.optee.examples.test.property1", \
+	USER_TA_PROP_TYPE_STRING, \
+        "Some string" }, \
+    { "org.linaro.optee.examples.test.property2", \
+	USER_TA_PROP_TYPE_U32, &(const uint32_t){ 0x0010 } }
 
-#endif /*USER_TA_HEADER_DEFINES_H*/
+#endif /* USER_TA_HEADER_DEFINES_H */

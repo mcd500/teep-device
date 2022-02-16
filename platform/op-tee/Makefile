@@ -149,11 +149,11 @@ libteesuit-tee-FLAGS = \
 	-DENABLE_LOG_STDOUT=OFF \
 	-DENABLE_EXAMPLE=OFF
 
-all: libteep hello teep
+all: libteep hello-tc teep
 
 include ../common.mk
 
-clean:
+clean: clean-hello-tc
 	rm -rf $(BUILD)
 
 prefix ?= $(OPTEE_DIR)/out-br/images
@@ -166,7 +166,7 @@ install_qemu: all
 	cd $(prefix)/rootfs; \
 	sudo gzip -dc ../rootfs.cpio.gz | sudo cpio -i
 #	sudo install $(BUILD)/hello-ta/$(HELLO_TA_UUID).ta $(prefix)/rootfs/lib/optee_armtz
-	sudo install $(BUILD)/hello-app/hello-app $(prefix)/rootfs/root/teep-device
+	sudo install $(SOURCE)/hello-tc/build-optee/App-optee $(prefix)/rootfs/root/teep-device/hello-app
 	sudo install $(BUILD)/teep-agent-ta/$(TEE_AGENT_UUID).ta $(prefix)/rootfs/lib/optee_armtz
 	sudo install $(BUILD)/teep-broker-app/teep-broker-app $(prefix)/rootfs/root/teep-device
 	mkdir -p $(prefix)/rootfs/usr/lib
@@ -200,7 +200,7 @@ test_integrated_payload:
 	sed "s@http://localhost:8888@#tc@" manifest/hello-ta.json >$(BUILD)/hello-ta.json
 	suit-tool create -i $(BUILD)/hello-ta.json -o $(BUILD)/hello-ta.suit
 	suit-tool sign -m $(BUILD)/hello-ta.suit -k ../../key/tc-provider-priv.pem -o $(BUILD)/signed-hello-ta.suit
-	$(SOURCE)/scripts/add-payload.py --key "#tc" --payload $(BUILD)/hello-ta/$(HELLO_TA_UUID).ta --in $(BUILD)/signed-hello-ta.suit --out $(BUILD)/signed-hello-ta-payload.suit
+	$(SOURCE)/scripts/add-payload.py --key "#tc" --payload $(SOURCE)/hello-tc/build-optee/$(HELLO_TA_UUID).ta --in $(BUILD)/signed-hello-ta.suit --out $(BUILD)/signed-hello-ta-payload.suit
 	curl $(TAM_URL)/panel/upload \
 		-F "file=@$(BUILD)/signed-hello-ta-payload.suit;filename=integrated-payload-manifest.cbor"
 
@@ -220,7 +220,7 @@ test_download_payload:
 	curl $(TAM_URL)/panel/upload \
 		-F "file=@$(BUILD)/signed-hello-ta.suit;filename=integrated-payload-manifest.cbor"
 	curl $(TAM_URL)/panel/upload \
-		-F "file=@$(BUILD)/hello-ta/$(HELLO_TA_UUID).ta;filename=$(HELLO_TA_UUID).ta"
+		-F "file=@$(SOURCE)/hello-tc/build-optee/$(HELLO_TA_UUID).ta;filename=$(HELLO_TA_UUID).ta"
 
 	cd $(OPTEE_DIR)/out/bin && \
 		QEMU=$(OPTEE_DIR)/qemu/aarch64-softmmu/qemu-system-aarch64 \

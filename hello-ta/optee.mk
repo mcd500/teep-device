@@ -1,6 +1,0 @@
-CPPFLAGS += -DTEE_TA
-CFLAGS += $(TA_CFLAGS)
-LDADD += $(TA_LDFLAGS)
-BINARY = $(HELLO_TA_UUID)
-
--include $(TA_DEV_KIT_DIR)/mk/ta_dev_kit.mk

@@ -1,7 +1,6 @@
 
 
 libteep: libteep-host libteep-ree libteep-tee
-hello: hello-ta hello-app
 teep: teep-agent-ta teep-broker-app
 
 libteep-host: libteep-mbedtls-host libteep-libwebsockets-host libteep-QCBOR-host
@@ -94,12 +93,11 @@ libteesuit-tee:
 		make; \
 	fi
 
+hello-tc:
+	$(MAKE) -C $(SOURCE)/hello-tc/build-$(PLAT) SOURCE=$(SOURCE)/hello-tc
 
-hello-ta: libteep
-	$(MAKE) -C $(SOURCE)/hello-ta -f $(PLAT).mk out-dir=$(BUILD)/hello-ta
-
-hello-app: libteep
-	$(MAKE) -C $(SOURCE)/hello-app -f $(PLAT).mk out-dir=$(BUILD)/hello-app APP_CFLAGS="$(APP_CFLAGS)" APP_LDFLAGS="$(APP_LDFLAGS)"
+clean-hello-tc:
+	$(MAKE) -C $(SOURCE)/hello-tc/build-$(PLAT) SOURCE=$(SOURCE)/hello-tc clean
 
 teep-agent-ta: libteep
 	$(MAKE) -C $(SOURCE)/teep-agent-ta -f $(PLAT).mk BUILD=$(BUILD) out-dir=$(BUILD)/teep-agent-ta

@@ -176,21 +176,20 @@ libteesuit-tee-FLAGS = \
 	-DENABLE_LOG_STDOUT=OFF \
 	-DENABLE_EXAMPLE=OFF
 
-all: libteep hello teep
+all: libteep hello-tc teep
 
 include ../common.mk
 
-clean:
+clean: clean-hello-tc
 	rm -rf $(BUILD)
-
 
 prefix ?= $(KEYSTONE_DIR)/build/overlay
 
 install: all
 	test -n "$(prefix)"
 	mkdir -p $(prefix)/root/teep-device
-	install $(BUILD)/hello-ta/hello-ta $(prefix)/root/teep-device
-	install $(BUILD)/hello-app/hello-app $(prefix)/root/teep-device
+	install $(SOURCE)/hello-tc/build-keystone/Enclave $(prefix)/root/teep-device/hello-ta
+	install $(SOURCE)/hello-tc/build-keystone/App-keystone $(prefix)/root/teep-device/hello-app
 	install $(BUILD)/teep-agent-ta/teep-agent-ta $(prefix)/root/teep-device
 	install $(BUILD)/teep-broker-app/teep-broker-app $(prefix)/root/teep-device
 	install $(KEYSTONE_SDK_DIR)/runtime/eyrie-rt $(prefix)/root/teep-device
@@ -276,7 +275,7 @@ test_integrated_payload:
 	sed "s@http://localhost:8888@#tc@" manifest/hello-ta.json >$(BUILD)/hello-ta.json
 	suit-tool create -i $(BUILD)/hello-ta.json -o $(BUILD)/hello-ta.suit
 	suit-tool sign -m $(BUILD)/hello-ta.suit -k ../../key/tc-provider-priv.pem -o $(BUILD)/signed-hello-ta.suit
-	$(SOURCE)/scripts/add-payload.py --key "#tc" --payload $(BUILD)/hello-ta/hello-ta --in $(BUILD)/signed-hello-ta.suit --out $(BUILD)/signed-hello-ta-payload.suit
+	$(SOURCE)/scripts/add-payload.py --key "#tc" --payload $(SOURCE)/hello-tc/build-keystone/Enclave --in $(BUILD)/signed-hello-ta.suit --out $(BUILD)/signed-hello-ta-payload.suit
 	curl $(TAM_URL)/panel/upload \
 		-F "file=@$(BUILD)/signed-hello-ta-payload.suit;filename=integrated-payload-manifest.cbor"
 	TAM_URL=$(TAM_URL) expect ./script/test.expect
@@ -289,7 +288,7 @@ test_download_payload:
 	curl $(TAM_URL)/panel/upload \
 		-F "file=@$(BUILD)/signed-hello-ta.suit;filename=integrated-payload-manifest.cbor"
 	curl $(TAM_URL)/panel/upload \
-		-F "file=@$(BUILD)/hello-ta/hello-ta;filename=$(HELLO_TA_UUID).ta"
+		-F "file=@$(SOURCE)/hello-tc/build-keystone/Enclave;filename=$(HELLO_TA_UUID).ta"
 
 	TAM_URL=$(TAM_URL) expect ./script/test.expect
 
