@@ -7,6 +7,28 @@ The TEEP Protocol provides the protocol on a wide range of devices for install, 
 
 The TEEP-Device is an implementation for defining the draft of Trusted Execution Environment Provisioning (TEEP) Protocol at the Internet Engineering Task Force (IETF). The chart above is a simplified diagram of components described in the TEEP Protocol and TEEP Architecture drafts. The TEEP Protocol on the TEEP-Device uses HTTP packets defined by HTTP Transport for Trusted Execution Environment Provisioning.
 
+Following are the explanation of each components on the above diagram.
+
+Trusted Application (TA): An application that runs in a TEE.
+
+Trusted Application Manager (TAM): An entity that manages Trusted
+      Applications and other Trusted Components running in TEEs of
+      various devices.
+
+TEEP Broker: A TEEP Broker is an application component running in
+      a Rich Execution Environment (REE) that enables the message
+      protocol exchange between a TAM and a TEE in a device.  A TEEP
+      Broker does not process messages on behalf of a TEE, but merely is
+      responsible for relaying messages from the TAM to the TEE, and for
+      returning the TEE's responses to the TAM.
+
+TEEP Agent: The TEEP Agent is a processing module running inside a
+      TEE that receives TAM requests (typically relayed via a TEEP
+      Broker that runs in an REE).  A TEEP Agent in the TEE may parse
+      requests or forward requests to other processing modules in a TEE,
+      which is up to a TEE provider's implementation.
+
+More details can be found in the below URL.
 - TEEP Protocol
   * https://datatracker.ietf.org/doc/html/draft-ietf-teep-protocol
 - HTTP Transport for Trusted Execution Environment Provisioning
@@ -46,7 +68,7 @@ Typical use cases for TEEP Protocol is a firmware update Over The Air (OTA) whic
 @image html docs/images/teep-and-taref-on-keystone.png
 @image latex docs/images/teep-and-taref-on-keystone.png width=\textwidth
 
-The TEEP-Device is on the TA-Ref withTEE provided by the Keystone project on RISC-V RV64GC CPU. Each TA in the Trusted Aria is protected with Physical memory protection (PMP) which is enabled by RISC-V hardware.
+The TEEP-Device is on the TA-Ref with TEE provided by the Keystone project on RISC-V RV64GC CPU. Each TA in the Trusted Area is protected with Physical memory protection (PMP) which is enabled by RISC-V hardware.
 
 - Keystone project
   * https://keystone-enclave.org/
@@ -56,7 +78,7 @@ The TEEP-Device is on the TA-Ref withTEE provided by the Keystone project on RIS
 @image html docs/images/teep-and-taref-on-optee.png
 @image latex docs/images/teep-and-taref-on-optee.png width=\textwidth
 
-It is on OP-TEE but highly utilizing the programming environment provided by TA-Ref to simplify the TEEP-Device to be able to build and function on other CPUs with the single source code of TEEP-Agent and Hello-TEEP-TA. The both are using the subset of Global Platform API.
+It is on OP-TEE but highly utilizes the programming environment provided by TA-Ref to simplify the TEEP-Device to be able to build and function on other CPUs with the single source code of TEEP-Agent and Hello-TEEP-TA. They both are using the subset of Global Platform API.
 
 ### TEEP-device and TA-Ref Components on SGX
 
