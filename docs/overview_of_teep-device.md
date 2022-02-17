@@ -49,7 +49,7 @@ Typical use cases for TEEP Protocol is a firmware update Over The Air (OTA) whic
 - Uses the tamproto as an implementation of the TAM server.
   * https://github.com/ko-isobe/tamproto
 
-- Provides initiating the protocol from TEEP-Device, downloading a sample Trusted Components (TC) called Hello-TEEP-TA from the TAM, installing it inside TEE, and executing the Hello-TEEP-TA.
+- Provides initiating the protocol from TEEP-Device, downloading a Trusted Components (TC) called Hello-TEEP-TA as a sample of TC from the TAM, installing it inside TEE, and executing the Hello-TEEP-TA.
 
 - Implemented on top of TA-Ref which provides a portable TEE programming environment among different TEEs on Intel CPU, ARM Cortex-A and RISC-V 64G to provide uniform source codes over OP-TEE on ARM-TrustZone for Cortex-A series and Keystone on RISC-V.
 
