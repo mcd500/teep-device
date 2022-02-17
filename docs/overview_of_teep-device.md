@@ -63,6 +63,11 @@ Typical use cases for TEEP Protocol is a firmware update Over The Air (OTA) whic
 
 ## Components of TEEP-Device and TA-Ref
 
+The Trusted Application Reference (TA-Ref) is a different software stack from this TEEP-Devie. The TA-Ref provides portable API and SDK among Intel SGX, ARM TrustZone-A and RISC-V Keystone and enables portability for source codes of Trusted Applications among different CPUs.
+
+The API of TA-Ref is a subset of TEE Internal Core API Specification defined by Global Platform.
+ - https://globalplatform.org/specs-library/tee-internal-core-api-specification/
+
 ### TEEP-Device and TA-Ref Components on Keystone
 
 @image html docs/images/teep-and-taref-on-keystone.png
