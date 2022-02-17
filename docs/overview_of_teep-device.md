@@ -44,7 +44,7 @@ Typical use cases for TEEP Protocol is a firmware update Over The Air (OTA) whic
 
 - The TEEP Protocol defines the protocol format and interaction between the server called Trusted Application Managers (TAM) and the IoT/Edge devices. The TEEP-Device is an implementation of Trusted Execution Environment Provisioning (TEEP) Protocol on the IoT/Edge devices.
 
-- The TEEP-Device provides the requirements of the TEEP-Agent in IETF drafts.
+- The TEEP-Device provides the requirements of the TEEP-Broker and TEEP-Agent in IETF drafts.
 
 - Uses the tamproto as an implementation of the TAM server.
   * https://github.com/ko-isobe/tamproto
@@ -53,34 +53,34 @@ Typical use cases for TEEP Protocol is a firmware update Over The Air (OTA) whic
 
 - Implemented on top of TA-Ref which provides a portable TEE programming environment among different TEEs on Intel CPU, ARM Cortex-A and RISC-V 64G to provide uniform source codes over OP-TEE on ARM-TrustZone for Cortex-A series and Keystone on RISC-V.
 
-- The required features of TEEP-Agent in devices in the draft is implemented as a Trusted Application inside TEE in this TEEP-Device to simplify the implementation. Therefore, some of the assumed requirements on the draft are not fulfilled with the TEEP-Devise. In the product, the features of TEEP-Agent must be enabled through root-of-trust from the boot up of the CPUs, the TCs must be saved in secure manner and protection of installed TCs.
+- The required features of TEEP-Agent in the draft is implemented as a application in user application privilege level inside TEE in this TEEP-Device to simplify the implementation which ideally should be combined with implementation in higher level privilege levels, such as, the runtime in S-Mode and Secure Monitor in M-mode on RISC-V. Therefore, some of the assumed requirements on the draft are not fulfilled with the TEEP-Devise. In the product, the features of TEEP-Agent must be enabled through root-of-trust from the boot up of the CPUs, the TCs must be saved in secure manner and have protection of installed TCs.
 
-- Supports Concise Binary Object Representation (CBOR) for all TEEP messages.
+- Supports Concise Binary Object Representation (CBOR) for current four TEEP messages.
   * https://datatracker.ietf.org/doc/html/rfc7049
 
-- Supports SUIT-manifest inside the Update message.
+- Supports SUIT-manifest inside the Update message of TEEP Protocol.
   * https://datatracker.ietf.org/doc/draft-ietf-suit-manifest/
 
-## Components of TEEP-device and TA-Ref
+## Components of TEEP-Device and TA-Ref
 
-### TEEP-device and TA-Ref Components on Keystone
+### TEEP-Device and TA-Ref Components on Keystone
 
 @image html docs/images/teep-and-taref-on-keystone.png
 @image latex docs/images/teep-and-taref-on-keystone.png width=\textwidth
 
-The TEEP-Device is on the TA-Ref with TEE provided by the Keystone project on RISC-V RV64GC CPU. Each TA in the Trusted Area is protected with Physical memory protection (PMP) which is enabled by RISC-V hardware.
+The TEEP-Device is implemented on top of the TA-Ref with TEE provided by the Keystone project on RISC-V RV64GC CPU. Each TA in the Trusted Area is protected with Physical memory protection (PMP) which is enabled by RISC-V hardware.
 
 - Keystone project
   * https://keystone-enclave.org/
 
-### TEEP-device and TA-Ref Components on OP-TEE
+### TEEP-Device and TA-Ref Components on OP-TEE
 
 @image html docs/images/teep-and-taref-on-optee.png
 @image latex docs/images/teep-and-taref-on-optee.png width=\textwidth
 
 It is on OP-TEE but highly utilizes the programming environment provided by TA-Ref to simplify the TEEP-Device to be able to build and function on other CPUs with the single source code of TEEP-Agent and Hello-TEEP-TA. They both are using the subset of Global Platform API.
 
-### TEEP-device and TA-Ref Components on SGX
+### TEEP-Device and TA-Ref Components on SGX
 
 @image html docs/images/teep-and-taref-on-sgx.png
 @image latex docs/images/teep-and-taref-on-sgx.png width=\textwidth
