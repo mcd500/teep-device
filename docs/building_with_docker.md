@@ -1,9 +1,9 @@
-# TEEP-Device with docker
+# Building TEEP-Device with docker
 
 
 ## Preparation for Docker
 
-For building teep-device with docker, it is required to install docker on Ubuntu.
+For building TEEP-Device with docker, it is required to install docker on Ubuntu.
 
 For the first time users of docker, please have a look on https://docs.docker.com/engine/
 
@@ -67,9 +67,9 @@ $ docker network create tamproto_default
 
 ## Pre-built Docker Image details
 
-The following are the docker images that has pre-built and tested binaries of teep-device with ta-ref.
+The following are the docker images that has pre-built and tested binaries of TEEP-Device with ta-ref.
 Since this images are already prepared and built already, you can start using it directly without
-building the teep-device again.
+building the TEEP-Device again.
 Make sure you have account on docker-hub. If not please create one on `dockerhub.com`
 
 | Target | docker image |
@@ -81,12 +81,12 @@ Make sure you have account on docker-hub. If not please create one on `dockerhub
 | Doxygen | trasioteam/teep-dev:doxygen |
 
 
-## Prepartion for building teep-device on docker
+## Prepartion for building TEEP-Device on docker
 
 ### Docker images details for building
 
-If we need to build the teep-device,
-docker images with all necessary packages for building teep-device for all three targets are already available.
+If we need to build the TEEP-Device,
+docker images with all necessary packages for building TEEP-Device for all three targets are already available.
 The details are mentioned below.
 
 
@@ -98,13 +98,13 @@ The details are mentioned below.
 | Doxygen | trasioteam/taref-dev:doxygen |
 
 
-## Building teep-device with Docker
+## Building TEEP-Device with Docker
 
-### Building teep-device for Keystone with docker
+### Building TEEP-Device for Keystone with docker
 
 Following commands are to be executed on Ubuntu 20.04.
 
-To run teep-device, first we need to run tamproto inside the same
+To run TEEP-Device, first we need to run tamproto inside the same
 host. Lets clone the tamproto and start it.
 
 **tamproto**
@@ -133,7 +133,7 @@ tam_api_1  | Express HTTPS server listening on port 8443
 ```
 
 
-**teep-device**
+**TEEP-Device**
 
 ```sh
 # Clone the teep-device repo and checkout master branch
@@ -166,7 +166,7 @@ $ cd ~/teep-device/
 $ make
     
 # After the successful build
-# Test the teep-device
+# Run the TEEP-Device
 $ make test
 	
 ```
@@ -263,9 +263,9 @@ cmp: 8d82573a-926d-4754-9353-32dc29997f74.ta.secstor.plain: No such file or dire
 ####  done
 ```
 
-### Building teep-device for Optee with docker
+### Building TEEP-Device for OPTEE with docker
 
-To run teep-device, first we need to run tamproto inside the same
+To run TEEP-Device, first we need to run tamproto inside the same
 host. Lets clone the tamproto and start it.
 
 **tamproto**
@@ -296,7 +296,7 @@ tam_api_1  | Express HTTPS server listening on port 8443
 Copy the IP address of the tamproto which will be passed in the 
 next section.
 
-**teep-device**
+**TEEP-Device**
 
 ```sh
 # Clone the teep-device repo and checkout master branch
@@ -332,7 +332,7 @@ $ make
 $ make optee_install_qemu
     
 # After the successful build
-# Test the teep-device
+# Run the TEEP-Device
 $ make test
     
 ```
@@ -387,10 +387,10 @@ D/TC:? 0 destroy_context:298 Destroy TA ctx (0xc0948fc0)
 make[1]: Leaving directory '/home/user/teep-device/platform/op-tee'
 ```
 
-### Building teep-device for SGX with docker
+### Building TEEP-Device for PC with docker
 
 
-To run teep-device, first we need to run tamproto inside the same
+To run TEEP-Device, first we need to run tamproto inside the same
 host. Lets clone the tamproto and start it.
 
 **tamproto**
@@ -421,7 +421,7 @@ tam_api_1  | Express HTTPS server listening on port 8443
 Copy the IP address of the tamproto which will be passed in the 
 next section.
 
-**teep-device**
+**TEEP-Device**
 
 ```sh
 # Clone the teep-device repo and checkout master branch
@@ -457,12 +457,12 @@ $ export TEE=pc
 $ make
 	    
 # After the successful build
-# Test the teep-device
+# Run the TEEP-Device
 $ make test
     
 ```
 
-Trimmed output of the test.
+Trimmed output of the run.
 The output can be found in /home/user/teep-device/platform/pc/build/8d82573a-926d-4754-9353-32dc29997f74.ta
 
 

@@ -1,8 +1,8 @@
-# Clone and Building teep-device without docker
+# Building TEEP-Device without docker
 
-Clone the teep-device source code and build it for Keystone, OPTEE and SGX. 
+Clone the TEEP-Device's source code and build it for Keystone, OPTEE and SGX. 
 
-To build teep-device for any targets, the preparation and building 
+To build TEEP-Device for any targets, the preparation and building 
 of ta-ref sdk has to be done already and the path of ta-ref has to be exported
 in the following environment variable.
 
@@ -12,31 +12,9 @@ The detailed steps of preparation and building ta-ref can be found in ta-ref.pdf
 $ export TAREF_DIR=<ta-ref dir>
 ```
 
-## Doxygen
+## Prerequisite
 
-This PDF (ta-ref.pdf) was generated using Doxygen version 1.9.2. To install `doxygen-1.9.2` following procedure is necessary.
-
-### Required Packages
-
-Install following packages on Ubuntu. Its better to install from package rather than using apt-install.
-
-```sh
-$ sudo apt install doxygen-latex graphviz texlive-full texlive-latex-base latex-cjk-all
-```
-
-Above packages required to generate PDF using doxygen.
-
-### Build and Install Doxygen
-
-```sh
-$ git clone https://github.com/doxygen/doxygen.git 
-$ cd doxygen
-$ mkdir build 
-$ cd build 
-$ cmake -G "Unix Makefiles" .. 
-$ make
-$ sudo make install 
-```
+Have tested on Ubuntu 20.04.
 
 ## Run Tamproto (TAM Server) - Required by all targets
 
@@ -101,7 +79,7 @@ Please keep the terminal open and do clone and build for the targets on seperate
 
 ## Keystone 
 
-Build `teep-device` with Keystone. Make sure Keystone and its supporting sources have been build already.
+Build `TEEP-Device` with Keystone. Make sure Keystone and its supporting sources have been build already.
 Please refer ta-ref.pdf document for "Preparation before building ta-ref without Docker" - Keystone section.
 
 ### Clone and Build
@@ -118,7 +96,7 @@ $ export KEYEDGE_DIR=<path to keyedge dir>
 Clone and Build
 
 ```sh
-# Clone the teep-device
+# Clone the TEEP-Device
 $ git clone https://192.168.100.100/rinkai/teep-device.git
 $ cd teep-device
 $ git checkout master
@@ -127,18 +105,18 @@ $ git checkout master
 $ git submodule sync --recursive
 $ git submodule update --init --recursive
   
-# Build the teep-device
+# Build the TEEP-Device
 $ make
 ```
 
-### Check teep-device by running hello-app & teep-broker-app on QEMU Environment
+### Check TEEP-Device by running hello-app & teep-broker-app on QEMU Environment
 
-To check teep-device on Keystone, we need to run TAM server on PC.
+To check TEEP-Device on Keystone, we need to run TAM server on PC.
 
 
 ```sh      
 # After the successful build
-# Test the teep-device
+# Test the TEEP-Device
 $ make test
   
 ```
@@ -205,9 +183,9 @@ cmp: 8d82573a-926d-4754-9353-32dc29997f74.ta.secstor.plain: No such file or dire
 ####  done
 ```
 
-### Check teep-device by running hello-app and teep-broker-app on RISC-V Unleashed
+### Check TEEP-Device by running hello-app and teep-broker-app on RISC-V Unleashed
 
-To check teep-device on Unleased, we need to run TAM server (refer above
+To check TEEP-Device on Unleased, we need to run TAM server (refer above
 to run tamproto) and networking with Unleased dev board
 
 #### Copy the hello-app and teep-broker-app binaries to Unleased
@@ -232,7 +210,7 @@ $ scp platform/keystone/build/libteep/ree/libwebsockets/lib/lib* root@192.168.0.
 
 **Write to SD card**
 
-Please follow below steps to write the teep-device binaries to SD-card
+Please follow below steps to write the TEEP-Device binaries to SD-card
 
 - Insert SD card to your PC for Unleashed
 - Edit `platform/keystone/script/sktinst.sh`
@@ -364,7 +342,7 @@ ta_store_install: ta_image_len = 130552 ta_name=8d82573a-926d-4754-9353-32dc2999
 
 ## OPTEE 
 
-Build `teep-device` with OPTEE. So make sure OPTEE and its supporting sources have been build already.
+Build `TEEP-Device` with OPTEE. So make sure OPTEE and its supporting sources have been build already.
 Please refer ta-ref.pdf document for "Preparation before building ta-ref without Docker" - OP-TEE section.
 
 ### Clone and Build
@@ -380,7 +358,7 @@ $ export PATH=$PATH:$OPTEE_DIR/toolchains/aarch64/bin:$OPTEE_DIR/toolchains/aarc
 Clone and Build
 
 ```sh
-# Clone the teep-device
+# Clone the TEEP-Device
 $ git clone https://192.168.100.100/rinkai/teep-device.git
 $ cd teep-device
 $ git checkout master
@@ -389,13 +367,13 @@ $ git checkout master
 $ git submodule sync --recursive
 $ git submodule update --init --recursive
   
-# Build the teep-device
+# Build the TEEP-Device
 $ make
 ```
 
-### Check teep-device by running hello-app & teep-broker-app on QEMU Environment
+### Check TEEP-Device by running hello-app & teep-broker-app on QEMU Environment
 
-To check teep-device on OP-TEE, we need to run TAM server on PC.
+To check TEEP-Device on OP-TEE, we need to run TAM server on PC.
 
 
 ```sh      
@@ -403,7 +381,7 @@ To check teep-device on OP-TEE, we need to run TAM server on PC.
 $ make optee_install_qemu
     
 # After the successful build
-# Test the teep-device
+# Test the TEEP-Device
 $ make test
 ```
 
@@ -458,9 +436,9 @@ make[1]: Leaving directory '/home/user/teep-device/platform/op-tee'
 ```
 
 
-### Check teep-device by running hello-app and teep-broker-app on RPI3
+### Check TEEP-Device by running hello-app and teep-broker-app on RPI3
 
-To check teep-device on RPI3, we need to run TAM server on PC and networking with RPI3 board
+To check TEEP-Device on RPI3, we need to run TAM server on PC and networking with RPI3 board
 
 #### Copy the hello-app and teep-broker-app binaries to RPI3
 <br/>
@@ -476,7 +454,7 @@ TODO - Further update required
 
 **Write to SD card**
 <br />
-Please follow below steps to write the teep-device binaries to SD-card
+Please follow below steps to write the TEEP-Device binaries to SD-card
 - Insert SD card to your PC for Unleashed
 - Copy the binaries to SD card
 - Move the sd to RPI3 board and boot it
@@ -517,7 +495,7 @@ TODO - Further update required
 
 ## SGX
 
-Build `teep-device` with SGX. Make sure SGX and its supporting sources have been build already.
+Build `TEEP-Device` with SGX. Make sure SGX and its supporting sources have been build already.
 Please refer ta-ref.pdf document for "Preparation before building ta-ref without Docker" - SGX section.
 
 ### Clone and Build
@@ -535,7 +513,7 @@ $ export TAREF_DIR=<ta-ref dir>
 Clone and Build
 
 ```sh
-# Clone the teep-device
+# Clone the TEEP-Device
 $ git clone https://192.168.100.100/rinkai/teep-device.git
 $ cd teep-device
 $ git checkout master
@@ -544,13 +522,13 @@ $ git checkout master
 $ git submodule sync --recursive
 $ git submodule update --init --recursive
   
-# Build the teep-device
+# Build the TEEP-Device
 $ make
 ```
 
-### Check teep-device by running hello-app & teep-broker-app on QEMU Environment
+### Check TEEP-Device by running hello-app & teep-broker-app on QEMU Environment
 
-To check teep-device on SGX, we need to run TAM server on PC and networking with SGX machine
+To check TEEP-Device on SGX, we need to run TAM server on PC and networking with SGX machine
 
 ```sh
 $ cd ~/teep-device
@@ -568,8 +546,34 @@ $ cat ~/teep-device/platform/pc/build/8d82573a-926d-4754-9353-32dc29997f74.ta
 Hello TEEP from TEE!
 ```
 
-### Check teep-device by running hello-app & teep-broker-app on Intel SGX
+### Check TEEP-Device by running hello-app & teep-broker-app on Intel SGX
 
 ```sh
 TODO - Further update required
+```
+
+## Doxygen
+
+This PDF (ta-ref.pdf) was generated using Doxygen version 1.9.2. To install `doxygen-1.9.2` following procedure is necessary.
+
+### Required Packages
+
+Install following packages on Ubuntu. Its better to install from package rather than using apt-install.
+
+```sh
+$ sudo apt install doxygen-latex graphviz texlive-full texlive-latex-base latex-cjk-all
+```
+
+Above packages required to generate PDF using doxygen.
+
+### Build and Install Doxygen
+
+```sh
+$ git clone https://github.com/doxygen/doxygen.git 
+$ cd doxygen
+$ mkdir build 
+$ cd build 
+$ cmake -G "Unix Makefiles" .. 
+$ make
+$ sudo make install 
 ```
