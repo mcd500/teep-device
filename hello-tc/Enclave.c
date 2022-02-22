@@ -28,13 +28,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <tee_ta_api.h>
-// DMSG, IMSG
-#include "trace.h"  // for DMSG
 #include "config_ref_ta.h"
 
-#include "assert.h" // move this to inside tee_ta_api.h
-#include "edger/Enclave_t.h"
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h> // for memmove
