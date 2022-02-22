@@ -1,5 +1,7 @@
 /*
- * Copyright (C) 2017 - 2019 National Institute of Advanced Industrial Science
+ * SPDX-License-Identifier: BSD-2-Clause
+ *
+ * Copyright (C) 2019 National Institute of Advanced Industrial Science
  *                           and Technology (AIST)
  * All rights reserved.
  *

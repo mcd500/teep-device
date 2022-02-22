@@ -1,6 +1,8 @@
 /*
- * Copyright (C) 2019  National Institute of Advanced Industrial Science
- *                     and Technology (AIST)
+ * SPDX-License-Identifier: BSD-2-Clause
+ *
+ * Copyright (C) 2019 National Institute of Advanced Industrial Science
+ *                           and Technology (AIST)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,7 +26,6 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- *
  */
 
 #if !defined(__LIBAISTTEEP__)
