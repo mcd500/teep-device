@@ -30,6 +30,10 @@
 
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define TEEP_AGENT_BROKER_TASK_DONE 1
 #define TEEP_AGENT_QUERY_NEXT_BROKER_TASK 2
 #define TEEP_AGENT_SET_DEV_OPTION 3
@@ -59,3 +63,7 @@ enum agent_dev_option
     AGENT_OPTION_SET_TAM_URI,
     AGENT_OPTION_SET_CURRENT_TA_LIST
 };
+
+#ifdef __cplusplus
+}
+#endif

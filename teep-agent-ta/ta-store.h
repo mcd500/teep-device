@@ -31,6 +31,10 @@
 #ifndef TA_STORE_H
 #define TA_STORE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct component_path {
 	const char *device;
 	const char *storage;
@@ -39,5 +43,9 @@ struct component_path {
 };
 
 bool store_component(const struct component_path *path, const void *image, size_t image_len);
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #endif /* TA_STORE_H */

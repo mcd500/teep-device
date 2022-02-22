@@ -28,8 +28,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#if !defined(__LIBAISTTEEP__)
-#define __LIBAISTTEEP__
+#ifndef __LIBTEEP_H__
+#define __LIBTEEP_H__
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -221,5 +221,5 @@ QCBORError teep_message_encoder_finish(struct teep_message_encoder *encoder, Use
 }
 #endif
 
-#endif
+#endif /* __LIBTEEP_H__ */
 
