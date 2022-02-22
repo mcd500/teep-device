@@ -37,7 +37,7 @@
 #include <stdlib.h>
 
 
-static const TEEC_UUID uuid_aist_otrp_ta =
+static const TEEC_UUID uuid_teep_broker =
         { 0x68373894, 0x5bb3, 0x403c,
                 { 0x9e, 0xec, 0x31, 0x14, 0xa1, 0xf5, 0xd3, 0xfc } };
 
@@ -67,7 +67,7 @@ static int broker_ctx_init(struct broker_ctx *ctx)
 	TEEC_Operation op;
 	memset(&op, 0, sizeof op);
 	r = TEEC_OpenSession(&ctx->tee_context, &ctx->tee_session,
-			     &uuid_aist_otrp_ta, TEEC_LOGIN_PUBLIC,
+			     &uuid_teep_broker, TEEC_LOGIN_PUBLIC,
 			     NULL, &op, NULL);
 	if (r != TEEC_SUCCESS) {
 		fprintf(stderr, "%s: tee open session failed 0x%x\n",
