@@ -3,41 +3,13 @@
 .PHONY: test test-optee test-keystone test-pc
 .PHONY: qemu qemu-optee qemu-keystone
 
-all: $(KEY_HEADERS) all-$(TEE)
-
-KEYS := $(CURDIR)/key/test-jw_tee_identity_private_tee-mytee-private.jwk \
-	$(CURDIR)/key/test-jw_tee_identity_tee-mytee-public.jwk \
-	$(CURDIR)/key/test-jw_tee_sds_xbank_spaik-priv.jwk \
-	$(CURDIR)/key/test-jw_tee_sds_xbank_spaik-pub.jwk \
-	$(CURDIR)/key/test-jw_tsm_identity_private_tam-mytam-private.jwk \
-	$(CURDIR)/key/test-jw_tsm_identity_tam-mytam-public.jwk
-
-KEY_HEADERS := $(CURDIR)/key/include/sp_pubkey_jwk.h \
-	$(CURDIR)/key/include/tam_id_pubkey_jwk.h \
-	$(CURDIR)/key/include/tee_id_privkey_jwk.h \
-	$(CURDIR)/key/include/tee_id_pubkey_jwk.h
-
-.PHONY: gen-keys
-gen-keys $(KEYS):
-	scripts/keygen/genkeys.sh
-
-.PHONY: gen-key-headers
-gen-key-headers $(KEY_HEADERS): $(KEYS)
-	scripts/keygen/genheaders.sh
+all: all-$(TEE)
 
 clean: clean-optee clean-keystone clean-pc clean-docs
 
 test: test-$(TEE)
 
 qemu: qemu-$(TEE)
-
-.PHONY: distclean
-distclean: clean
-	rm -fr sample-senario/node_modules/ sample-senario/package-lock.json
-	rm -fr test-jw
-	rm -f $(TEEP_KEY_SRCS)
-
-
 
 all-:
 	@echo '$$TEE must be "optee", "keystone" or "pc"'
