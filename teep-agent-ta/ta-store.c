@@ -57,7 +57,7 @@ bail_1:
 #endif
 
 #ifdef PLAT_OPTEE
-#include "tee-common.h"
+#include <tee_internal_api.h>
 #include <pta_secstor_ta_mgmt.h>
 #include <time.h>
 #include <string.h>
