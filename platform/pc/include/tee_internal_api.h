@@ -27,41 +27,6 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-/**
- * @file tee-common.h
- * draft RISC-V Internal TEE API
- * @brief Common type and definitions of RISC-V TEE.
- * @author Akira Tsukamoto, AIST
- * @date 2019/09/25
- */
 
-#ifndef TEE_COMMON_H
-#define TEE_COMMON_H
-
-#include <stdint.h>
-#include <stdio.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
-#ifdef DEBUG
-#define pr_deb(...)       do { printf(__VA_ARGS__); } while (0)
-#else
-#define pr_deb(...)       do { } while (0)
-#endif /* DEBUG */
-#endif /*DOXYGEN_SHOULD_SKIP_THIS*/
-
-//#include <tee_api.h>
-#include <tee_api_defines.h>
-#include <tee_api_types.h>
-// #include <tee_ta_api.h>
-
-//typedef uint32_t TEE_Result;
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* TEE_COMMON_H */
+#include "tee_api_defines.h"
+#include "tee_api_types.h"

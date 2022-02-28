@@ -30,7 +30,7 @@
 
 #include <libwebsockets.h>
 #include <tee_client_api.h>
-#include "tee-common.h"
+#include <tee_internal_api.h>
 #include "ta-store.h"
 #include "teep-agent-ta.h"
 
