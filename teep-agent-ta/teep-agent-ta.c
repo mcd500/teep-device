@@ -32,7 +32,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
-#include <tee_internal_api.h>
+#include "tee-common.h"
 //#include <libwebsockets.h>
 #include <libteep.h>
 #include <teesuit.h>
