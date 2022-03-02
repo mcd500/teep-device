@@ -102,6 +102,15 @@ static bool install_ta(const char *filename, const void *image, size_t image_len
 
 #endif
 
+#ifdef PLAT_SGX
+
+static bool install_ta(const char *filename, const void *image, size_t image_len)
+{
+	return true;
+}
+
+#endif
+
 bool store_component(const struct component_path *path, const void *image, size_t image_len)
 {
 	tee_log_trace("store component\n");

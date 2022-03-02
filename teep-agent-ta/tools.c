@@ -30,7 +30,7 @@
 
 #include <string.h>
 
-#ifdef PLAT_KEYSTONE
+#if defined(PLAT_KEYSTONE) || defined(PLAT_SGX)
 /**
  * strcpy() - Copies the string from source to destination.
  *

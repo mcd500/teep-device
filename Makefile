@@ -1,11 +1,11 @@
-.PHONY: all all- all-optee all-keystone all-pc docs
-.PHONY: clean clean-optee clean-keystone clean-pc clean-docs
-.PHONY: test test-optee test-keystone test-pc
+.PHONY: all all- all-optee all-keystone all-sgx all-pc docs
+.PHONY: clean clean-optee clean-keystone clean-sgx clean-pc clean-docs
+.PHONY: test test-optee test-keystone test-sgx test-pc
 .PHONY: qemu qemu-optee qemu-keystone gen_readme
 
 all: all-$(TEE)
 
-clean: clean-optee clean-keystone clean-pc clean-docs
+clean: clean-optee clean-keystone clean-sgx clean-pc clean-docs
 
 test: test-$(TEE)
 
@@ -18,6 +18,8 @@ all-:
 all-optee: build-optee
 
 all-keystone: build-keystone
+
+all-sgx: build-sgx
 
 all-pc: build-pc
 
@@ -49,10 +51,13 @@ clean-optee:
 clean-keystone:
 	$(MAKE) -C platform/keystone clean
 
+clean-sgx:
+	$(MAKE) -C platform/sgx clean
+
 clean-pc:
 	$(MAKE) -C platform/pc clean
 
-.PHONY: build-optee build-keystone
+.PHONY: build-optee build-keystone build-sgx
 
 build-optee:
 	$(MAKE) -C platform/op-tee
@@ -66,6 +71,9 @@ build-keystone:
 build-pc:
 	$(MAKE) -C platform/pc
 
+build-sgx:
+	$(MAKE) -C platform/sgx
+
 build-keystone-trvsim:
 	$(MAKE) -C platform/keystone ship-trvsim PORT=$(TRVSIM_PORT)
 
@@ -75,6 +83,9 @@ test-optee:
 
 test-keystone:
 	$(MAKE) -C platform/keystone test
+
+test-sgx:
+	$(MAKE) -C platform/sgx test
 
 test-pc:
 	$(MAKE) -C platform/pc test

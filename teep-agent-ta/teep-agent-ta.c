@@ -936,7 +936,102 @@ void EAPP_ENTRY eapp_entry()
 
 #endif
 
-#if defined(PLAT_KEYSTONE) || defined(PLAT_OPTEE)
+#ifdef PLAT_SGX
+
+#include "sgx_trts.h" /* for sgx_ocalloc, sgx_is_outside_enclave */
+#include <edger/Enclave_t.h>
+
+#define CHECK_UNIQUE_POINTER(ptr, siz) do {     \
+        if ((ptr) && ! sgx_is_outside_enclave((ptr), (siz)))    \
+                return TEE_ERROR_BAD_PARAMETERS;\
+} while (0)
+
+static void *session;
+
+uint32_t ecall_TA_OpenSessionEntryPoint()
+{
+	return TA_OpenSessionEntryPoint(0, NULL, &session);
+}
+
+void ecall_TA_CloseSessionEntryPoint()
+{
+	return TA_CloseSessionEntryPoint(session);
+}
+
+uint32_t ecall_TA_InvokeCommandEntryPoint(uint32_t unused, uint32_t cmd_id, uint32_t param_types, struct command_param p[4])
+{
+	for (int i = 0; i < 4; i++) {
+		switch (TEE_PARAM_TYPE_GET(param_types, i)) {
+		default:
+			return TEE_ERROR_BAD_PARAMETERS;
+		case TEE_PARAM_TYPE_NONE:
+			break;
+		case TEE_PARAM_TYPE_VALUE_INPUT:
+		case TEE_PARAM_TYPE_VALUE_INOUT:
+		case TEE_PARAM_TYPE_VALUE_OUTPUT:
+			CHECK_UNIQUE_POINTER(p[i].a, sizeof (uint32_t));
+			CHECK_UNIQUE_POINTER(p[i].b, sizeof (uint32_t));
+			break;
+		case TEE_PARAM_TYPE_MEMREF_INPUT:
+		case TEE_PARAM_TYPE_MEMREF_INOUT:
+		case TEE_PARAM_TYPE_MEMREF_OUTPUT:
+			CHECK_UNIQUE_POINTER(p[i].size, sizeof (uint32_t));
+			CHECK_UNIQUE_POINTER(p[i].p, *p[i].size);
+			break;
+		}
+	}
+	TEE_Param params[4];
+	for (int i = 0; i < 4; i++) {
+		params[i].value.a = 0;
+		params[i].value.b = 0;
+		switch (TEE_PARAM_TYPE_GET(param_types, i)) {
+		case TEE_PARAM_TYPE_VALUE_INPUT:
+		case TEE_PARAM_TYPE_VALUE_INOUT:
+			params[i].value.a = *p[i].a;
+			params[i].value.b = *p[i].b;
+			break;
+		case TEE_PARAM_TYPE_MEMREF_INPUT:
+		case TEE_PARAM_TYPE_MEMREF_INOUT:
+			params[i].memref.size = *p[i].size;
+			params[i].memref.buffer = malloc(params[i].memref.size); // TODO: check
+			memcpy(params[i].memref.buffer, p[i].p, params[i].memref.size);
+			break;
+		case TEE_PARAM_TYPE_MEMREF_OUTPUT:
+			params[i].memref.size = *p[i].size;
+			params[i].memref.buffer = malloc(params[i].memref.size); // TODO: check
+			memset(params[i].memref.buffer, 0, params[i].memref.size);
+			break;
+		}
+	}
+
+	TEE_Result r = TA_InvokeCommandEntryPoint(session, cmd_id, param_types, params);
+
+	for (int i = 0; i < 4; i++) {
+		switch (TEE_PARAM_TYPE_GET(param_types, i)) {
+		default:
+			break;
+		case TEE_PARAM_TYPE_VALUE_OUTPUT:
+		case TEE_PARAM_TYPE_VALUE_INOUT:
+			memcpy_s(p[i].a, sizeof *p[i].a, &params[i].value.a, sizeof params[i].value.a);
+			memcpy_s(p[i].b, sizeof *p[i].b, &params[i].value.b, sizeof params[i].value.b);
+			break;
+		case TEE_PARAM_TYPE_MEMREF_OUTPUT:
+		case TEE_PARAM_TYPE_MEMREF_INOUT:
+			memcpy_s(p[i].p, *p[i].size, params[i].memref.buffer, params[i].memref.size);
+			memcpy_s(p[i].size, sizeof *p[i].size, &params[i].memref.size, sizeof params[i].memref.size);
+			free(params[i].memref.buffer);
+			break;
+		case TEE_PARAM_TYPE_MEMREF_INPUT:
+			free(params[i].memref.buffer);
+			break;
+		}
+	}
+
+	return r;
+}
+#endif
+
+#if defined(PLAT_KEYSTONE) || defined(PLAT_OPTEE) || defined(PLAT_SGX)
 void tee_log(enum tee_log_level level, const char *msg, ...)
 {
 	char buf[256];
@@ -946,8 +1041,12 @@ void tee_log(enum tee_log_level level, const char *msg, ...)
 	va_end(list);
 #ifdef PLAT_KEYSTONE
 	ocall_print_string(buf);
-#else
+#endif
+#ifdef PLAT_OPTEE
 	MSG("%s", buf);
+#endif
+#ifdef PLAT_SGX
+	ocall_print_string(NULL, buf);
 #endif
 }
 #endif
