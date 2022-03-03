@@ -1,0 +1,2 @@
+output_line_start="$(cat README.md | grep -Fn "## supported TEEs" | cut -f1 -d:)"
+sed -i "$((${output_line_start}-1))"r<(cat docs/overview_of_teep-device.md docs/building_with_docker.md $f; echo $'\n') README.md

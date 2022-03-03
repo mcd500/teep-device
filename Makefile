@@ -30,6 +30,8 @@ docs:
 	mv docs/doxygen/html docs/teep-device_readme_html
 	cd docs; tar czf teep-device_readme_html.tar.gz open-readme.html teep-device_readme_html
 
+gen_readme:
+	bash ./scripts/update_readme.sh
 
 clean-docs:
 	rm -f -r docs/doxygen/html
