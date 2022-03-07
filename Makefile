@@ -1,7 +1,7 @@
 .PHONY: all all- all-optee all-keystone all-pc docs
 .PHONY: clean clean-optee clean-keystone clean-pc clean-docs
 .PHONY: test test-optee test-keystone test-pc
-.PHONY: qemu qemu-optee qemu-keystone
+.PHONY: qemu qemu-optee qemu-keystone gen_readme
 
 all: all-$(TEE)
 
@@ -31,7 +31,9 @@ docs:
 	cd docs; tar czf teep-device_readme_html.tar.gz open-readme.html teep-device_readme_html
 
 gen_readme:
-	bash ./scripts/update_readme.sh
+	cat docs/overview_of_teep-device.md docs/building_with_docker.md > README.md
+	sed -i 's/@image html /![](/g' README.md
+	sed -i '/^\!\[\]/ s/$$/)/' README.md
 
 clean-docs:
 	rm -f -r docs/doxygen/html
