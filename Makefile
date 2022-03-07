@@ -34,6 +34,7 @@ gen_readme:
 	cat docs/overview_of_teep-device.md docs/building_with_docker.md > README.md
 	sed -i 's/@image html /![](/g' README.md
 	sed -i '/^\!\[\]/ s/$$/)/' README.md
+	sed -i '/^@image/,/textwidth$$/d' README.md
 
 clean-docs:
 	rm -f -r docs/doxygen/html
