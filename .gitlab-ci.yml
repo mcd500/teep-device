@@ -6,6 +6,7 @@ stages:
     - build
     - test
     - example
+    - trigger
 
 
 default:
@@ -102,3 +103,12 @@ teep_doxygen:
         expire_in: 1 week
 
 ### DOXYGEN - START ###
+
+trigger_docker-teep-dev:
+    variables:
+        TOKEN: 0b8ade51abfe0f4a0bf3d502a5d3b8
+    stage: trigger
+    tags:
+        - shell117
+    script:
+        - "curl -X POST --fail -F token=TOKEN -F ref=master https://192.168.100.100/api/v4/projects/133/trigger/pipeline"
