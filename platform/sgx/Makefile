@@ -13,15 +13,18 @@ else
 LIBRARY_SUFFIX =
 endif
 
-export APP_CFLAGS = -g \
-	-Wall \
+export TEE_CFLAGS = \
+	-I$(BUILD)/libteep/tee/QCBOR/inc \
+	-I$(TEE_REF_TA_DIR)/include \
+	-I$(TAREF_DIR)/build/include
+
+export APP_CFLAGS = $(TEE_CFLAGS) \
+	-Wall -g \
 	-I$(SOURCE)/include \
-	-I$(TAREF_DIR)/build/include \
 	-I$(SOURCE)/libteep/lib \
 	-I$(BUILD)/libteep/ree/libwebsockets/include \
 	-I$(SOURCE)/submodule/libwebsockets/include \
 	-I$(SOURCE)/submodule/mbedtls/include \
-	-I$(BUILD)/libteep/ree/QCBOR/inc \
 	-DPLAT_SGX
 
 export APP_LDFLAGS = \
@@ -36,17 +39,13 @@ export APP_LIBS = \
 	-lsgx_uae_service$(LIBRARY_SUFFIX) \
 	-lEnclave_u -lpthread -lwebsockets -lmbedtls -lmbedx509 -lmbedcrypto -lcap
 
-export TEE_CFLAGS = \
-	-I$(BUILD)/libteep/tee/QCBOR/inc
-
-export TA_CFLAGS = -g \
+export TA_CFLAGS = $(TEE_CFLAGS) \
+	-g \
 	$(SGX_CFLAGS) $(DEBUG_FLAGS) \
 	$(addprefix -I, $(INCLUDE_DIRS)) \
 	-I$(TAREF_DIR)/gp/include \
 	-I$(TAREF_DIR)/api/include \
-	-I$(TAREF_DIR)/build/include \
 	-I$(SOURCE)/include \
-	-I$(BUILD)/libteep/tee/QCBOR/inc \
 	-I$(SOURCE)/suit/include \
 	-I$(SOURCE)/libteep/lib \
 	-DPLAT_SGX

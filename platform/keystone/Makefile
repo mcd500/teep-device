@@ -12,7 +12,7 @@ export TAREF_DIR ?= $(CURDIR)/../../..
 export TEE_CFLAGS = \
 	-I$(BUILD)/libteep/tee/QCBOR/inc \
 	-I$(TEE_REF_TA_DIR)/include \
-	-I$(TAREF_DIR)/build/include \
+	-I$(TAREF_DIR)/build/include
 
 export APP_CFLAGS = $(TEE_CFLAGS) \
 	-Wall \
