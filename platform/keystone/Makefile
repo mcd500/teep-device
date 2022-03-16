@@ -9,17 +9,20 @@ export TEE_AGENT_UUID ?= 68373894-5bb3-403c-9eec-3114a1f5d3fc
 
 export TAREF_DIR ?= $(CURDIR)/../../..
 
-export APP_CFLAGS = \
+export TEE_CFLAGS = \
+	-I$(BUILD)/libteep/tee/QCBOR/inc \
+	-I$(TEE_REF_TA_DIR)/include \
+	-I$(TAREF_DIR)/build/include \
+
+export APP_CFLAGS = $(TEE_CFLAGS) \
 	-Wall \
 	-I$(SOURCE)/include \
 	-I$(KEYSTONE_SDK_DIR)/lib/host/include \
 	-I$(KEYSTONE_SDK_DIR)/lib/edge/include \
-	-I$(TAREF_DIR)/build/include \
 	-I$(SOURCE)/libteep/lib \
 	-I$(BUILD)/libteep/ree/libwebsockets/include \
 	-I$(SOURCE)/submodule/libwebsockets/include \
 	-I$(SOURCE)/submodule/mbedtls/include \
-	-I$(BUILD)/libteep/ree/QCBOR/inc \
 	-DPLAT_KEYSTONE
 
 export APP_LDFLAGS = \
@@ -34,17 +37,12 @@ export APP_LDFLAGS = \
 export APP_LIBS = \
 	-lkeystone-host -lkeystone-edge -lEnclave_u -lflatccrt -lmbedcrypto -lmbedx509 -lmbedtls -lwebsockets
 
-export TEE_CFLAGS = \
-	-I$(BUILD)/libteep/tee/QCBOR/inc
-
-export TA_CFLAGS = \
+export TA_CFLAGS = $(TEE_CFLAGS) \
 	-Wall -fno-builtin-printf -DEDGE_IGNORE_EGDE_RESULT \
 	-I. \
 	-I$(SOURCE)/include \
-	-I$(TAREF_DIR)/build/include \
 	-I$(KEYSTONE_SDK_DIR)/include/app \
 	-I$(KEYSTONE_SDK_DIR)/include/edge \
-	-I$(BUILD)/libteep/tee/QCBOR/inc \
 	-I$(SOURCE)/suit/include \
 	-I$(SOURCE)/libteep/lib \
 	-DPLAT_KEYSTONE

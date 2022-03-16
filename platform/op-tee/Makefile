@@ -8,18 +8,21 @@ export TA_DEV_KIT_DIR ?= $(OPTEE_DEV_KIT_DIR)/export-ta_arm64
 export HELLO_TA_UUID  ?= 8d82573a-926d-4754-9353-32dc29997f74
 export TEE_AGENT_UUID ?= 68373894-5bb3-403c-9eec-3114a1f5d3fc
 
-export APP_CFLAGS ?= \
+export TEE_CFLAGS = \
+	-I$(BUILD)/libteep/tee/QCBOR/inc \
+	-I$(SOURCE)/include \
+	-I$(TEE_REF_TA_DIR)/include \
+	-I$(TAREF_DIR)/build/include
+
+export APP_CFLAGS ?=  $(TEE_CFLAGS) \
 	-Wall \
 	-DPLAT_OPTEE=1 \
 	-I$(SOURCE)/libteep/lib \
 	-I$(SOURCE)/submodule/libwebsockets/include \
 	-I$(SOURCE)/submodule/mbedtls/include \
-	-I$(SOURCE)/include \
 	-I$(OPTEE_DIR)/optee_client/public \
-	-I$(TEE_REF_TA_DIR)/include \
 	-I$(BUILD)/libteep/ree/mbedtls/include \
 	-I$(BUILD)/libteep/ree/libwebsockets/include \
-	-I$(BUILD)/libteep/tee/QCBOR/inc
 
 export APP_LDFLAGS ?= \
 	-L$(OPTEE_DIR)/out-br/target/usr/lib \
@@ -34,10 +37,6 @@ export APP_LIBS ?= \
 	-lmbedtls \
 	-lmbedcrypto \
 	-lmbedx509
-
-export TEE_CFLAGS = \
-	-I$(BUILD)/libteep/tee/QCBOR/inc \
-	-I$(SOURCE)/include
 
 export TA_CFLAGS = $(TEE_CFLAGS) \
 	-nostdinc -DPLAT_OPTEE=1  \
