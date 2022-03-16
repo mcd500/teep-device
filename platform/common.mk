@@ -83,6 +83,12 @@ hello-tc:
 clean-hello-tc:
 	$(MAKE) -C $(SOURCE)/hello-tc/build-$(PLAT) SOURCE=$(SOURCE)/hello-tc clean
 
+upload-hello-tc-download:
+	$(MAKE) -C $(SOURCE)/hello-tc/build-$(PLAT) SOURCE=$(SOURCE)/hello-tc upload-download-manifest
+
+upload-hello-tc-embed:
+	$(MAKE) -C $(SOURCE)/hello-tc/build-$(PLAT) SOURCE=$(SOURCE)/hello-tc upload-embed-manifest
+
 teep-agent-ta: libteep
 	$(MAKE) -C $(SOURCE)/teep-agent-ta -f $(PLAT).mk BUILD=$(BUILD) out-dir=$(BUILD)/teep-agent-ta
 

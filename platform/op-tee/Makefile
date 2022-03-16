@@ -158,16 +158,8 @@ run-qemu:
 
 TAM_URL ?= http://tamproto_tam_api_1:8888
 
-test_integrated_payload:
+test: upload-hello-tc-download
 	ln -sf $(prefix)/rootfs.cpio.gz $(OPTEE_DIR)/out/bin
-	curl $(TAM_URL)/api/
-	sed "s@http://localhost:8888@#tc@" manifest/hello-ta.json >$(BUILD)/hello-ta.json
-	suit-tool create -i $(BUILD)/hello-ta.json -o $(BUILD)/hello-ta.suit
-	suit-tool sign -m $(BUILD)/hello-ta.suit -k ../../key/tc-provider-priv.pem -o $(BUILD)/signed-hello-ta.suit
-	$(SOURCE)/scripts/add-payload.py --key "#tc" --payload $(SOURCE)/hello-tc/build-optee/$(HELLO_TA_UUID).ta --in $(BUILD)/signed-hello-ta.suit --out $(BUILD)/signed-hello-ta-payload.suit
-	curl $(TAM_URL)/panel/upload \
-		-F "file=@$(BUILD)/signed-hello-ta-payload.suit;filename=integrated-payload-manifest.cbor"
-
 	cd $(OPTEE_DIR)/out/bin && \
 		QEMU=$(OPTEE_DIR)/qemu/aarch64-softmmu/qemu-system-aarch64 \
 		QEMU_SMP=2 \
@@ -175,23 +167,3 @@ test_integrated_payload:
 		expect $(CURDIR)/script/test.expect
 	cat $(OPTEE_DIR)/out/bin/serial1.log
 
-test_download_payload:
-	ln -sf $(prefix)/rootfs.cpio.gz $(OPTEE_DIR)/out/bin
-	curl $(TAM_URL)/api/
-	sed "s@http://localhost:8888@$(TAM_URL)@" manifest/hello-ta.json >$(BUILD)/hello-ta.json
-	suit-tool create -i $(BUILD)/hello-ta.json -o $(BUILD)/hello-ta.suit
-	suit-tool sign -m $(BUILD)/hello-ta.suit -k ../../key/tc-provider-priv.pem -o $(BUILD)/signed-hello-ta.suit
-	curl $(TAM_URL)/panel/upload \
-		-F "file=@$(BUILD)/signed-hello-ta.suit;filename=integrated-payload-manifest.cbor"
-	curl $(TAM_URL)/panel/upload \
-		-F "file=@$(SOURCE)/hello-tc/build-optee/$(HELLO_TA_UUID).ta;filename=$(HELLO_TA_UUID).ta"
-
-	cd $(OPTEE_DIR)/out/bin && \
-		QEMU=$(OPTEE_DIR)/qemu/aarch64-softmmu/qemu-system-aarch64 \
-		QEMU_SMP=2 \
-		TAM_URL=$(TAM_URL) \
-		expect $(CURDIR)/script/test.expect
-	cat $(OPTEE_DIR)/out/bin/serial1.log
-
-
-test: test_download_payload

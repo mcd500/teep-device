@@ -12,7 +12,7 @@ stages:
 default:
     tags:
         - docker
-    image: docker.io/trasioteam/ta_ref_teep_devel:keystone_qemu
+    image: docker.io/trasioteam/taref-dev:keystone
 
 suit_build:
     stage: build
@@ -43,7 +43,7 @@ suit_example:
 teep_build:
     stage: build
     script:
-        - apt-get install -y libcap-dev
+        - sudo apt-get install -y libcap-dev
         - export TEE=pc
         - make
 
@@ -53,11 +53,7 @@ teep_test:
         - name: docker.io/trasioteam/tamproto:latest
           alias: tamproto
     script:
-        - apt-get install -y libcap-dev
-        - pip3 uninstall ietf-suit-tool -y
-        - git clone https://git.gitlab.arm.com/research/ietf-suit/suit-tool.git
-        - (cd suit-tool && pip3 install --upgrade .)
-        - pip3 install cbor2
+        - sudo apt-get install -y libcap-dev
         - export TEE=pc
         - make
         - TAMIP=`python3 -c 'import socket;print(socket.gethostbyname("tamproto"))'`

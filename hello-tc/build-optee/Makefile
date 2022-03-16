@@ -11,7 +11,7 @@ export CROSS_COMPILE
 
 .PHONY: build app enclave image run
 
-build: app enclave
+build: app enclave manifest
 
 app:
 	make -f app.mk
@@ -48,5 +48,15 @@ run-qemu:
 			-append 'console=ttyAMA0,38400 keep_bootcon root=/dev/vda2' \
 			$(QEMU_EXTRA_ARGS)
 
-clean:
+clean: clean-manifest
 	rm -f *.dmp *.elf *.map *.ta *.o ta.lds App-optee
+
+TAM_URL ?= http://tamproto_tam_api_1:8888
+
+MANIFEST_OUT_DIR = $(CURDIR)
+MANIFEST_DIR = ../manifest
+SUIT_PRIV_KEY = ../../key/tc-provider-priv.pem
+TC_URI = $(TAM_URL)/TAs/8d82573a-926d-4754-9353-32dc29997f74.ta
+TC_BINARY = 8d82573a-926d-4754-9353-32dc29997f74.ta
+
+include ../manifest/manifest.mk

@@ -61,7 +61,7 @@ QEMU_INSTALLED_BINS = \
 export CROSS_COMPILE = riscv64-unknown-linux-gnu-
 
 .PHONY: all
-all: App-keystone Enclave
+all: App-keystone Enclave manifest
 
 App-keystone.o: $(SOURCE)/App-keystone.cpp
 	$(CROSS_COMPILE)g++ -c -o $@ $< $(APP_CFLAGS)
@@ -104,5 +104,15 @@ run-qemu: $(QEMU_INSTALLED_BINS)
 		-device virtio-rng-pci
 
 .PHONY: clean
-clean:
+clean: clean-manifest
 	rm -rf *.o App-keystone Enclave
+
+TAM_URL ?= http://tamproto_tam_api_1:8888
+
+MANIFEST_OUT_DIR = $(CURDIR)
+MANIFEST_DIR = ../manifest
+SUIT_PRIV_KEY = ../../key/tc-provider-priv.pem
+TC_URI = $(TAM_URL)/TAs/8d82573a-926d-4754-9353-32dc29997f74.ta
+TC_BINARY = Enclave
+
+include ../manifest/manifest.mk

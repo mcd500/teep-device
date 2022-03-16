@@ -176,27 +176,5 @@ run-qemu:
 
 TAM_URL ?= http://tamproto_tam_api_1:8888
 
-test_integrated_payload:
-	curl $(TAM_URL)/api/
-	sed "s@http://localhost:8888@#tc@" manifest/hello-ta.json >$(BUILD)/hello-ta.json
-	suit-tool create -i $(BUILD)/hello-ta.json -o $(BUILD)/hello-ta.suit
-	suit-tool sign -m $(BUILD)/hello-ta.suit -k ../../key/tc-provider-priv.pem -o $(BUILD)/signed-hello-ta.suit
-	$(SOURCE)/scripts/add-payload.py --key "#tc" --payload $(SOURCE)/hello-tc/build-keystone/Enclave --in $(BUILD)/signed-hello-ta.suit --out $(BUILD)/signed-hello-ta-payload.suit
-	curl $(TAM_URL)/panel/upload \
-		-F "file=@$(BUILD)/signed-hello-ta-payload.suit;filename=integrated-payload-manifest.cbor"
+test: upload-hello-tc-download
 	TAM_URL=$(TAM_URL) expect ./script/test.expect
-
-test_download_payload:
-	curl $(TAM_URL)/api/
-	sed "s@http://localhost:8888@$(TAM_URL)@" manifest/hello-ta.json >$(BUILD)/hello-ta.json
-	suit-tool create -i $(BUILD)/hello-ta.json -o $(BUILD)/hello-ta.suit
-	suit-tool sign -m $(BUILD)/hello-ta.suit -k ../../key/tc-provider-priv.pem -o $(BUILD)/signed-hello-ta.suit
-	curl $(TAM_URL)/panel/upload \
-		-F "file=@$(BUILD)/signed-hello-ta.suit;filename=integrated-payload-manifest.cbor"
-	curl $(TAM_URL)/panel/upload \
-		-F "file=@$(SOURCE)/hello-tc/build-keystone/Enclave;filename=$(HELLO_TA_UUID).ta"
-
-	TAM_URL=$(TAM_URL) expect ./script/test.expect
-
-
-test: test_download_payload
