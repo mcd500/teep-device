@@ -49,7 +49,7 @@ run-qemu:
 			$(QEMU_EXTRA_ARGS)
 
 clean: clean-manifest
-	rm -f *.dmp *.elf *.map *.ta *.o ta.lds App-optee
+	rm -f *.dmp *.elf *.map *.ta *.o ta.lds App-optee ../.*.cmd ../.*.d
 
 TAM_URL ?= http://tamproto_tam_api_1:8888
 
