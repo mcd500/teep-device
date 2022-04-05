@@ -138,10 +138,9 @@ install_qemu: all
 	sudo install $(BUILD)/libteep/ree/libwebsockets/lib/lib* $(prefix)/rootfs/usr/lib
 #	install $(BUILD)/libteep/ree/lib/lib* $(prefix)/rootfs/usr/lib
 	cd $(prefix)/rootfs; \
-	sudo find . | sudo cpio -o -H newc 2> /dev/null | gzip -c9 > ../rootfs.cpio.gz
+	sudo find . | sudo cpio -o -H newc 2> /dev/null | gzip -c9 > $(BUILD)/rootfs.cpio.gz
 
 run-qemu:
-	ln -sf $(prefix)/rootfs.cpio.gz $(OPTEE_DIR)/out/bin
 	cd $(OPTEE_DIR)/out/bin && \
 		$(OPTEE_DIR)/qemu/aarch64-softmmu/qemu-system-aarch64 \
 			-nographic \
@@ -151,7 +150,7 @@ run-qemu:
 			-d unimp -semihosting-config enable,target=native \
 			-m 1057 \
 			-bios bl1.bin \
-			-initrd rootfs.cpio.gz \
+			-initrd $(BUILD)/rootfs.cpio.gz \
 			-kernel Image -no-acpi \
 			-append 'console=ttyAMA0,38400 keep_bootcon root=/dev/vda2' \
 			$(QEMU_EXTRA_ARGS)
@@ -159,11 +158,11 @@ run-qemu:
 TAM_URL ?= http://tamproto_tam_api_1:8888
 
 test: upload-hello-tc-download
-	ln -sf $(prefix)/rootfs.cpio.gz $(OPTEE_DIR)/out/bin
 	cd $(OPTEE_DIR)/out/bin && \
 		QEMU=$(OPTEE_DIR)/qemu/aarch64-softmmu/qemu-system-aarch64 \
 		QEMU_SMP=2 \
 		TAM_URL=$(TAM_URL) \
+		ROOTFS=$(BUILD)/rootfs.cpio.gz \
 		expect $(CURDIR)/script/test.expect
 	cat $(OPTEE_DIR)/out/bin/serial1.log
 

@@ -10,7 +10,7 @@ spawn $::env(QEMU) \
 	-smp $::env(QEMU_SMP) -machine virt,secure=on -cpu cortex-a57 -d unimp \
 	-semihosting-config enable,target=native \
 	-m 1057 \
-	-bios bl1.bin -initrd rootfs.cpio.gz -kernel Image -no-acpi \
+	-bios bl1.bin -initrd $::env(ROOTFS) -kernel Image -no-acpi \
 	-append "root=/dev/vda2"
 
 expect {
