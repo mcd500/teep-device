@@ -53,12 +53,12 @@ teep_test:
         - name: docker.io/trasioteam/tamproto:latest
           alias: tamproto
     script:
+        - TAMIP=`python3 -c 'import socket;print(socket.gethostbyname("tamproto"))'`
+        - export TAM_URL="http://$TAMIP:8888"
         - sudo apt-get install -y libcap-dev
         - export TEE=pc
         - make
-        - TAMIP=`python3 -c 'import socket;print(socket.gethostbyname("tamproto"))'`
-        - curl "http://$TAMIP:8888/api/tam"
-        - make test TAM_URL="http://$TAMIP:8888"
+        - make test
 
 teep_test_keystone:
     stage: test
@@ -67,10 +67,10 @@ teep_test_keystone:
         - name: docker.io/trasioteam/tamproto:latest
           alias: tamproto
     script:
-        - make
         - TAMIP=`python3 -c 'import socket;print(socket.gethostbyname("tamproto"))'`
-        - curl "http://$TAMIP:8888/api/tam"
-        - make test TAM_URL="http://$TAMIP:8888" | tr -d "\r"
+        - export TAM_URL="http://$TAMIP:8888"
+        - make
+        - make test | tr -d "\r"
 
 teep_test_optee:
     stage: test
@@ -79,11 +79,11 @@ teep_test_optee:
         - name: docker.io/trasioteam/tamproto:latest
           alias: tamproto
     script:
+        - TAMIP=`python3 -c 'import socket;print(socket.gethostbyname("tamproto"))'`
+        - export TAM_URL="http://$TAMIP:8888"
         - make
         - make optee_install_qemu
-        - TAMIP=`python3 -c 'import socket;print(socket.gethostbyname("tamproto"))'`
-        - curl "http://$TAMIP:8888/api/tam"
-        - make test TAM_URL="http://$TAMIP:8888" | tr -d "\r"
+        - make test | tr -d "\r"
 
 teep_test_sgx:
     stage: test
@@ -92,11 +92,11 @@ teep_test_sgx:
         - name: docker.io/trasioteam/tamproto:latest
           alias: tamproto
     script:
+        - TAMIP=`python3 -c 'import socket;print(socket.gethostbyname("tamproto"))'`
+        - export TAM_URL="http://$TAMIP:8888"
         - export MACHINE=SIM
         - make
-        - TAMIP=`python3 -c 'import socket;print(socket.gethostbyname("tamproto"))'`
-        - curl "http://$TAMIP:8888/api/tam"
-        - make test TAM_URL="http://$TAMIP:8888" | tr -d "\r"
+        - make test | tr -d "\r"
 
 
 ### DOXYGEN - START ###
