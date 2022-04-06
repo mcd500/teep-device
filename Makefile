@@ -62,9 +62,6 @@ clean-pc:
 build-optee:
 	$(MAKE) -C platform/op-tee
 
-optee_install_qemu:
-	$(MAKE) -C platform/op-tee install_qemu
-
 build-keystone:
 	$(MAKE) -C platform/keystone image
 

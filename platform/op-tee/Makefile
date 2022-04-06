@@ -113,14 +113,14 @@ libteesuit-tee-FLAGS = \
 	-DENABLE_LOG_STDOUT=OFF \
 	-DENABLE_EXAMPLE=OFF
 
-all: libteep hello-tc teep
+all: libteep hello-tc teep rootfs
 
 include ../common.mk
 
 clean: clean-hello-tc
 	rm -rf $(BUILD)
 
-install_qemu: all
+rootfs: libteep hello-tc teep
 	rm -rf $(BUILD)/rootfs-ext
 	mkdir -p $(BUILD)/rootfs-ext/root/teep-device
 	mkdir -p $(BUILD)/rootfs-ext/lib/optee_armtz

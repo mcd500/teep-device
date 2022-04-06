@@ -82,7 +82,6 @@ teep_test_optee:
         - TAMIP=`python3 -c 'import socket;print(socket.gethostbyname("tamproto"))'`
         - export TAM_URL="http://$TAMIP:8888"
         - make
-        - make optee_install_qemu
         - make test | tr -d "\r"
 
 teep_test_sgx:
