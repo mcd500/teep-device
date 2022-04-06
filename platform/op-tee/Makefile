@@ -120,25 +120,20 @@ include ../common.mk
 clean: clean-hello-tc
 	rm -rf $(BUILD)
 
-prefix ?= $(OPTEE_DIR)/out-br/images
-
 install_qemu: all
-	test -n "$(prefix)"
-	sudo rm -rf $(prefix)/rootfs
-	mkdir -p $(prefix)/rootfs
-	mkdir -p $(prefix)/rootfs/root/teep-device
-	cd $(prefix)/rootfs; \
-	sudo gzip -dc ../rootfs.cpio.gz | sudo cpio -i
-#	sudo install $(BUILD)/hello-ta/$(HELLO_TA_UUID).ta $(prefix)/rootfs/lib/optee_armtz
-	sudo install $(SOURCE)/hello-tc/build-optee/App-optee $(prefix)/rootfs/root/teep-device/hello-app
-	sudo install $(BUILD)/teep-agent-ta/$(TEE_AGENT_UUID).ta $(prefix)/rootfs/lib/optee_armtz
-	sudo install $(BUILD)/teep-broker-app/teep-broker-app $(prefix)/rootfs/root/teep-device
-	mkdir -p $(prefix)/rootfs/usr/lib
-	sudo install $(BUILD)/libteep/ree/mbedtls/library/lib* $(prefix)/rootfs/usr/lib
-	sudo install $(BUILD)/libteep/ree/libwebsockets/lib/lib* $(prefix)/rootfs/usr/lib
-#	install $(BUILD)/libteep/ree/lib/lib* $(prefix)/rootfs/usr/lib
-	cd $(prefix)/rootfs; \
-	sudo find . | sudo cpio -o -H newc 2> /dev/null | gzip -c9 > $(BUILD)/rootfs.cpio.gz
+	rm -rf $(BUILD)/rootfs-ext
+	mkdir -p $(BUILD)/rootfs-ext/root/teep-device
+	mkdir -p $(BUILD)/rootfs-ext/lib/optee_armtz
+	mkdir -p $(BUILD)/rootfs-ext/usr/lib
+	install $(SOURCE)/hello-tc/build-optee/App-optee $(BUILD)/rootfs-ext/root/teep-device/hello-app
+	install $(BUILD)/teep-agent-ta/$(TEE_AGENT_UUID).ta $(BUILD)/rootfs-ext/lib/optee_armtz
+	install $(BUILD)/teep-broker-app/teep-broker-app $(BUILD)/rootfs-ext/root/teep-device
+	install $(BUILD)/libteep/ree/mbedtls/library/lib* $(BUILD)/rootfs-ext/usr/lib
+	install $(BUILD)/libteep/ree/libwebsockets/lib/lib* $(BUILD)/rootfs-ext/usr/lib
+
+	cp $(OPTEE_DIR)/out-br/images/rootfs.cpio.gz $(BUILD)/rootfs.cpio.gz
+	cd $(BUILD)/rootfs-ext; \
+		find . | cpio -o -H newc -R root:root | gzip -c9 >>$(BUILD)/rootfs.cpio.gz
 
 run-qemu:
 	cd $(OPTEE_DIR)/out/bin && \
