@@ -1,9 +1,26 @@
-CFLAGS += $(TA_CFLAGS)
+TOPDIR = $(CURDIR)/..
+include $(TOPDIR)/conf.mk
 
-LDFLAGS = $(TA_LDFLAGS)
-LIBS = $(TA_LIBS) -lgcc
+CFLAGS = $(TEE_CFLAGS) \
+	-Wall -fno-builtin-printf -DEDGE_IGNORE_EGDE_RESULT \
+	-I. \
+	-I$(TOPDIR)/include \
+	-I$(BUILD)/tee/QCBOR/inc \
+	-I$(TOPDIR)/suit/include \
+	-I$(TOPDIR)/libteep/lib \
+	-DPLAT_KEYSTONE
 
-out-dir ?= .
+LDFLAGS = $(TEE_LDFLAGS) \
+	-L$(BUILD)/tee/libwebsockets/lib \
+	-L$(BUILD)/tee/QCBOR \
+	-L$(BUILD)/tee/libteep \
+	-L$(BUILD)/tee/suit/lib
+
+LIBS = $(TEE_LIBS) \
+	-lteep \
+	-lqcbor \
+	-lteesuit \
+	-lgcc
 
 all: $(out-dir)/teep-agent-ta
 

@@ -58,7 +58,7 @@ teep_test:
         - sudo apt-get install -y libcap-dev
         - export TEE=pc
         - make
-        - make test
+        - make run-sample-session
 
 teep_test_keystone:
     stage: test
@@ -67,10 +67,11 @@ teep_test_keystone:
         - name: docker.io/trasioteam/tamproto:latest
           alias: tamproto
     script:
+        - sudo apt-get install -y e2tools
         - TAMIP=`python3 -c 'import socket;print(socket.gethostbyname("tamproto"))'`
         - export TAM_URL="http://$TAMIP:8888"
         - make
-        - make test | tr -d "\r"
+        - make run-sample-session | tr -d "\r"
 
 teep_test_optee:
     stage: test
@@ -82,7 +83,7 @@ teep_test_optee:
         - TAMIP=`python3 -c 'import socket;print(socket.gethostbyname("tamproto"))'`
         - export TAM_URL="http://$TAMIP:8888"
         - make
-        - make test | tr -d "\r"
+        - make run-sample-session | tr -d "\r"
 
 teep_test_sgx:
     stage: test
@@ -95,7 +96,7 @@ teep_test_sgx:
         - export TAM_URL="http://$TAMIP:8888"
         - export MACHINE=SIM
         - make
-        - make test | tr -d "\r"
+        - make run-sample-session | tr -d "\r"
 
 
 ### DOXYGEN - START ###

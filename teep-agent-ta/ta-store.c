@@ -93,7 +93,7 @@ static bool install_ta(const char *filename, const void *image, size_t image_len
 
 #endif
 
-#ifdef PCTEST
+#ifdef PLAT_PC
 
 static bool install_ta(const char *filename, const void *image, size_t image_len)
 {

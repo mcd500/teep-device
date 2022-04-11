@@ -1,21 +1,9 @@
-ifndef TUTORIAL_TA_UUID
-$(error TUTORIAL_TA_UUID is not set)
-endif
+TOPDIR = $(CURDIR)/../..
+include $(TOPDIR)/conf.mk
 
-ifndef TAREF_DIR
-$(error TAREF_DIR is not set)
-endif
-
-BINARY = $(TUTORIAL_TA_UUID)
-CPPFLAGS = \
-	-I$(TAREF_DIR)/build/include \
+BINARY = $(HELLO_TA_UUID)
+CPPFLAGS = $(TEE_CFLAGS) \
 	-I$(TAREF_DIR)/build/include/api \
-	-I$(TAREF_DIR)/build/include/gp \
 	-Dtee_printf=printf
 
 -include $(TA_DEV_DIR)/mk/ta_dev_kit.mk
-
-.PHONY: clean
-clean:
-	rm -rf *.o .*.o.* *.dmp *.elf *.map $(BINARY).ta ta.lds .ta.ld.d
-

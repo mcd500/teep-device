@@ -1,27 +1,54 @@
-.PHONY: all all- all-optee all-keystone all-sgx all-pc docs
-.PHONY: clean clean-optee clean-keystone clean-sgx clean-pc clean-docs
-.PHONY: test test-optee test-keystone test-sgx test-pc
-.PHONY: qemu qemu-optee qemu-keystone gen_readme
+TOPDIR = $(CURDIR)
+include $(TOPDIR)/conf.mk
 
-all: all-$(TEE)
+.PHONY: all
+all: check-tee submodule suit libteep agent broker hello-tc rootfs
 
-clean: clean-optee clean-keystone clean-sgx clean-pc clean-docs
+.PHONY: clean
+clean: clean-hello-tc clean-docs
+	rm -rf build
 
-test: test-$(TEE)
+.PHONY: submodule
+submodule:
+	$(MAKE) -C submodule
 
-qemu: qemu-$(TEE)
+suit-FLAGS = \
+	-DCMAKE_BUILD_TYPE=DEBUG \
+	-DENABLE_LOG_STDOUT=OFF \
+	-DENABLE_EXAMPLE=OFF
 
-all-:
-	@echo '$$TEE must be "optee", "keystone", "sgx" or "pc"'
-	@false
+.PHONY: suit
+suit:
+	mkdir -p build/$(TEE)/tee/suit
+	cd build/$(TEE)/tee/suit && cmake $(TOPDIR)/suit $(suit-FLAGS) $(cmake-tee-TOOLCHAIN)
+	$(MAKE) -C build/$(TEE)/tee/suit
 
-all-optee: build-optee
+.PHONY: libteep
+libteep:
+	$(MAKE) -C libteep/lib
 
-all-keystone: build-keystone
+.PHONY: agent
+agent:
+	$(MAKE) -C teep-agent-ta -f $(TEE).mk out-dir=$(BUILD)/agent
 
-all-sgx: build-sgx
+.PHONY: broker
+broker:
+	$(MAKE) -C teep-broker-app
 
-all-pc: build-pc
+.PHONY: hello-tc
+hello-tc:
+	$(MAKE) -C hello-tc/build-$(PLAT) SOURCE=$(TOPDIR)/hello-tc
+
+.PHONY: clean-hello-tc
+clean-hello-tc:
+	$(MAKE) -C hello-tc/build-keystone SOURCE=$(TOPDIR)/hello-tc clean
+	$(MAKE) -C hello-tc/build-optee SOURCE=$(TOPDIR)/hello-tc clean
+	$(MAKE) -C hello-tc/build-sgx SOURCE=$(TOPDIR)/hello-tc clean
+	$(MAKE) -C hello-tc/build-pc SOURCE=$(TOPDIR)/hello-tc clean
+
+.PHONY: rootfs
+rootfs:
+	$(MAKE) -C sample rootfs
 
 docs:
 	@echo "Generating doxygen files"
@@ -45,47 +72,20 @@ clean-docs:
 	rm -f -r docs/teep-device_readme_html.tar.gz
 	rm -f -r docs/teep-device.pdf
 
-clean-optee:
-	$(MAKE) -C platform/op-tee clean
+.PHONY: run-sample-session
+run-sample-session: check-tee
+	$(MAKE) -C sample run-session
 
-clean-keystone:
-	$(MAKE) -C platform/keystone clean
+.PHONY: run-qemu
+run-qemu: check-tee
+	$(MAKE) -C sample run-qemu
 
-clean-sgx:
-	$(MAKE) -C platform/sgx clean
+.PHONY: check-tee
+ifeq ($(TEE),)
+check-tee:
+	@echo '$$TEE must be "optee", "keystone", "sgx" or "pc"'
+	@false
+else
+check-tee:
+endif
 
-clean-pc:
-	$(MAKE) -C platform/pc clean
-
-.PHONY: build-optee build-keystone build-sgx
-
-build-optee:
-	$(MAKE) -C platform/op-tee
-
-build-keystone:
-	$(MAKE) -C platform/keystone image
-
-build-pc:
-	$(MAKE) -C platform/pc
-
-build-sgx:
-	$(MAKE) -C platform/sgx
-
-
-test-optee:
-	$(MAKE) -C platform/op-tee test
-
-test-keystone:
-	$(MAKE) -C platform/keystone test
-
-test-sgx:
-	$(MAKE) -C platform/sgx test
-
-test-pc:
-	$(MAKE) -C platform/pc test
-
-qemu-optee:
-	$(MAKE) -C platform/op-tee run-qemu
-
-qemu-keystone:
-	$(MAKE) -C platform/keystone run-qemu

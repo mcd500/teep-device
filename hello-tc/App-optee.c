@@ -34,9 +34,6 @@
 
 #include <tee_client_api.h>
 
-// For the UUID
-#include <edger/Enclave.h>
-
 #define PRINT_BUF_SIZE 16384
 static char print_buf[PRINT_BUF_SIZE];
 #define TEEC_PARAM_TYPE1 TEEC_MEMREF_TEMP_OUTPUT

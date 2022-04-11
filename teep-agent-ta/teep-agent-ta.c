@@ -33,7 +33,6 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <tee_internal_api.h>
-//#include <libwebsockets.h>
 #include <libteep.h>
 #include <teesuit.h>
 
@@ -1031,7 +1030,6 @@ uint32_t ecall_TA_InvokeCommandEntryPoint(uint32_t unused, uint32_t cmd_id, uint
 }
 #endif
 
-#if defined(PLAT_KEYSTONE) || defined(PLAT_OPTEE) || defined(PLAT_SGX)
 void tee_log(enum tee_log_level level, const char *msg, ...)
 {
 	char buf[256];
@@ -1048,6 +1046,8 @@ void tee_log(enum tee_log_level level, const char *msg, ...)
 #ifdef PLAT_SGX
 	ocall_print_string(NULL, buf);
 #endif
-}
+#ifdef PLAT_PC
+	printf("%s", buf);
 #endif
+}
 

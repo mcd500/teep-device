@@ -1,12 +1,20 @@
-build = .
+TOPDIR = $(CURDIR)/../..
+include $(TOPDIR)/conf.mk
 
-all: $(build)/libteep.a
+B = $(BUILD)/tee/libteep
 
-$(build)/libteep.a: $(build)/libteep.o $(build)/qcbor-ext.o
+CFLAGS = \
+	$(TEE_CFLAGS) \
+	-I$(BUILD)/tee/QCBOR/inc
+
+all: $(B)/libteep.a
+
+$(B)/libteep.a: $(B)/libteep.o $(B)/qcbor-ext.o
 	$(CROSS_COMPILE)ar cr $@ $^
 
-$(build)/%.o: %.c
+$(B)/%.o: %.c
+	@mkdir -p $(B)
 	$(CROSS_COMPILE)gcc -c -o $@ $< $(CFLAGS)
 
-$(build)/libteep.o: libteep.c libteep.h qcbor-ext.h
-$(build)/qcbor-ext.o: qcbor-ext.c qcbor-ext.h
+$(B)/libteep.o: libteep.c libteep.h qcbor-ext.h
+$(B)/qcbor-ext.o: qcbor-ext.c qcbor-ext.h

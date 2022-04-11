@@ -1,17 +1,17 @@
-CFLAGS = \
-	-Wall \
-	-I$(OPTEE_DIR)/optee_client/public \
-	-I$(TAREF_DIR)/build/include
-LDFLAGS = \
-	-L$(OPTEE_DIR)/out-br/target/usr/lib
+TOPDIR = $(CURDIR)/../..
+include $(TOPDIR)/conf.mk
 
-LIBS = -lteec
+out-dir = $(BUILD)/hello-tc
 
-all: App-optee
+all: $(out-dir)/App-optee
 
-App-optee: App-optee.o
-	$(CROSS_COMPILE)gcc -o $@ $^ $(LDFLAGS) $(LIBS)
+$(out-dir)/App-optee: $(out-dir)/App-optee.o
+	mkdir -p $(out-dir)
+	$(CROSS_COMPILE)gcc -o $@ $^ $(REE_LDFLAGS) $(REE_LIBS)
 
-App-optee.o: ../App-optee.c
-	$(CROSS_COMPILE)gcc $(CFLAGS) -c -o $@ $<
+$(out-dir)/App-optee.o: ../App-optee.c
+	mkdir -p $(out-dir)
+	$(CROSS_COMPILE)gcc $(REE_CFLAGS) -c -o $@ $<
 
+clean:
+	rm -f $(out-dir)/App-optee.o $(out-dir)/App-optee
