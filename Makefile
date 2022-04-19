@@ -12,7 +12,7 @@ test: test-$(TEE)
 qemu: qemu-$(TEE)
 
 all-:
-	@echo '$$TEE must be "optee", "keystone" or "pc"'
+	@echo '$$TEE must be "optee", "keystone", "sgx" or "pc"'
 	@false
 
 all-optee: build-optee
