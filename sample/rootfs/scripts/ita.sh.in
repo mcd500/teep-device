@@ -1,0 +1,3 @@
+#!/bin/bash -x
+
+./teep-broker-app --tamurl ${TAM_URL}/api/tam_cbor

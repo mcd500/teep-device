@@ -1,0 +1,3 @@
+#!/bin/bash
+
+echo --tamurl ${TAM_URL}/api/tam_cbor
