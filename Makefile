@@ -27,6 +27,12 @@ suit-FLAGS = \
 	-DENABLE_LOG_STDOUT=OFF \
 	-DENABLE_EXAMPLE=OFF
 
+ifeq ($(TEE),pc)
+suit-FLAGS += -DENABLE_TEST=ON
+else
+suit-FLAGS += -DENABLE_TEST=OFF
+endif
+
 .PHONY: suit
 suit:
 	mkdir -p build/$(TEE)/tee/suit

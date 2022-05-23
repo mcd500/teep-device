@@ -25,7 +25,10 @@ suit_build:
 suit_test:
     stage: run
     script:
-        - echo OK
+        - sudo apt-get install -y libcap-dev
+        - export TEE=pc
+        - make
+        - make test
 
 suit_example:
     stage: example

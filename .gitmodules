@@ -10,3 +10,6 @@
 [submodule "submodule/t_cose"]
 	path = submodule/t_cose
 	url = https://github.com/laurencelundblade/t_cose.git
+[submodule "submodule/googletest"]
+	path = submodule/googletest
+	url = https://github.com/google/googletest.git
