@@ -1,7 +1,7 @@
 TOPDIR = $(CURDIR)/..
 include $(TOPDIR)/conf.mk
 
-.PHOHY: all
+.PHONY: all
 all: mbedtls-ree libwebsockets-ree QCBOR-tee
 
 
@@ -12,7 +12,7 @@ mbedtls-ree-common-FLAGS = \
 	-DUSE_STATIC_MBEDTLS_LIBRARY=1 \
 	-DUSE_SHARED_MBEDTLS_LIBRARY=0
 
-.PHOHY: mbedtls-ree
+.PHONY: mbedtls-ree
 mbedtls-ree:
 	mkdir -p $(BUILD)/ree/mbedtls
 	cd $(BUILD)/ree/mbedtls && \
@@ -38,14 +38,14 @@ libwebsockets-ree-common-FLAGS = \
 	-DLWS_WITHOUT_EXTENSIONS=1 \
 	-DLWS_WITH_ZLIB=0
 
-.PHOHY: libwebsockets-ree
+.PHONY: libwebsockets-ree
 libwebsockets-ree:
 	mkdir -p $(BUILD)/ree/libwebsockets
 	cd $(BUILD)/ree/libwebsockets && \
 		cmake $($@-common-FLAGS) $(cmake-ree-TOOLCHAIN) $(TOPDIR)/submodule/libwebsockets && \
 		make -j `nproc`
 
-.PHOHY: QCBOR-tee
+.PHONY: QCBOR-tee
 QCBOR-tee:
 	mkdir -p $(BUILD)/tee/QCBOR
 	rm -rf $(BUILD)/tee/QCBOR
