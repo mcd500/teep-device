@@ -73,6 +73,10 @@ install:
 	$(MAKE) -C sample install prefix=$(prefix) prefix_bin=$(prefix_bin) \
 		prefix_lib=$(prefix_lib)
 
+.PHONY: test
+test:
+	cd $(BUILD)/tee/suit && ctest -V
+
 .PHONY: docs
 docs:
 	@echo "Generating doxygen files"
