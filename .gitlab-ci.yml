@@ -8,19 +8,10 @@ stages:
     - example
     - trigger
 
-
 default:
     tags:
         - fast-dockers
     image: docker.io/aistcpsec/tee-distro-dev:x64-20.04
-
-suit_build:
-    stage: build
-    script:
-        - mkdir suit/build
-        - cd suit/build
-        - cmake ..
-        - make
 
 suit_test:
     stage: run
@@ -33,16 +24,17 @@ suit_test:
 suit_example:
     stage: example
     script:
-        - mkdir suit/build
-        - cd suit/build
-        - cmake ..
+        - sudo apt-get install -y libcap-dev
+        - export TEE=pc
         - make
-        - ./example/dump ../example/manifests/teep-I-D/ex1.suit
-        - ./example/dump ../example/manifests/teep-I-D/ex2.suit
-        - ./example/dump ../example/manifests/teep-I-D/ex3.suit
-        - ./example/run-install ../example/manifests/teep-I-D/ex1.suit
-        - ./example/run-install ../example/manifests/teep-I-D/ex2.suit
-        - ./example/run-install ../example/manifests/teep-I-D/ex3.suit
+        - S=`pwd`/suit
+        - cd build/pc/tee/suit
+        - ./example/dump $S/example/manifests/teep-I-D/ex1.suit
+        - ./example/dump $S/example/manifests/teep-I-D/ex2.suit
+        - ./example/dump $S/example/manifests/teep-I-D/ex3.suit
+        - ./example/run-install $S/example/manifests/teep-I-D/ex1.suit
+        - ./example/run-install $S/example/manifests/teep-I-D/ex2.suit
+        - ./example/run-install $S/example/manifests/teep-I-D/ex3.suit
 
 teep_build:
     stage: build

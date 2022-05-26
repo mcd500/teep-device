@@ -23,14 +23,21 @@ submodule:
 	$(MAKE) -C submodule
 
 suit-FLAGS = \
-	-DCMAKE_BUILD_TYPE=DEBUG \
-	-DENABLE_LOG_STDOUT=OFF \
-	-DENABLE_EXAMPLE=OFF
+	-DCMAKE_BUILD_TYPE=DEBUG
 
 ifeq ($(TEE),pc)
-suit-FLAGS += -DENABLE_TEST=ON
+suit-FLAGS += \
+	-DENABLE_LOG_STDOUT=ON \
+	-DENABLE_EXAMPLE=ON \
+	-DENABLE_TEST=ON \
+	-DCMAKE_C_FLAGS=-I$(TOPDIR)/submodule/mbedtls/include \
+	-DCMAKE_CXX_FLAGS=-I$(TOPDIR)/submodule/mbedtls/include \
+	-DCMAKE_LIBRARY_PATH=$(BUILD)/ree/mbedtls/library
 else
-suit-FLAGS += -DENABLE_TEST=OFF
+suit-FLAGS += \
+	-DENABLE_LOG_STDOUT=OFF \
+	-DENABLE_EXAMPLE=OFF \
+	-DENABLE_TEST=OFF
 endif
 
 .PHONY: suit
