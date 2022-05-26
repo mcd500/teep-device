@@ -30,8 +30,10 @@
 
 #include <stdio.h>
 #include <string.h>
+#include "mbedtls/pk.h"
 #include "nocbor.h"
 #include "teesuit.h"
+#include "teerng.h"
 #include "teelog.h"
 
 static nocbor_range_t empty_array()
@@ -541,4 +543,67 @@ void suit_runner_resume(suit_runner_t *runner, void *user)
             f(runner, user);
         }
     }
+}
+
+void suit_check_mbedtls_pk(void)
+{
+    tee_log_trace("suit_check_mbedtls_pk\n");
+    mbedtls_pk_context ctx;
+
+    const unsigned char prv_key[] =
+        "-----BEGIN EC PRIVATE KEY-----\n"
+        "MHcCAQEEIDgSOT6RU/WLJrnJQOBQzNcCUtALyHpOPB7fsnUhDctsoAoGCCqGSM49\n"
+        "AwEHoUQDQgAE6oNVxlIVnUynYAVBb5pUutPh3gi0tI0f4dBRq4xnEqqzJH+XexVQ\n"
+        "egTVdiDSAdkTG/aEtOTHaWpC4rDLIzwplA==\n"
+        "-----END EC PRIVATE KEY-----\n";
+    const unsigned char pub_key[] =
+        "-----BEGIN PUBLIC KEY-----\n"
+        "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE6oNVxlIVnUynYAVBb5pUutPh3gi0\n"
+        "tI0f4dBRq4xnEqqzJH+XexVQegTVdiDSAdkTG/aEtOTHaWpC4rDLIzwplA==\n"
+        "-----END PUBLIC KEY-----\n";
+
+    mbedtls_pk_init(&ctx);
+    tee_log_trace("mbedtls_pk_init ok\n");
+
+    int ret = mbedtls_pk_parse_key(&ctx, prv_key, sizeof prv_key, NULL, 0);
+    if (ret != 0) {
+        tee_log_trace("mbedtls_pk_parse_key failed\n");
+        return;
+    }
+    tee_log_trace("mbedtls_pk_parse_key ok\n");
+
+    unsigned char sign[MBEDTLS_ECDSA_MAX_LEN];
+    size_t sign_len = sizeof sign;
+    unsigned char hash[32];
+    for (int i = 0; i < 32; i++) {
+        hash[i] = i;
+    }
+
+    ret = mbedtls_pk_sign(&ctx, MBEDTLS_MD_SHA256,
+        hash, 32, sign, &sign_len, teerng_read, NULL);
+    if (ret != 0) {
+        tee_log_trace("mbedtls_pk_sign failed\n");
+        return;
+    }
+    tee_log_trace("mbedtls_pk_sign ok\n");
+
+    mbedtls_pk_free(&ctx);
+    tee_log_trace("mbedtls_pk_free ok\n");
+
+    ret = mbedtls_pk_parse_public_key(&ctx, pub_key, sizeof pub_key);
+    if (ret != 0) {
+        tee_log_trace("mbedtls_pk_parse_public_key failed\n");
+        return;
+    }
+    tee_log_trace("mbedtls_pk_parse_public_key ok\n");
+
+    ret = mbedtls_pk_verify(&ctx, MBEDTLS_MD_SHA256, hash, 32, sign, sign_len);
+    if (ret != 0) {
+        tee_log_trace("mbedtls_pk_verify failed\n");
+        return;
+    }
+    tee_log_trace("mbedtls_pk_verify ok\n");
+
+    mbedtls_pk_free(&ctx);
+    tee_log_trace("mbedtls_pk_free ok\n");
 }

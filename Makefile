@@ -27,6 +27,7 @@ suit-FLAGS = \
 
 ifeq ($(TEE),pc)
 suit-FLAGS += \
+	-DTEE_PLATFORM=$(TEE) \
 	-DENABLE_LOG_STDOUT=ON \
 	-DENABLE_EXAMPLE=ON \
 	-DENABLE_TEST=ON \
@@ -35,9 +36,11 @@ suit-FLAGS += \
 	-DCMAKE_LIBRARY_PATH=$(BUILD)/ree/mbedtls/library
 else
 suit-FLAGS += \
+	-DTEE_PLATFORM=$(TEE) \
 	-DENABLE_LOG_STDOUT=OFF \
 	-DENABLE_EXAMPLE=OFF \
-	-DENABLE_TEST=OFF
+	-DENABLE_TEST=OFF \
+	-DCMAKE_C_FLAGS=-I$(TAREF_DIR)/build/include
 endif
 
 .PHONY: suit

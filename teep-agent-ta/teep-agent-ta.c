@@ -709,6 +709,8 @@ TEE_Result TA_OpenSessionEntryPoint(uint32_t param_types,
 	if (param_types != exp_param_types)
 		return TEE_ERROR_BAD_PARAMETERS;
 
+	suit_check_mbedtls_pk();
+
 	struct teep_agent_session *session = teep_agent_session_create();
 	if (!session) return TEE_ERROR_OUT_OF_MEMORY;
 	*sess_ctx = session;

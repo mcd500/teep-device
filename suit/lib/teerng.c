@@ -28,29 +28,52 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma once
+#include "teerng.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#ifdef PLAT_OPTEE
+#include <tee_api.h>
 
-enum tee_log_level
+int teerng_read(void *unesed, unsigned char *output, size_t len)
 {
-    TEE_LOG_ERROR,
-    TEE_LOG_WARN,
-    TEE_LOG_INFO,
-    TEE_LOG_DEBUG,
-    TEE_LOG_TRACE
-};
-
-void tee_log(enum tee_log_level level, const char *msg, ...);
-
-#define tee_log_error(...) tee_log(TEE_LOG_ERROR, __VA_ARGS__)
-#define tee_log_warn(...)  tee_log(TEE_LOG_WARN, __VA_ARGS__)
-#define tee_log_info(...)  tee_log(TEE_LOG_INFO, __VA_ARGS__)
-#define tee_log_debug(...) tee_log(TEE_LOG_DEBUG, __VA_ARGS__)
-#define tee_log_trace(...) tee_log(TEE_LOG_TRACE, __VA_ARGS__)
-
-#ifdef __cplusplus
+    TEE_GenerateRandom(output, len);
+    return 0;
 }
+
 #endif
+
+#ifdef PLAT_KEYSTONE
+
+int teerng_read(void *unesed, unsigned char *output, size_t len)
+{
+    // TODO
+    memset(output, 42, len);
+    return 0;
+}
+
+#endif
+
+#ifdef PLAT_SGX
+#include <sgx_trts.h>
+#include <mbedtls/ctr_drbg.h>
+
+int teerng_read(void *unesed, unsigned char *output, size_t len)
+{
+    if (sgx_read_rand(output, len) != SGX_SUCCESS)
+        return MBEDTLS_ERR_CTR_DRBG_ENTROPY_SOURCE_FAILED;
+    return 0;
+}
+
+#endif
+
+#ifdef PLAT_PC
+#include <string.h>
+
+int teerng_read(void *unesed, unsigned char *output, size_t len)
+{
+    // TODO
+    memset(output, 42, len);
+    return 0;
+}
+
+#endif
+

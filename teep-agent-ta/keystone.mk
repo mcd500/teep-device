@@ -20,6 +20,7 @@ LIBS = $(TEE_LIBS) \
 	-lteep \
 	-lqcbor \
 	-lteesuit \
+	-lmbedtls \
 	-lgcc
 
 .PHONY: all

@@ -1,6 +1,7 @@
 #include "gtest/gtest.h"
 #include "mbedtls/pk.h"
 #include "mbedtls/error.h"
+#include "teerng.h"
 
 TEST(SuitTest, sign_verify) {
     mbedtls_pk_context ctx;
@@ -29,7 +30,7 @@ TEST(SuitTest, sign_verify) {
     }
 
     ret = mbedtls_pk_sign(&ctx, MBEDTLS_MD_SHA256,
-        hash, 32, sign, &sign_len, NULL, NULL);
+        hash, 32, sign, &sign_len, teerng_read, NULL);
     EXPECT_EQ(0, ret);
 
     mbedtls_pk_free(&ctx);
