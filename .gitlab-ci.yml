@@ -11,7 +11,7 @@ stages:
 
 default:
     tags:
-        - docker
+        - fast-dockers
     image: docker.io/trasioteam/taref-dev:keystone
 
 suit_build:
