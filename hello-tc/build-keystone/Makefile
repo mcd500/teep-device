@@ -29,7 +29,7 @@ clean: clean-manifest
 
 MANIFEST_OUT_DIR = $(out-dir)
 MANIFEST_DIR = ../manifest
-SUIT_PRIV_KEY = ../../key/tc-developper-P256-priv.txt
+SUIT_PRIV_KEY = $(TOPDIR)/key/tc-signer-P256-priv.pem
 TC_URI = $(TAM_URL)/TAs/8d82573a-926d-4754-9353-32dc29997f74.ta
 TC_BINARY = $(out-dir)/Enclave
 

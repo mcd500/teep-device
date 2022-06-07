@@ -8,14 +8,14 @@ TEST(SuitTest, sign_verify) {
 
     const unsigned char prv_key[] =
         "-----BEGIN EC PRIVATE KEY-----\n"
-        "MHcCAQEEIDgSOT6RU/WLJrnJQOBQzNcCUtALyHpOPB7fsnUhDctsoAoGCCqGSM49\n"
-        "AwEHoUQDQgAE6oNVxlIVnUynYAVBb5pUutPh3gi0tI0f4dBRq4xnEqqzJH+XexVQ\n"
-        "egTVdiDSAdkTG/aEtOTHaWpC4rDLIzwplA==\n"
+        "MHcCAQEEIELKcPPgZFmM5Ti7aYjUNJBrjvO/d7hi2mnluNN8XX5hoAoGCCqGSM49\n"
+        "AwEHoUQDQgAExMJmSeV+ZMSbccfu7+o/Gsw+IhTcr9tM9MRNd+pnVh4mHrMozWjW\n"
+        "aWFkMdpOEHZpSKLToh1UsIYXgf+PoPtiMw==\n"
         "-----END EC PRIVATE KEY-----\n";
     const unsigned char pub_key[] =
         "-----BEGIN PUBLIC KEY-----\n"
-        "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE6oNVxlIVnUynYAVBb5pUutPh3gi0\n"
-        "tI0f4dBRq4xnEqqzJH+XexVQegTVdiDSAdkTG/aEtOTHaWpC4rDLIzwplA==\n"
+        "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAExMJmSeV+ZMSbccfu7+o/Gsw+IhTc\n"
+        "r9tM9MRNd+pnVh4mHrMozWjWaWFkMdpOEHZpSKLToh1UsIYXgf+PoPtiMw==\n"
         "-----END PUBLIC KEY-----\n";
 
     mbedtls_pk_init(&ctx);
