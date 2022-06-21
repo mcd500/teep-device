@@ -41,3 +41,124 @@ TEST(SuitTest, sign_verify) {
     ret = mbedtls_pk_verify(&ctx, MBEDTLS_MD_SHA256, hash, 32, sign, sign_len);
     EXPECT_EQ(0, ret);
 }
+
+TEST(SuitTest, verify_signature_signed_by_suit_tool) {
+    mbedtls_pk_context ctx;
+
+    const unsigned char pub_key[] =
+        "-----BEGIN PUBLIC KEY-----\n"
+        "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAExMJmSeV+ZMSbccfu7+o/Gsw+IhTc\n"
+        "r9tM9MRNd+pnVh4mHrMozWjWaWFkMdpOEHZpSKLToh1UsIYXgf+PoPtiMw==\n"
+        "-----END PUBLIC KEY-----\n";
+
+//         / authentication-wrapper / 2:<<[
+//             digest: <<[
+//                 / algorithm-id / -16 / "sha256" /,
+//                 / digest-bytes / h'637090821cbbb2679542787b49f45e14af0cbfad9ef4a4f0b342b923355605af'
+//             ]>>,
+//             signature: <<18([
+//                     / protected / <<{
+//                         / alg / 1:-7 / "ES256" /,
+//                     }>>,
+//                     / unprotected / {
+//                     },
+//                     / payload / F6 / nil /,
+//                     / signature / h'51996636b7b0ac47bf0a9e93b41b088363c83c782bd5145f0f660bede78fd3624f679012262417207f24aaf1a1261eb868f113227bee58ec11dd2b9c76b7f922'
+//                 ])>>
+//             ]
+//         ]>>,
+
+    int ret;
+
+    mbedtls_md_context_t md_ctx;
+    mbedtls_md_init(&md_ctx);
+
+    ret = mbedtls_md_setup(&md_ctx, mbedtls_md_info_from_type(MBEDTLS_MD_SHA256), 0);
+    EXPECT_EQ(0, ret);
+    ret = mbedtls_md_starts(&md_ctx);
+    EXPECT_EQ(0, ret);
+
+    unsigned char buf[32];
+    buf[0] = 0x84; // array(4)
+    ret = mbedtls_md_update(&md_ctx, buf, 1);
+    EXPECT_EQ(0, ret);
+
+    buf[0] = 0x6A; //   text(10) "Signature1"
+    ret = mbedtls_md_update(&md_ctx, buf, 1);
+    EXPECT_EQ(0, ret);
+    ret = mbedtls_md_update(&md_ctx, (unsigned char *)"Signature1", 10);
+    EXPECT_EQ(0, ret);
+
+    buf[0] = 0x43; //   bstr(3)
+    buf[1] = 0xA1; //     map(1)
+    buf[2] = 0x01; //       uint(1)   // alg
+    buf[3] = 0x26; //       nint(-7)  // ES256
+    ret = mbedtls_md_update(&md_ctx, buf, 4);
+    EXPECT_EQ(0, ret);
+
+    buf[0] = 0x40; //   bstr(0)
+    ret = mbedtls_md_update(&md_ctx, buf, 1);
+    EXPECT_EQ(0, ret);
+
+    buf[0] = 0x58; //
+    buf[1] = 0x24; //   bstr(36)
+    buf[2] = 0x82; //     array(2)
+    buf[3] = 0x2F; //       nint(-16)  // SHA-256
+    buf[4] = 0x58; //
+    buf[5] = 0x20; //       bstr(32)
+    ret = mbedtls_md_update(&md_ctx, buf, 6);
+    EXPECT_EQ(0, ret);
+    const unsigned char payload_digest[] = {
+        0x63, 0x70, 0x90, 0x82, 0x1c, 0xbb, 0xb2, 0x67,
+        0x95, 0x42, 0x78, 0x7b, 0x49, 0xf4, 0x5e, 0x14,
+        0xaf, 0x0c, 0xbf, 0xad, 0x9e, 0xf4, 0xa4, 0xf0,
+        0xb3, 0x42, 0xb9, 0x23, 0x35, 0x56, 0x05, 0xaf
+    };
+    ret = mbedtls_md_update(&md_ctx, payload_digest, 32);
+    EXPECT_EQ(0, ret);
+
+    unsigned char digest[32];
+    ret = mbedtls_md_finish(&md_ctx, digest);
+
+    const unsigned char signature[] = {
+        0x51, 0x99, 0x66, 0x36, 0xb7, 0xb0, 0xac, 0x47,
+        0xbf, 0x0a, 0x9e, 0x93, 0xb4, 0x1b, 0x08, 0x83,
+        0x63, 0xc8, 0x3c, 0x78, 0x2b, 0xd5, 0x14, 0x5f,
+        0x0f, 0x66, 0x0b, 0xed, 0xe7, 0x8f, 0xd3, 0x62,
+        0x4f, 0x67, 0x90, 0x12, 0x26, 0x24, 0x17, 0x20,
+        0x7f, 0x24, 0xaa, 0xf1, 0xa1, 0x26, 0x1e, 0xb8,
+        0x68, 0xf1, 0x13, 0x22, 0x7b, 0xee, 0x58, 0xec,
+        0x11, 0xdd, 0x2b, 0x9c, 0x76, 0xb7, 0xf9, 0x22
+    };
+
+    mbedtls_pk_init(&ctx);
+    ret = mbedtls_pk_parse_public_key(&ctx, pub_key, sizeof pub_key);
+    EXPECT_EQ(0, ret);
+
+    mbedtls_ecdsa_context ecdsa;
+    mbedtls_ecdsa_init( &ecdsa );
+
+    mbedtls_ecdsa_from_keypair(&ecdsa, (mbedtls_ecp_keypair *)ctx.pk_ctx);
+    EXPECT_EQ(0, ret);
+
+    mbedtls_mpi r;
+    mbedtls_mpi s;
+
+    mbedtls_mpi_init(&r);
+    mbedtls_mpi_init(&s);
+
+    size_t p_bytes = (mbedtls_mpi_size(&ecdsa.grp.P) + 7) / 8 * 8;
+    EXPECT_EQ(p_bytes * 2, sizeof signature);
+
+    ret = mbedtls_mpi_read_binary(&r, signature, p_bytes);
+    EXPECT_EQ(0, ret);
+    ret = mbedtls_mpi_read_binary(&s, signature + p_bytes, p_bytes);
+    EXPECT_EQ(0, ret);
+
+    ret = mbedtls_ecdsa_verify(&ecdsa.grp, digest, 32,
+        &ecdsa.Q, &r, &s
+    );
+    EXPECT_EQ(0, ret);
+
+    mbedtls_ecdsa_free( &ecdsa );
+}
