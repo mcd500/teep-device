@@ -22,7 +22,7 @@ CFLAGS = \
 	-Wall \
 	-I$(BUILD)/tee/QCBOR/inc \
 	-I$(TOPDIR)/include \
-	-I$(TOPDIR)/libteep/lib \
+	-I$(TOPDIR)/lib/include \
 	-I$(BUILD)/ree/libwebsockets/include \
 	-I$(TOPDIR)/submodule/libwebsockets/include \
 	-I$(TOPDIR)/submodule/mbedtls/include \
@@ -45,9 +45,8 @@ OBJ += \
 	$(BUILD)/agent/agent.a
 
 LDFLAGS += \
-	-L$(BUILD)/tee/libteep \
-	-L$(BUILD)/tee/QCBOR \
-	-L$(BUILD)/tee/suit/lib
+	-L$(BUILD)/lib \
+	-L$(BUILD)/tee/QCBOR
 
 LIBS +=  -lteep -lqcbor -lteesuit
 

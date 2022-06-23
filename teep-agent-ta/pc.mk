@@ -6,8 +6,7 @@ all: $(out-dir)/agent.a
 
 CFLAGS = \
 	-I$(TOPDIR)/include \
-	-I$(TOPDIR)/suit/include \
-	-I$(TOPDIR)/libteep/lib \
+	-I$(TOPDIR)/lib/include \
 	-I$(TOPDIR)/platform/pc/include \
 	-I$(BUILD)/tee/QCBOR/inc \
 	-DPLAT_PC

@@ -6,15 +6,13 @@ CFLAGS = $(TEE_CFLAGS) \
 	-I. \
 	-I$(TOPDIR)/include \
 	-I$(BUILD)/tee/QCBOR/inc \
-	-I$(TOPDIR)/suit/include \
-	-I$(TOPDIR)/libteep/lib \
+	-I$(TOPDIR)/lib/include \
 	-DPLAT_KEYSTONE
 
 LDFLAGS = $(TEE_LDFLAGS) \
 	-L$(BUILD)/tee/libwebsockets/lib \
 	-L$(BUILD)/tee/QCBOR \
-	-L$(BUILD)/tee/libteep \
-	-L$(BUILD)/tee/suit/lib
+	-L$(BUILD)/lib
 
 LIBS = $(TEE_LIBS) \
 	-lteep \

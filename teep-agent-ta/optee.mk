@@ -9,14 +9,11 @@ export TA_CFLAGS = $(TEE_CFLAGS) \
 	-I$(TOPDIR)/include \
 	-I$(BUILD)/tee/libwebsockets/include \
 	-I$(BUILD)/tee/QCBOR/inc \
-	-I$(TOPDIR)/libteep/lib \
-	-I$(TOPDIR)/suit/include \
-	-I$(TOPDIR)/key/include
+	-I$(TOPDIR)/lib/include
 
 export TA_LDFLAGS = \
-	-L$(BUILD)/tee/libteep \
 	-L$(BUILD)/tee/QCBOR \
-	-L$(BUILD)/tee/suit/lib
+	-L$(BUILD)/lib
 
 CPPFLAGS += -DTEE_TA
 CFLAGS += $(TA_CFLAGS)

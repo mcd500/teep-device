@@ -12,7 +12,7 @@ TAM_IP  ?= tamproto_tam_api_1
 TAM_URL ?= http://$(TAM_IP):8888
 
 .PHONY: all
-all: check-tee submodule suit libteep agent broker hello-tc rootfs
+all: check-tee submodule lib agent broker hello-tc rootfs
 
 .PHONY: clean
 clean: clean-hello-tc clean-docs
@@ -22,36 +22,23 @@ clean: clean-hello-tc clean-docs
 submodule:
 	$(MAKE) -C submodule
 
-suit-FLAGS = \
-	-DCMAKE_BUILD_TYPE=DEBUG
-
 ifeq ($(TEE),pc)
-suit-FLAGS += \
+lib-FLAGS += \
 	-DTEE_PLATFORM=$(TEE) \
-	-DENABLE_LOG_STDOUT=ON \
-	-DENABLE_EXAMPLE=ON \
-	-DENABLE_TEST=ON \
-	-DCMAKE_C_FLAGS=-I$(TOPDIR)/submodule/mbedtls/include \
+	-DCMAKE_C_FLAGS='-I$(TOPDIR)/submodule/mbedtls/include -I$(BUILD)/tee/QCBOR/inc' \
 	-DCMAKE_CXX_FLAGS=-I$(TOPDIR)/submodule/mbedtls/include \
 	-DCMAKE_LIBRARY_PATH=$(BUILD)/ree/mbedtls/library
 else
-suit-FLAGS += \
+lib-FLAGS += \
 	-DTEE_PLATFORM=$(TEE) \
-	-DENABLE_LOG_STDOUT=OFF \
-	-DENABLE_EXAMPLE=OFF \
-	-DENABLE_TEST=OFF \
-	-DCMAKE_C_FLAGS=-I$(TAREF_DIR)/build/include
+	-DCMAKE_C_FLAGS='-I$(TAREF_DIR)/build/include -I$(BUILD)/tee/QCBOR/inc'
 endif
 
-.PHONY: suit
-suit:
-	mkdir -p build/$(TEE)/tee/suit
-	cd build/$(TEE)/tee/suit && cmake $(TOPDIR)/suit $(suit-FLAGS) $(cmake-tee-TOOLCHAIN)
-	$(MAKE) -C build/$(TEE)/tee/suit
-
-.PHONY: libteep
-libteep:
-	$(MAKE) -C libteep/lib
+.PHONY: lib
+lib:
+	mkdir -p build/$(TEE)/lib
+	cd build/$(TEE)/lib && cmake $(TOPDIR)/lib $(lib-FLAGS) $(cmake-tee-TOOLCHAIN)
+	$(MAKE) -C build/$(TEE)/lib
 
 .PHONY: agent
 agent:
@@ -85,7 +72,7 @@ install:
 
 .PHONY: test
 test:
-	cd $(BUILD)/tee/suit && ctest -V
+	cd $(BUILD)/lib && ctest -V
 
 .PHONY: docs
 docs:

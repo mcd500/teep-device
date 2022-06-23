@@ -13,9 +13,8 @@ export TA_CFLAGS = $(TEE_CFLAGS) \
 	-I$(TAREF_DIR)/api/include \
 	-I$(BUILD)/tee/QCBOR/inc \
 	-I$(TOPDIR)/include \
-	-I$(TOPDIR)/suit/include \
-	-I$(TOPDIR)/libteep/lib \
-	-DPLAT_SGX
+	-I$(TOPDIR)/lib/include \
+	-DPLAT_SGX \
 
 TA_LIBS = \
 	-ltee_api \
@@ -30,8 +29,7 @@ TA_LIBS = \
 export TA_LDFLAGS = \
 	-L$(TAREF_DIR)/build/lib \
 	-L$(BUILD)/tee/QCBOR \
-	-L$(BUILD)/tee/libteep \
-	-L$(BUILD)/tee/suit/lib \
+	-L$(BUILD)/lib \
 	-Wl,-z,relro,-z,now,-z,noexecstack \
 	-Wl,--no-undefined -nostdlib -nodefaultlibs -nostartfiles -L$(SGX_LIBRARY_DIR) -L$(TAREF_DIR)/build/lib \
 	-Wl,--whole-archive -lsgx_trts$(LIBRARY_SUFFIX) -Wl,--no-whole-archive \

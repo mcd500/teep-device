@@ -27,8 +27,8 @@ suit_example:
         - sudo apt-get install -y libcap-dev
         - export TEE=pc
         - make
-        - S=`pwd`/suit
-        - cd build/pc/tee/suit
+        - S=`pwd`/lib/suit
+        - cd build/pc/lib/suit
         - ./example/dump $S/example/manifests/teep-I-D/ex1.suit
         - ./example/dump $S/example/manifests/teep-I-D/ex2.suit
         - ./example/dump $S/example/manifests/teep-I-D/ex3.suit

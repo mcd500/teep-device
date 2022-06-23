@@ -1,4 +1,4 @@
-TOPDIR = $(CURDIR)/../..
+TOPDIR = $(CURDIR)/../../..
 include $(TOPDIR)/conf.mk
 
 B = $(BUILD)/tee/libteep
