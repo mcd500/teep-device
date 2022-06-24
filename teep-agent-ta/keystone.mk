@@ -18,6 +18,7 @@ LIBS = $(TEE_LIBS) \
 	-lteep \
 	-lqcbor \
 	-lteesuit \
+	-lteecbor \
 	-lmbedtls \
 	-lgcc
 

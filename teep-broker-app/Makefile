@@ -48,7 +48,7 @@ LDFLAGS += \
 	-L$(BUILD)/lib \
 	-L$(BUILD)/tee/QCBOR
 
-LIBS +=  -lteep -lqcbor -lteesuit
+LIBS +=  -lteep -lqcbor -lteesuit -lteecbor
 
 ifeq ($(shell uname),Linux)
 LIBS += -lcap

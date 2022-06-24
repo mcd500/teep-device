@@ -24,6 +24,7 @@ TA_LIBS = \
 	-lteep \
 	-lqcbor \
 	-lteesuit \
+	-lteecbor \
 	-lsgx_tstdc -lsgx_tcxx -lsgx_tcrypto -lsgx_tservice$(LIBRARY_SUFFIX)
 
 export TA_LDFLAGS = \
