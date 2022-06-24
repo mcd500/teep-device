@@ -67,9 +67,9 @@ static const char *command_name(enum suit_command command)
     }
 }
 
-static void print_command_sequence(nocbor_range_t command_sequence_bstr)
+static void print_command_sequence(tcbor_range_t command_sequence_bstr)
 {
-    if (nocbor_range_is_null(command_sequence_bstr)) {
+    if (tcbor_range_is_null(command_sequence_bstr)) {
         return;
     }
     suit_command_reader_t r;
@@ -114,7 +114,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    nocbor_range envelope_bstr = {
+    tcbor_range envelope_bstr = {
         &*envelope_binary.begin(),
         &*envelope_binary.end()
     };

@@ -48,7 +48,7 @@ bool read_file(std::vector<uint8_t>& dst, const char *file)
     return true;
 }
 
-void hexdump(nocbor_range_t r)
+void hexdump(tcbor_range_t r)
 {
     if (!r.begin) {
         printf(" (NULL)\n");
@@ -62,7 +62,7 @@ void hexdump(nocbor_range_t r)
     }
 }
 
-void print_tstr(nocbor_range_t r)
+void print_tstr(tcbor_range_t r)
 {
     if (!r.begin) {
         printf("(NULL)");
@@ -73,7 +73,7 @@ void print_tstr(nocbor_range_t r)
     }
 }
 
-void print_bstr(nocbor_range_t r)
+void print_bstr(tcbor_range_t r)
 {
     if (!r.begin) {
         printf("(NULL)");
@@ -109,9 +109,9 @@ void print_auth_wrapper(suit_authentication_wrapper w)
     print_digest(w.digest);
 }
 
-void print_envelope_field(nocbor_range_t envelope_bstr, enum suit_cbor_label key)
+void print_envelope_field(tcbor_range_t envelope_bstr, enum suit_cbor_label key)
 {
-    nocbor_range_t field;
+    tcbor_range_t field;
     if (suit_envelope_get_field_by_key(envelope_bstr, key, &field)) {
         hexdump(field);
     }

@@ -29,7 +29,7 @@
  */
 
 #pragma once
-#include "nocbor.h"
+#include "teecbor.h"
 
 #include "teesuit-constant.h"
 #include "teesuit-internal.h"
@@ -45,7 +45,7 @@ extern "C" {
 typedef struct suit_digest
 {
     uint64_t algorithm_id;
-    nocbor_range_t bytes;
+    tcbor_range_t bytes;
 } suit_digest_t;
 
 typedef struct suit_severable
@@ -54,7 +54,7 @@ typedef struct suit_severable
     bool severed;
     union {
         suit_digest_t digest; // severed
-        nocbor_range_t body;  // not severed
+        tcbor_range_t body;  // not severed
     };
 } suit_severable_t;
 
@@ -62,14 +62,14 @@ typedef struct suit_severable
 
 typedef struct suit_component
 {
-    nocbor_range_t id_cbor;
+    tcbor_range_t id_cbor;
 } suit_component_t;
 
 typedef struct suit_dependency
 {
     suit_digest_t digest;
     size_t prefix_len;
-    nocbor_range_t prefix[SUIT_COMONENT_ID_LEN];
+    tcbor_range_t prefix[SUIT_COMONENT_ID_LEN];
 } suit_dependency_t;
 
 typedef struct suit_object
@@ -90,67 +90,67 @@ typedef struct suit_common
     suit_dependency_t dependencies[SUIT_DEPENDENCY_MAX];
     size_t n_components;
     suit_component_t components[SUIT_COMPONENT_MAX];
-    nocbor_range_t command_sequence;
+    tcbor_range_t command_sequence;
 } suit_common_t;
 
 typedef struct suit_manifest
 {
-    nocbor_range_t envelope_bstr;
-	nocbor_range_t binary;
+    tcbor_range_t envelope_bstr;
+	tcbor_range_t binary;
 
     uint64_t version;
     uint64_t sequence_number;
-    nocbor_range_t common_bstr;
+    tcbor_range_t common_bstr;
     suit_common_t common;
-    nocbor_range_t reference_uri;
+    tcbor_range_t reference_uri;
     suit_severable_t dependency_resolution;
     suit_severable_t payload_fetch;
     suit_severable_t install;
     suit_severable_t text;
     suit_severable_t coswid;
-    nocbor_range_t validate;
-    nocbor_range_t load;
-    nocbor_range_t run;
+    tcbor_range_t validate;
+    tcbor_range_t load;
+    tcbor_range_t run;
 } suit_manifest_t;
 
-bool suit_manifest_parse(nocbor_range_t manifest_bstr, suit_manifest_t *ret);
+bool suit_manifest_parse(tcbor_range_t manifest_bstr, suit_manifest_t *ret);
 
 typedef struct suit_authentication_wrapper
 {
     suit_digest_t digest;
 } suit_authentication_wrapper_t;
 
-bool suit_parse_authentication_wrapper(nocbor_range_t authentication_wrapper_bstr, suit_authentication_wrapper_t *ret);
+bool suit_parse_authentication_wrapper(tcbor_range_t authentication_wrapper_bstr, suit_authentication_wrapper_t *ret);
 
 typedef struct suit_envelope
 {
-    nocbor_range_t binary;
-    nocbor_range_t delegation;
-    nocbor_range_t authentication_wrapper;
-    nocbor_range_t manifest;
-    nocbor_range_t dependency_resolution;
-    nocbor_range_t payload_fetch;
-    nocbor_range_t install;
-    nocbor_range_t text;
-    nocbor_range_t coswid;
+    tcbor_range_t binary;
+    tcbor_range_t delegation;
+    tcbor_range_t authentication_wrapper;
+    tcbor_range_t manifest;
+    tcbor_range_t dependency_resolution;
+    tcbor_range_t payload_fetch;
+    tcbor_range_t install;
+    tcbor_range_t text;
+    tcbor_range_t coswid;
 } suit_envelope_t;
 
-bool suit_envelope_get_field_by_key(nocbor_range_t envelope_bstr, enum suit_cbor_label key, nocbor_range_t *ret);
-bool suit_envelope_get_field_by_name(nocbor_range_t envelope_bstr, nocbor_range_t key_tstr, nocbor_range_t *ret);
+bool suit_envelope_get_field_by_key(tcbor_range_t envelope_bstr, enum suit_cbor_label key, tcbor_range_t *ret);
+bool suit_envelope_get_field_by_name(tcbor_range_t envelope_bstr, tcbor_range_t key_tstr, tcbor_range_t *ret);
 
-//bool suit_parse_envelope(nocbor_range_t envelope_bstr, suit_envelope_t *ret);
+//bool suit_parse_envelope(tcbor_range_t envelope_bstr, suit_envelope_t *ret);
 
-bool suit_envelope_get_manifest(nocbor_range_t envelope_bstr, suit_manifest_t *ret);
+bool suit_envelope_get_manifest(tcbor_range_t envelope_bstr, suit_manifest_t *ret);
 
-//bool suit_envelope_get_payload(const suit_envelope_t *envelope, nocbor_range_t key_tstr, nocbor_range_t *ret);
-bool suit_envelope_get_severed(const suit_severable_t *severable, nocbor_range_t severed, nocbor_range_t *ret);
+//bool suit_envelope_get_payload(const suit_envelope_t *envelope, tcbor_range_t key_tstr, tcbor_range_t *ret);
+bool suit_envelope_get_severed(const suit_severable_t *severable, tcbor_range_t severed, tcbor_range_t *ret);
 
 typedef struct suit_command_reader
 {
-    nocbor_context_t ctx;
+    tcbor_context_t ctx;
 } suit_command_reader_t;
 
-bool suit_command_sequence_open(nocbor_range_t command_sequence_bstr, suit_command_reader_t *ret);
+bool suit_command_sequence_open(tcbor_range_t command_sequence_bstr, suit_command_reader_t *ret);
 bool suit_command_sequence_read_command(suit_command_reader_t *r, enum suit_command *ret);
 
 bool suit_command_sequence_read_reppolicy(suit_command_reader_t *r /* TODO ret */);
@@ -173,7 +173,7 @@ typedef struct suit_context
 } suit_context_t;
 
 void suit_context_init(suit_context_t *p);
-bool suit_context_add_envelope(suit_context_t *p, nocbor_range_t envelope_bstr);
+bool suit_context_add_envelope(suit_context_t *p, tcbor_range_t envelope_bstr);
 suit_manifest_t *suit_context_get_root_manifest(suit_context_t *p);
 
 /*
@@ -185,16 +185,16 @@ typedef struct suit_runner suit_runner_t;
 /* call back functions user supplies */
 typedef struct suit_callbacks
 {
-    bool (*check_vendor_id)(suit_runner_t *runner, void *user, const suit_object_t *target, nocbor_range_t id);
-    bool (*store)(suit_runner_t *runner, void *user, const suit_object_t *target, nocbor_range_t body);
-    bool (*fetch_and_store)(suit_runner_t *runner, void *user, const suit_object_t *target, nocbor_range_t uri);
+    bool (*check_vendor_id)(suit_runner_t *runner, void *user, const suit_object_t *target, tcbor_range_t id);
+    bool (*store)(suit_runner_t *runner, void *user, const suit_object_t *target, tcbor_range_t body);
+    bool (*fetch_and_store)(suit_runner_t *runner, void *user, const suit_object_t *target, tcbor_range_t uri);
 } suit_callbacks_t;
 
 typedef struct suit_binder
 {
     const suit_object_t *target;
     suit_parameter_key_t key;
-    nocbor_range_t value_cbor;
+    tcbor_range_t value_cbor;
 } suit_binder_t;
 
 
@@ -209,8 +209,8 @@ struct suit_runner
     enum suit_command_sequence sequence;
 
     // TODO: move into program counter
-    nocbor_range_t selected_components;
-    nocbor_range_t selected_dependencies;
+    tcbor_range_t selected_components;
+    tcbor_range_t selected_dependencies;
 
     int n_binder;
     suit_binder_t bindings[SUIT_BINDER_MAX];
@@ -245,7 +245,7 @@ bool suit_runner_get_error(const suit_runner_t *r, void *error_enum_todo);
 void suit_runner_suspend(suit_runner_t *r, void (*on_resume)(suit_runner_t *, void *));
 void suit_runner_resume(suit_runner_t *r, void *user);
 
-bool suit_runner_get_parameter(suit_runner_t *r, const suit_object_t *target, uint64_t key, nocbor_range_t *dst);
+bool suit_runner_get_parameter(suit_runner_t *r, const suit_object_t *target, uint64_t key, tcbor_range_t *dst);
 
 void suit_check_mbedtls_pk(void);
 

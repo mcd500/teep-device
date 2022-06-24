@@ -126,7 +126,7 @@ struct teep_agent_session
 	suit_context_t suit_context;
 	suit_runner_t suit_runner;
 
-	nocbor_range_t fetch_uri;
+	tcbor_range_t fetch_uri;
 	struct component_path fetch_component_path;
 };
 
@@ -281,7 +281,7 @@ handle_tam_message(struct teep_agent_session *session, const void *buffer, size_
 
 			for (size_t i = 0; i < p->len; i++) {
 				UsefulBufC e = suit_manifests[p->len - i - 1].envelope;
-				nocbor_range_t r = {
+				tcbor_range_t r = {
 					e.ptr, e.ptr + e.len
 				};
 				if (!suit_context_add_envelope(&session->suit_context, r)) {
@@ -428,7 +428,7 @@ static int build_error(struct teep_agent_session *session, void *dst, size_t *ds
 	return 1;
 }
 
-static void hexdump(nocbor_range_t r)
+static void hexdump(tcbor_range_t r)
 {
     if (!r.begin) {
         tee_log_trace(" (NULL)\n");
@@ -459,7 +459,7 @@ static void severed(suit_severed_t s)
 */
 
 
-static bool check_vendor_id(suit_runner_t *runner, void *user, const suit_object_t *target, nocbor_range_t id)
+static bool check_vendor_id(suit_runner_t *runner, void *user, const suit_object_t *target, tcbor_range_t id)
 {
     tee_log_trace("check vendor id\n");
     return true;
@@ -467,24 +467,24 @@ static bool check_vendor_id(suit_runner_t *runner, void *user, const suit_object
 
 static bool parse_component_id(suit_component_t *component, struct component_path *dst)
 {
-	nocbor_range_t id_cbor = component->id_cbor;
-	nocbor_context_t ctx = nocbor_toplevel(id_cbor);
-	nocbor_context_t array;
-	if (!nocbor_read_array(&ctx, &array)) return false;
-	nocbor_range_t bstr;
-	if (!nocbor_read_bstr(&array, &bstr)) return false;
+	tcbor_range_t id_cbor = component->id_cbor;
+	tcbor_context_t ctx = tcbor_toplevel(id_cbor);
+	tcbor_context_t array;
+	if (!tcbor_read_array(&ctx, &array)) return false;
+	tcbor_range_t bstr;
+	if (!tcbor_read_bstr(&array, &bstr)) return false;
 	if (memcmp(bstr.begin, "TEEP-Device", bstr.end - bstr.begin) != 0) return false;
 	dst->device = "TEEP-Device";
 
-	if (!nocbor_read_bstr(&array, &bstr)) return false;
+	if (!tcbor_read_bstr(&array, &bstr)) return false;
 	if (memcmp(bstr.begin, "SecureFS", bstr.end - bstr.begin) != 0) return false;
 	dst->storage = "SecureFS";
 
-	if (!nocbor_read_bstr(&array, &bstr)) return false;
+	if (!tcbor_read_bstr(&array, &bstr)) return false;
 	if (bstr.end - bstr.begin != 16) return false;
 	memcpy(dst->uuid, bstr.begin, 16);
 
-	if (!nocbor_read_bstr(&array, &bstr)) return false;
+	if (!tcbor_read_bstr(&array, &bstr)) return false;
 	if (memcmp(bstr.begin, "ta", bstr.end - bstr.begin) != 0) return false;
 	char *p = dst->filename;
 	for (int i = 0; i < 16; i++) {
@@ -497,12 +497,12 @@ static bool parse_component_id(suit_component_t *component, struct component_pat
 	}
 	snprintf(p, 4, ".ta");
 
-	if (!nocbor_close(&ctx, array)) return false;
+	if (!tcbor_close(&ctx, array)) return false;
 
 	return true;
 }
 
-static bool store(suit_runner_t *runner, void *user, const suit_object_t *target, nocbor_range_t body)
+static bool store(suit_runner_t *runner, void *user, const suit_object_t *target, tcbor_range_t body)
 {
 	if (target->is_component) {
 		tee_log_trace("teep-agent-ta.c: store(): store component\n");
@@ -527,7 +527,7 @@ static void fetch_complete(suit_runner_t *runner, void *user)
     tee_log_trace("finish fetch\n");
 }
 
-static bool fetch_and_store(suit_runner_t *runner, void *user, const suit_object_t *target, nocbor_range_t uri)
+static bool fetch_and_store(suit_runner_t *runner, void *user, const suit_object_t *target, tcbor_range_t uri)
 {
 	struct teep_agent_session *session = (struct teep_agent_session *)user;
 	if (target->is_component) {
@@ -636,7 +636,7 @@ query_next_broker_task(struct teep_agent_session *session)
 				teep_error(session, "suit error");
 			}
 		} else if (session->state == AGENT_FETCH_COMPONENT) {
-			nocbor_range_t uri = session->fetch_uri;
+			tcbor_range_t uri = session->fetch_uri;
 			task->command = BROKER_HTTP_GET;
 			memset(task->uri, 0, sizeof task->uri);
 			// TODO: length

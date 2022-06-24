@@ -29,7 +29,7 @@
  */
 
 #pragma once
-#include "nocbor.h"
+#include "teecbor.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -60,21 +60,21 @@ typedef struct suit_continuation
     enum suit_next_action next;
     union {
         struct {
-            nocbor_context_t common;
-            nocbor_context_t target;
+            tcbor_context_t common;
+            tcbor_context_t target;
         } sequence;
         struct {
             uint64_t command;
-            nocbor_range_t param;
+            tcbor_range_t param;
             bool is_component; // component or dependency
             bool selected_all;
             union {
                 uint64_t index;  // selected all
-                nocbor_context_t array; // selected array
+                tcbor_context_t array; // selected array
             };
         } command;
         struct {
-            nocbor_context_t try_entries;
+            tcbor_context_t try_entries;
         } try_entry;
         struct {
         } exit;

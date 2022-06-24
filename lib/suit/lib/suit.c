@@ -31,17 +31,17 @@
 #include <stdio.h>
 #include <string.h>
 #include "mbedtls/pk.h"
-#include "nocbor.h"
+#include "teecbor.h"
 #include "teesuit.h"
 #include "teerng.h"
 #include "teelog.h"
 
-static nocbor_range_t empty_array()
+static tcbor_range_t empty_array()
 {
     static uint8_t array[] = {
         0x80
     };
-    return (nocbor_range_t){ array, array + 1 };
+    return (tcbor_range_t){ array, array + 1 };
 }
 
 static bool push_program_counter(suit_runner_t *runner)
@@ -64,7 +64,7 @@ static bool pop_program_counter(suit_runner_t *runner)
     return true;
 }
 
-static bool get_command_sequence_body(suit_runner_t *runner, suit_manifest_t *manifest, nocbor_range_t *ret)
+static bool get_command_sequence_body(suit_runner_t *runner, suit_manifest_t *manifest, tcbor_range_t *ret)
 {
     switch (runner->sequence) {
     case SUIT_COMMAND_SEQUENCE_INSTALL:
@@ -78,23 +78,23 @@ static bool get_command_sequence_body(suit_runner_t *runner, suit_manifest_t *ma
 
 static bool call_command_sequence(suit_runner_t *runner, suit_manifest_t *manifest)
 {
-    nocbor_range_t common_sequence = manifest->common.command_sequence;
-    if (nocbor_range_is_null(common_sequence)) {
+    tcbor_range_t common_sequence = manifest->common.command_sequence;
+    if (tcbor_range_is_null(common_sequence)) {
         common_sequence = empty_array();
     }
-    nocbor_range_t target_sequence;
+    tcbor_range_t target_sequence;
     if (!get_command_sequence_body(runner, manifest, &target_sequence)) return false;
-    if (nocbor_range_is_null(target_sequence)) {
+    if (tcbor_range_is_null(target_sequence)) {
         target_sequence = empty_array();
     }
 
-    nocbor_context_t target_contxt = nocbor_toplevel(target_sequence);
-    nocbor_context_t common_context = nocbor_toplevel(common_sequence);
+    tcbor_context_t target_contxt = tcbor_toplevel(target_sequence);
+    tcbor_context_t common_context = tcbor_toplevel(common_sequence);
 
-    nocbor_context_t target_array;
-    nocbor_context_t common_array;
-    if (!nocbor_read_array(&target_contxt, &target_array)) return false;
-    if (!nocbor_read_array(&common_context, &common_array)) return false;
+    tcbor_context_t target_array;
+    tcbor_context_t common_array;
+    if (!tcbor_read_array(&target_contxt, &target_array)) return false;
+    if (!tcbor_read_array(&common_context, &common_array)) return false;
 
     if (!push_program_counter(runner)) return false;
     runner->program_counter.manifest = manifest;
@@ -108,7 +108,7 @@ static bool call_command_sequence(suit_runner_t *runner, suit_manifest_t *manife
 static bool digest_equal(suit_digest_t dx, suit_digest_t dy)
 {
     if (dx.algorithm_id != dy.algorithm_id) return false;
-    return nocbor_range_equal(dx.bytes, dy.bytes);
+    return tcbor_range_equal(dx.bytes, dy.bytes);
 }
 
 static bool call_dependency(suit_runner_t *runner, suit_manifest_t *manifest)
@@ -127,11 +127,11 @@ void suit_runner_init(suit_runner_t *runner, suit_context_t *context, enum suit_
     static const uint8_t cbor_true[] = {
         0xF5
     };
-    runner->selected_components = (nocbor_range_t) {
+    runner->selected_components = (tcbor_range_t) {
         .begin = cbor_true,
         .end = cbor_true + 1
     };
-    runner->selected_dependencies = nocbor_range_null();
+    runner->selected_dependencies = tcbor_range_null();
     suit_manifest_t *manifest = suit_context_get_root_manifest(runner->context);
     runner->program_counter.manifest = manifest;
     runner->program_counter.next = SUIT_NEXT_EXIT;
@@ -145,42 +145,42 @@ struct command_handler
 {
     enum suit_command command;
     bool allow_common;
-    bool (*handler)(suit_runner_t *runner, const suit_object_t *target, enum suit_command command, nocbor_range_t param);
+    bool (*handler)(suit_runner_t *runner, const suit_object_t *target, enum suit_command command, tcbor_range_t param);
 };
 
-static bool read_rep_policy(nocbor_context_t *ctx)
+static bool read_rep_policy(tcbor_context_t *ctx)
 {
     uint64_t policy;
-    if (nocbor_read_uint(ctx, &policy)) {
+    if (tcbor_read_uint(ctx, &policy)) {
         return true;
-    } else if (nocbor_read_null(ctx)) {
+    } else if (tcbor_read_null(ctx)) {
         return true;
     } else {
         return false;
     }
 }
 
-static bool parse_rep_policy(nocbor_range_t param)
+static bool parse_rep_policy(tcbor_range_t param)
 {
     // TODO
     return true;
 }
 
-static bool condition_vendor_identifier(suit_runner_t *runner, const suit_object_t *target, enum suit_command command, nocbor_range_t param)
+static bool condition_vendor_identifier(suit_runner_t *runner, const suit_object_t *target, enum suit_command command, tcbor_range_t param)
 {
     if (!parse_rep_policy(param)) return false;
     tee_log_trace("execute suit-condition-vendor-identifier\n");
     return true;
 }
 
-static bool condition_class_identifier(suit_runner_t *runner, const suit_object_t *target, enum suit_command command, nocbor_range_t param)
+static bool condition_class_identifier(suit_runner_t *runner, const suit_object_t *target, enum suit_command command, tcbor_range_t param)
 {
     if (!parse_rep_policy(param)) return false;
     tee_log_trace("execute suit-condition-class-identifier\n");
     return true;
 }
 
-static bool condition_image_match(suit_runner_t *runner, const suit_object_t *target, enum suit_command command, nocbor_range_t param)
+static bool condition_image_match(suit_runner_t *runner, const suit_object_t *target, enum suit_command command, tcbor_range_t param)
 {
     if (!parse_rep_policy(param)) return false;
     tee_log_trace("execute suit-condition-image-match\n");
@@ -208,7 +208,7 @@ static suit_binder_t *alloc_binder(suit_runner_t *runner, const suit_object_t *t
     return binder;
 }
 
-static bool set_parameter(suit_runner_t *runner, const suit_object_t *target, uint64_t key, nocbor_range_t value, bool override)
+static bool set_parameter(suit_runner_t *runner, const suit_object_t *target, uint64_t key, tcbor_range_t value, bool override)
 {
     suit_binder_t *binder = lookup_binder(runner, target, key);
     if (binder && !override) return true;
@@ -220,7 +220,7 @@ static bool set_parameter(suit_runner_t *runner, const suit_object_t *target, ui
     return true;
 }
 
-bool suit_runner_get_parameter(suit_runner_t *runner, const suit_object_t *target, uint64_t key, nocbor_range_t *dst)
+bool suit_runner_get_parameter(suit_runner_t *runner, const suit_object_t *target, uint64_t key, tcbor_range_t *dst)
 {
     suit_binder_t *binder = lookup_binder(runner, target, key);
     if (!binder) {
@@ -230,30 +230,30 @@ bool suit_runner_get_parameter(suit_runner_t *runner, const suit_object_t *targe
     return true;
 }
 
-static bool directive_set_parameters(suit_runner_t *runner, const suit_object_t *target, enum suit_command command, nocbor_range_t param)
+static bool directive_set_parameters(suit_runner_t *runner, const suit_object_t *target, enum suit_command command, tcbor_range_t param)
 {
     tee_log_trace("execute suit-set-parameters\n");
     bool is_override = command == SUIT_DIRECTIVE_OVERRIDE_PARAMETERS;
     
-    nocbor_context_t ctx = nocbor_toplevel(param);
+    tcbor_context_t ctx = tcbor_toplevel(param);
 
-    nocbor_context_t map;
-    if (!nocbor_read_map(&ctx, &map)) goto err;
-    while (!nocbor_is_end_of_context(map)) {
+    tcbor_context_t map;
+    if (!tcbor_read_map(&ctx, &map)) goto err;
+    while (!tcbor_is_end_of_context(map)) {
         uint64_t key;
-        nocbor_range_t value;
-        if (!nocbor_read_uint(&map, &key)) goto err;
-        if (!nocbor_read_subobject(&map, &value)) goto err;
+        tcbor_range_t value;
+        if (!tcbor_read_uint(&map, &key)) goto err;
+        if (!tcbor_read_subobject(&map, &value)) goto err;
         if (!set_parameter(runner, target, key, value, is_override)) goto err;
     }
-    if (!nocbor_close(&ctx, map)) goto err;
+    if (!tcbor_close(&ctx, map)) goto err;
 
     return true;
 err:
     return false;
 }
 
-static bool directive_process_dependency(suit_runner_t *runner, const suit_object_t *target, enum suit_command command, nocbor_range_t param)
+static bool directive_process_dependency(suit_runner_t *runner, const suit_object_t *target, enum suit_command command, tcbor_range_t param)
 {
     if (!parse_rep_policy(param)) return false;
     tee_log_trace("execute suit-directive-process-dependency\n");
@@ -261,19 +261,19 @@ static bool directive_process_dependency(suit_runner_t *runner, const suit_objec
     return true;
 }
 
-static bool directive_fetch(suit_runner_t *runner, const suit_object_t *target, enum suit_command command, nocbor_range_t param)
+static bool directive_fetch(suit_runner_t *runner, const suit_object_t *target, enum suit_command command, tcbor_range_t param)
 {
     if (!parse_rep_policy(param)) return false;
     tee_log_trace("execute suit-directive-fetch\n");
     
-    nocbor_range_t uri_cbor;
+    tcbor_range_t uri_cbor;
     if (!suit_runner_get_parameter(runner, target, SUIT_PARAMETER_URI, &uri_cbor)) {
         tee_log_trace("uri is not set\n");
         return false;
     }
-    nocbor_context_t ctx = nocbor_toplevel(uri_cbor);
-    nocbor_range_t uri;
-    if (!nocbor_read_tstr(&ctx, &uri)) {
+    tcbor_context_t ctx = tcbor_toplevel(uri_cbor);
+    tcbor_range_t uri;
+    if (!tcbor_read_tstr(&ctx, &uri)) {
         tee_log_trace("uri not tstr\n");
         return false;
     }
@@ -282,7 +282,7 @@ static bool directive_fetch(suit_runner_t *runner, const suit_object_t *target, 
         tee_log_trace("uri is empty\n");
     } else if (uri.begin[0] == '#') {
         tee_log_trace("local uri\n");
-        nocbor_range_t binary;
+        tcbor_range_t binary;
         if (!suit_envelope_get_field_by_name(runner->program_counter.manifest->envelope_bstr, uri, &binary)) {
             tee_log_trace("local uri not found\n");
             return false;
@@ -345,12 +345,12 @@ static bool get_object(suit_runner_t *runner, uint64_t index, bool is_component,
 static void run_sequence_step(suit_runner_t *runner, bool *pop_pc)
 {
     suit_continuation_t *pc = &runner->program_counter;
-    nocbor_context_t *ctx;
+    tcbor_context_t *ctx;
     bool is_common;
-    if (!nocbor_is_end_of_context(pc->sequence.common)) {
+    if (!tcbor_is_end_of_context(pc->sequence.common)) {
         ctx = &pc->sequence.common;
         is_common = true;
-    } else if (!nocbor_is_end_of_context(pc->sequence.target)) {
+    } else if (!tcbor_is_end_of_context(pc->sequence.target)) {
         ctx = &pc->sequence.target;
         is_common = false;
     } else {
@@ -360,19 +360,19 @@ static void run_sequence_step(suit_runner_t *runner, bool *pop_pc)
     }
 
     uint64_t command;
-    nocbor_range_t param;
+    tcbor_range_t param;
 
-    if (!nocbor_read_uint(ctx, &command)) goto err;
-    if (!nocbor_read_subobject(ctx, &param)) goto err;
+    if (!tcbor_read_uint(ctx, &command)) goto err;
+    if (!tcbor_read_subobject(ctx, &param)) goto err;
 
     tee_log_trace("command: %lu\n", command);
 
     if (command == SUIT_DIRECTIVE_SET_COMPONENT_INDEX) {
         runner->selected_components = param;
-        runner->selected_dependencies = nocbor_range_null();
+        runner->selected_dependencies = tcbor_range_null();
         return;
     } else if (command == SUIT_DIRECTIVE_SET_DEPENDENCY_INDEX) {
-        runner->selected_components = nocbor_range_null();
+        runner->selected_components = tcbor_range_null();
         runner->selected_dependencies = param;
         return;
     }
@@ -383,8 +383,8 @@ static void run_sequence_step(suit_runner_t *runner, bool *pop_pc)
         goto err;
     }
 
-    bool is_component = !nocbor_range_is_null(runner->selected_components);
-    bool is_dependency = !nocbor_range_is_null(runner->selected_dependencies);
+    bool is_component = !tcbor_range_is_null(runner->selected_components);
+    bool is_dependency = !tcbor_range_is_null(runner->selected_dependencies);
     if (is_component == is_dependency) goto err;
 
     suit_continuation_t newpc;
@@ -394,24 +394,24 @@ static void run_sequence_step(suit_runner_t *runner, bool *pop_pc)
     newpc.command.param = param;
     newpc.command.is_component = is_component;
 
-    nocbor_range_t selected = is_component ? runner->selected_components : runner->selected_dependencies;
-    nocbor_context_t selected_ctx = nocbor_toplevel(selected);
+    tcbor_range_t selected = is_component ? runner->selected_components : runner->selected_dependencies;
+    tcbor_context_t selected_ctx = tcbor_toplevel(selected);
     bool flag;
     uint64_t index;
-    nocbor_context_t array;
-    if (nocbor_read_bool(&selected_ctx, &flag)) {
+    tcbor_context_t array;
+    if (tcbor_read_bool(&selected_ctx, &flag)) {
         if (flag) {
             newpc.command.selected_all = true;
             newpc.command.index = 0;
         } else {
             return; // no object selected
         }
-    } else if (nocbor_read_uint(&selected_ctx, &index)) {
+    } else if (tcbor_read_uint(&selected_ctx, &index)) {
         suit_object_t target;
         if (!get_object(runner, index, is_component, &target)) goto err;
         if (!h->handler(runner, &target, command, param)) goto err;
         return;
-    } else if (nocbor_read_array(&selected_ctx, &array)) {
+    } else if (tcbor_read_array(&selected_ctx, &array)) {
         newpc.command.selected_all = false;
         newpc.command.array = array;
     } else {
@@ -446,12 +446,12 @@ static void run_command_step(suit_runner_t *runner, bool *pop_pc)
         if (!h->handler(runner, &target, pc->command.command, pc->command.param)) goto err;
         pc->command.index++;
     } else {
-        if (nocbor_is_end_of_context(pc->command.array)) {
+        if (tcbor_is_end_of_context(pc->command.array)) {
             *pop_pc = true;
             return;
         }
         uint64_t index;
-        if (!nocbor_read_uint(&pc->command.array, &index)) goto err;
+        if (!tcbor_read_uint(&pc->command.array, &index)) goto err;
         suit_object_t target;
         if (!get_object(runner, index, pc->command.is_component, &target)) goto err;
         if (!h->handler(runner, &target, pc->command.command, pc->command.param)) goto err;

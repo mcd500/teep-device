@@ -31,21 +31,21 @@
 #include <cstdio>
 #include "example-util.h"
 
-static bool check_vendor_id(suit_runner_t *runner, void *user, const suit_object_t *target, nocbor_range_t id)
+static bool check_vendor_id(suit_runner_t *runner, void *user, const suit_object_t *target, tcbor_range_t id)
 {
     printf("check vendor id\n");
     pirnt_object(target);
     return true;
 }
 
-static bool store(suit_runner_t *runner, void *user, const suit_object_t *target, nocbor_range_t body)
+static bool store(suit_runner_t *runner, void *user, const suit_object_t *target, tcbor_range_t body)
 {
     printf("store\n");
     pirnt_object(target);
     return true;
 }
 
-static bool fetch_and_store(suit_runner_t *runner, void *user, const suit_object_t *target, nocbor_range_t uri)
+static bool fetch_and_store(suit_runner_t *runner, void *user, const suit_object_t *target, tcbor_range_t uri)
 {
     printf("fetch_and_store\n");
     pirnt_object(target);
@@ -82,7 +82,7 @@ int main(int argc, char **argv)
     suit_context_init(&suit_context);
 
     for (auto i = envelope_binaries.begin(); i != envelope_binaries.end(); i++) {
-        nocbor_range r = {
+        tcbor_range r = {
             &*i->begin(),
             &*i->end()
         };
