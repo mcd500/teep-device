@@ -48,6 +48,5 @@ libwebsockets-ree:
 .PHONY: QCBOR-tee
 QCBOR-tee:
 	mkdir -p $(BUILD)/tee/QCBOR
-	rm -rf $(BUILD)/tee/QCBOR
-	cp -r $(TOPDIR)/submodule/QCBOR $(BUILD)/tee/QCBOR
-	make -C $(BUILD)/tee/QCBOR CC=$(CROSS_COMPILE)gcc
+	cd $(BUILD)/tee/QCBOR && cmake $(cmake-tee-TOOLCHAIN) $(TOPDIR)/submodule/QCBOR && \
+		make

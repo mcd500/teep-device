@@ -20,7 +20,7 @@ $(SCRIPTS): %: scripts/%.in
 CFLAGS = \
 	$(REE_CFLAGS) \
 	-Wall \
-	-I$(BUILD)/tee/QCBOR/inc \
+	-I$(TOPDIR)/submodule/QCBOR/inc \
 	-I$(TOPDIR)/include \
 	-I$(TOPDIR)/lib/include \
 	-I$(BUILD)/ree/libwebsockets/include \

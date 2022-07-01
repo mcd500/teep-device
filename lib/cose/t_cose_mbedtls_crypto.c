@@ -13,10 +13,11 @@
 
 #include "t_cose_crypto.h" /* The interface this code implements */
 
-#include <openssl/ecdsa.h> /* Needed for signature format conversion */
-#include <openssl/evp.h>
-#include <openssl/err.h>
-
+#include <stdlib.h>
+#include "mbedtls/ecp.h"
+#include "mbedtls/ecdsa.h"
+#include "mbedtls/md.h"
+#include "mbedtls/error.h"
 
 /**
  * \file t_cose_openssl_crypto.c
@@ -60,204 +61,6 @@
  * a llittle.
  */
 
-
-/**
- * \brief Convert DER-encoded signature to COSE-serialized signature
- *
- * \param[in] key_len             Size of the key in bytes -- governs sig size.
- * \param[in] der_signature       DER-encoded signature.
- * \param[in] signature_buffer    The buffer for output.
- *
- * \return The pointer and length of serialized signature in \c signature_buffer
-           or NULL_Q_USEFUL_BUF_C on error.
- *
- * The serialized format is defined by COSE in RFC 8152 section
- * 8.1. The signature which consist of two integers, r and s,
- * are simply zero padded to the nearest byte length and
- * concatenated.
- */
-static inline struct q_useful_buf_c
-signature_der_to_cose(unsigned               key_len,
-                      struct q_useful_buf_c  der_signature,
-                      struct q_useful_buf    signature_buffer)
-{
-    size_t                r_len;
-    size_t                s_len;
-    const BIGNUM         *r_bn;
-    const BIGNUM         *s_bn;
-    struct q_useful_buf_c cose_signature;
-    void                 *r_start_ptr;
-    void                 *s_start_ptr;
-    const unsigned char  *temp_der_sig_pointer;
-    ECDSA_SIG            *es;
-
-    /* Put DER-encode sig into an ECDSA_SIG so we can get the r and s out. */
-    temp_der_sig_pointer = der_signature.ptr;
-    es = d2i_ECDSA_SIG(NULL, &temp_der_sig_pointer, (long)der_signature.len);
-    if(es == NULL) {
-        cose_signature = NULL_Q_USEFUL_BUF_C;
-        goto Done;
-    }
-
-    /* Zero the buffer so that bytes r and s are padded with zeros */
-    q_useful_buf_set(signature_buffer, 0);
-
-    /* Get the signature r and s as BIGNUMs */
-    r_bn = NULL;
-    s_bn = NULL;
-    ECDSA_SIG_get0(es, &r_bn, &s_bn);
-    /* ECDSA_SIG_get0 returns void */
-
-
-    /* Internal consistency check that the r and s values will fit
-     * into the expected size. Be sure the output buffer is not
-     * overrun.
-     */
-    /* Cast is safe because BN_num_bytes() is documented to not return
-     * negative numbers.
-     */
-    r_len = (size_t)BN_num_bytes(r_bn);
-    s_len = (size_t)BN_num_bytes(s_bn);
-    if(r_len + s_len > signature_buffer.len) {
-        cose_signature = NULL_Q_USEFUL_BUF_C;
-        goto Done2;
-    }
-
-    /* Copy r and s of signature to output buffer and set length */
-    r_start_ptr = (uint8_t *)(signature_buffer.ptr) + key_len - r_len;
-    BN_bn2bin(r_bn, r_start_ptr);
-
-    s_start_ptr = (uint8_t *)signature_buffer.ptr + 2 * key_len - s_len;
-    BN_bn2bin(s_bn, s_start_ptr);
-
-    cose_signature = (UsefulBufC){signature_buffer.ptr, 2 * key_len};
-
-Done2:
-    ECDSA_SIG_free(es);
-
-Done:
-    return cose_signature;
-}
-
-
-/**
- * \brief Convert  COSE-serialized signature to DER-encoded signature.
- *
- * \param[in] key_len         Size of the key in bytes -- governs sig size.
- * \param[in] cose_signature  The COSE-serialized signature.
- * \param[in] buffer          Place to write DER-format signature.
- * \param[out] der_signature  The returned DER-encoded signature
- *
- * \return one of the \ref t_cose_err_t error codes.
- *
- * The serialized format is defined by COSE in RFC 8152 section
- * 8.1. The signature which consist of two integers, r and s,
- * are simply zero padded to the nearest byte length and
- * concatenated.
- *
- * OpenSSL has a preference for DER-encoded signatures.
- *
- * This uses an ECDSA_SIG as an intermediary to convert
- * between the two.
- */
-static enum t_cose_err_t
-signature_cose_to_der(unsigned                key_len,
-                      struct q_useful_buf_c   cose_signature,
-                      struct q_useful_buf     buffer,
-                      struct q_useful_buf_c  *der_signature)
-{
-    enum t_cose_err_t return_value;
-    BIGNUM           *signature_r_bn = NULL;
-    BIGNUM           *signature_s_bn = NULL;
-    int               ossl_result;
-    ECDSA_SIG        *signature;
-    unsigned char    *der_signature_ptr;
-    int               der_signature_len;
-
-    /* Check the signature length against expected */
-    if(cose_signature.len != key_len * 2) {
-        return_value = T_COSE_ERR_SIG_VERIFY;
-        goto Done;
-    }
-
-    /* Put the r and the s from the signature into big numbers */
-    signature_r_bn = BN_bin2bn(cose_signature.ptr, (int)key_len, NULL);
-    if(signature_r_bn == NULL) {
-        return_value = T_COSE_ERR_INSUFFICIENT_MEMORY;
-        goto Done;
-    }
-
-    signature_s_bn = BN_bin2bn(((const uint8_t *)cose_signature.ptr)+key_len,
-                                    (int)key_len,
-                                    NULL);
-    if(signature_s_bn == NULL) {
-        BN_free(signature_r_bn);
-        return_value = T_COSE_ERR_INSUFFICIENT_MEMORY;
-        goto Done;
-    }
-
-    /* Put the signature bytes into an ECDSA_SIG */
-    signature = ECDSA_SIG_new();
-    if(signature == NULL) {
-        /* Don't leak memory in error condition */
-        BN_free(signature_r_bn);
-        BN_free(signature_s_bn);
-        return_value = T_COSE_ERR_INSUFFICIENT_MEMORY;
-        goto Done;
-    }
-
-    /* Put the r and s bignums into an ECDSA_SIG. Freeing
-     * ossl_sig_to_verify will now free r and s.
-     */
-    ossl_result = ECDSA_SIG_set0(signature,
-                                 signature_r_bn,
-                                 signature_s_bn);
-    if(ossl_result != 1) {
-        BN_free(signature_r_bn);
-        BN_free(signature_s_bn);
-        return_value = T_COSE_ERR_SIG_FAIL;
-        goto Done;
-    }
-
-    /* Now output the ECDSA_SIG structure in DER format.
-     *
-     * Code safety is the priority here.  i2d_ECDSA_SIG() has two
-     * output buffer modes, one where it just writes to the buffer
-     * given and the other were it allocates memory.  It would be
-     * better to avoid the allocation, but the copy mode is not safe
-     * because you can't give it a buffer length. This is bad stuff
-     * from last century.
-     *
-     * So the allocation mode is used on the presumption that it is
-     * safe and correct even though there is more copying and memory
-     * use.
-     */
-    der_signature_ptr = NULL;
-    der_signature_len = i2d_ECDSA_SIG(signature, &der_signature_ptr);
-    ECDSA_SIG_free(signature);
-    if(der_signature_len < 0) {
-        return_value = T_COSE_ERR_SIG_FAIL;
-        goto Done;
-    }
-
-    *der_signature = q_useful_buf_copy_ptr(buffer,
-                                           der_signature_ptr,
-                                           (size_t)der_signature_len);
-    if(q_useful_buf_c_is_null_or_empty(*der_signature)) {
-        return_value = T_COSE_ERR_SIG_FAIL;
-        goto Done;
-    }
-
-    OPENSSL_free(der_signature_ptr);
-
-    return_value = T_COSE_SUCCESS;
-
-Done:
-    /* All the memory frees happen along the way in the code above. */
-    return return_value;
-}
-
-
 /**
  * \brief Common checks and conversions for signing and verification key.
  *
@@ -272,17 +75,16 @@ Done:
  * is also the size of r and s in the signature.
  */
 static enum t_cose_err_t
-key_convert_and_size(struct t_cose_key  t_cose_key,
-                     EVP_PKEY         **return_ossl_ec_key,
-                     unsigned          *return_key_size_in_bytes)
+key_convert_and_size(struct t_cose_key     t_cose_key,
+                     mbedtls_ecp_keypair **return_mbedtls_ec_key,
+                     unsigned             *return_key_size_in_bytes)
 {
     enum t_cose_err_t  return_value;
-    int                key_len_bits; /* type unsigned is conscious choice */
     unsigned           key_len_bytes; /* type unsigned is conscious choice */
-    EVP_PKEY          *ossl_ec_key;
+    mbedtls_ecp_keypair *mbedtls_ec_key;
 
     /* Check the signing key and get it out of the union */
-    if(t_cose_key.crypto_lib != T_COSE_CRYPTO_LIB_OPENSSL) {
+    if(t_cose_key.crypto_lib != T_COSE_CRYPTO_LIB_UNIDENTIFIED) {
         return_value = T_COSE_ERR_INCORRECT_KEY_FOR_LIB;
         goto Done;
     }
@@ -290,19 +92,12 @@ key_convert_and_size(struct t_cose_key  t_cose_key,
         return_value = T_COSE_ERR_EMPTY_KEY;
         goto Done;
     }
-    ossl_ec_key = (EVP_PKEY *)t_cose_key.k.key_ptr;
+    mbedtls_ec_key = (mbedtls_ecp_keypair *)t_cose_key.k.key_ptr;
 
-    key_len_bits = EVP_PKEY_bits(ossl_ec_key);
-
-    /* Calculation of size per RFC 8152 section 8.1 -- round up to
-     * number of bytes. */
-    key_len_bytes = (unsigned)key_len_bits / 8;
-    if(key_len_bits % 8) {
-        key_len_bytes++;
-    }
+    key_len_bytes = mbedtls_mpi_size(&mbedtls_ec_key->grp.P);
 
     *return_key_size_in_bytes = key_len_bytes;
-    *return_ossl_ec_key = ossl_ec_key;
+    *return_mbedtls_ec_key = mbedtls_ec_key;
 
     return_value = T_COSE_SUCCESS;
 
@@ -320,14 +115,14 @@ enum t_cose_err_t t_cose_crypto_sig_size(int32_t           cose_algorithm_id,
 {
     enum t_cose_err_t return_value;
     unsigned          key_len_bytes;
-    EVP_PKEY         *signing_key_evp; /* Unused */
+    mbedtls_ecp_keypair   *keypair;
 
     if(!t_cose_algorithm_is_ecdsa(cose_algorithm_id)) {
         return_value = T_COSE_ERR_UNSUPPORTED_SIGNING_ALG;
         goto Done;
     }
 
-    return_value = key_convert_and_size(signing_key, &signing_key_evp, &key_len_bytes);
+    return_value = key_convert_and_size(signing_key, &keypair, &key_len_bytes);
     if(return_value != T_COSE_SUCCESS) {
         goto Done;
     }
@@ -352,89 +147,81 @@ t_cose_crypto_sign(const int32_t                cose_algorithm_id,
                    const struct q_useful_buf    signature_buffer,
                    struct q_useful_buf_c       *signature)
 {
-    /* This is the overhead for the DER encoding of an EC signature as
-     * described by ECDSA-Sig-Value in RFC 3279.  It is at max 3 * (1
-     * type byte and 2 length bytes) + 2 zero pad bytes = 11
-     * bytes. We make it 16 to have a little extra. It is expected that
-     * EVP_PKEY_sign() will not over write the buffer so there will
-     * be no security problem if this is too short. */
-    #define DER_SIG_ENCODE_OVER_HEAD 16
-
+    mbedtls_ecp_keypair   *keypair;
     enum t_cose_err_t      return_value;
-    EVP_PKEY_CTX          *sign_context;
-    EVP_PKEY              *signing_key_evp;
-    int                    ossl_result;
-    unsigned               key_size_bytes;
-    MakeUsefulBufOnStack(  der_format_signature, T_COSE_MAX_SIG_SIZE + DER_SIG_ENCODE_OVER_HEAD);
+    unsigned               key_size;
+    mbedtls_md_type_t      md_type;
+    mbedtls_mpi r;
+    mbedtls_mpi s;
 
-    /* This implementation supports only ECDSA so far. The
-     * interface allows it to support other, but none are implemented.
-     *
-     * This implementation works for different key lengths and
-     * curves. That is, the curve and key length is associated with
-     * the signing_key passed in, not the cose_algorithm_id This
-     * check looks for ECDSA signing as indicated by COSE and rejects
-     * what is not since it only supports ECDSA.
-     */
+    mbedtls_mpi_init(&r);
+    mbedtls_mpi_init(&s);
+
     if(!t_cose_algorithm_is_ecdsa(cose_algorithm_id)) {
         return_value = T_COSE_ERR_UNSUPPORTED_SIGNING_ALG;
-        goto Done2;
+        goto Done;
     }
 
-    /* Pull the pointer to the OpenSSL-format EVP_PKEY out of the
-     * t_cose key structure and get the key size. */
-    return_value = key_convert_and_size(signing_key, &signing_key_evp, &key_size_bytes);
+    switch(cose_algorithm_id) {
+
+    case T_COSE_ALGORITHM_ES256:
+        md_type = MBEDTLS_MD_SHA256;
+        break;
+
+#ifndef T_COSE_DISABLE_ES384
+    case T_COSE_ALGORITHM_ES384:
+        md_type = MBEDTLS_MD_SHA256;
+        break;
+#endif
+
+#ifndef T_COSE_DISABLE_ES512
+    case T_COSE_ALGORITHM_ES512:
+        md_type = MBEDTLS_MD_SHA256;
+        break;
+#endif
+
+    default:
+        return T_COSE_ERR_UNSUPPORTED_SIGNING_ALG;
+    }
+
+    /* Get the verification key in an EVP_PKEY structure which is what
+     * is needed for sig verification. This also gets the key size
+     * which is needed to convert the format of the signature. */
+    return_value = key_convert_and_size(signing_key,
+                                        &keypair,
+                                        &key_size);
     if(return_value != T_COSE_SUCCESS) {
-        goto Done2;
-    }
-
-    /* Create and initialize the OpenSSL EVP_PKEY_CTX that is the
-     * signing context. */
-    sign_context = EVP_PKEY_CTX_new(signing_key_evp, NULL);
-    if(sign_context == NULL) {
-        return_value = T_COSE_ERR_INSUFFICIENT_MEMORY;
         goto Done;
     }
-    ossl_result = EVP_PKEY_sign_init(sign_context);
-    if(ossl_result != 1) {
+
+    if (mbedtls_ecdsa_sign_det(&keypair->grp,
+            &r, &s, &keypair->d,
+            hash_to_sign.ptr, hash_to_sign.len, md_type) != 0) {
         return_value = T_COSE_ERR_SIG_FAIL;
         goto Done;
     }
 
-    /* Actually do the signature operation.  */
-    ossl_result = EVP_PKEY_sign(sign_context,
-                                der_format_signature.ptr, &der_format_signature.len,
-                                hash_to_sign.ptr, hash_to_sign.len);
-    if(ossl_result != 1) {
+    if (signature_buffer.len < key_size * 2) {
         return_value = T_COSE_ERR_SIG_FAIL;
         goto Done;
     }
 
-
-    /* The signature produced by OpenSSL is DER-encoded. That encoding
-     * has to be removed and turned into the serialization format used
-     * by COSE. It is unfortunate that the OpenSSL APIs that create
-     * signatures that are not in DER-format are slated for
-     * deprecation.
-     */
-    *signature = signature_der_to_cose((unsigned)key_size_bytes,
-                                       q_usefulbuf_const(der_format_signature),
-                                       signature_buffer);
-    if(q_useful_buf_c_is_null(*signature)) {
+    if (mbedtls_mpi_write_binary(&r, signature_buffer.ptr, key_size) != 0) {
         return_value = T_COSE_ERR_SIG_FAIL;
         goto Done;
     }
 
-    /* Everything succeeded */
-    return_value = T_COSE_SUCCESS;
+    if (mbedtls_mpi_write_binary(&r, signature_buffer.ptr + key_size, key_size) != 0) {
+        return_value = T_COSE_ERR_SIG_FAIL;
+        goto Done;
+    }
+
+    *signature = (UsefulBufC){ signature_buffer.ptr, key_size * 2 };
 
 Done:
-    /* This checks for NULL before free, so it is not
-     * necessary to check for NULL here.
-     */
-    EVP_PKEY_CTX_free(sign_context);
+    mbedtls_mpi_free(&r);
+    mbedtls_mpi_free(&s);
 
-Done2:
     return return_value;
 }
 
@@ -450,13 +237,14 @@ t_cose_crypto_verify(const int32_t                cose_algorithm_id,
                      const struct q_useful_buf_c  hash_to_verify,
                      const struct q_useful_buf_c  cose_signature)
 {
-    int                    ossl_result;
+    mbedtls_ecp_keypair   *keypair;
     enum t_cose_err_t      return_value;
-    EVP_PKEY_CTX          *verify_context = NULL;
-    EVP_PKEY              *verification_key_evp;
     unsigned               key_size;
-    MakeUsefulBufOnStack(  der_format_buffer, T_COSE_MAX_SIG_SIZE + DER_SIG_ENCODE_OVER_HEAD);
-    struct q_useful_buf_c  der_format_signature;
+    mbedtls_mpi r;
+    mbedtls_mpi s;
+
+    mbedtls_mpi_init(&r);
+    mbedtls_mpi_init(&s);
 
     /* This implementation doesn't use any key store with the ability
      * to look up a key based on kid. */
@@ -471,56 +259,32 @@ t_cose_crypto_verify(const int32_t                cose_algorithm_id,
      * is needed for sig verification. This also gets the key size
      * which is needed to convert the format of the signature. */
     return_value = key_convert_and_size(verification_key,
-                                        &verification_key_evp,
+                                        &keypair,
                                         &key_size);
     if(return_value != T_COSE_SUCCESS) {
         goto Done;
     }
 
-    /* Unfortunately the officially supported OpenSSL API supports
-     * only DER-encoded signatures so the COSE format signatures must
-     * be converted to DER for verification. This requires a temporary
-     * buffer and a fair bit of work inside signature_cose_to_der().
-     */
-    return_value = signature_cose_to_der(key_size,
-                                         cose_signature,
-                                         der_format_buffer,
-                                        &der_format_signature);
-    if(return_value) {
+    /* Check the signature length against expected */
+    if(cose_signature.len != key_size * 2) {
+        return_value = T_COSE_ERR_SIG_VERIFY;
         goto Done;
     }
 
-
-    /* Create the verification context and set it up with the
-     * necessary verification key.
-     */
-    verify_context = EVP_PKEY_CTX_new(verification_key_evp, NULL);
-    if(verify_context == NULL) {
+    if (mbedtls_mpi_read_binary(&r, cose_signature.ptr, key_size) != 0) {
         return_value = T_COSE_ERR_INSUFFICIENT_MEMORY;
         goto Done;
     }
 
-    ossl_result = EVP_PKEY_verify_init(verify_context);
-    if(ossl_result != 1) {
-        return_value = T_COSE_ERR_SIG_FAIL;
+    if (mbedtls_mpi_read_binary(&s, (const uint8_t *)cose_signature.ptr + key_size, key_size) != 0) {
+        return_value = T_COSE_ERR_INSUFFICIENT_MEMORY;
         goto Done;
     }
 
-    /* Actually do the signature verification */
-    ossl_result =  EVP_PKEY_verify(verify_context,
-                                   der_format_signature.ptr,
-                                   der_format_signature.len,
-                                   hash_to_verify.ptr,
-                                   hash_to_verify.len);
-
-
-    if(ossl_result == 0) {
-        /* The operation succeeded, but the signature doesn't match */
+    if (mbedtls_ecdsa_verify(&keypair->grp,
+            hash_to_verify.ptr, hash_to_verify.len,
+            &keypair->Q, &r, &s) != 0) {
         return_value = T_COSE_ERR_SIG_VERIFY;
-        goto Done;
-    } else if (ossl_result != 1) {
-        /* Failed before even trying to verify the signature */
-        return_value = T_COSE_ERR_SIG_FAIL;
         goto Done;
     }
 
@@ -528,12 +292,16 @@ t_cose_crypto_verify(const int32_t                cose_algorithm_id,
     return_value = T_COSE_SUCCESS;
 
 Done:
-    EVP_PKEY_CTX_free(verify_context);
+    mbedtls_mpi_free(&r);
+    mbedtls_mpi_free(&s);
 
     return return_value;
 }
 
-
+struct hash_context_mbedtls {
+    mbedtls_md_context_t md_ctx;
+    int          update_error; /* Used to track error return by SHAXXX_Update() */
+};
 
 
 /*
@@ -543,25 +311,23 @@ enum t_cose_err_t
 t_cose_crypto_hash_start(struct t_cose_crypto_hash *hash_ctx,
                          int32_t                    cose_hash_alg_id)
 {
-    int           ossl_result;
-    int           nid;
-    const EVP_MD *message_digest;
+    mbedtls_md_type_t md_type;
 
     switch(cose_hash_alg_id) {
 
     case COSE_ALGORITHM_SHA_256:
-        nid = NID_sha256;
+        md_type = MBEDTLS_MD_SHA256;
         break;
 
 #ifndef T_COSE_DISABLE_ES384
     case COSE_ALGORITHM_SHA_384:
-        nid = NID_sha384;
+        md_type = MBEDTLS_MD_SHA384;
         break;
 #endif
 
 #ifndef T_COSE_DISABLE_ES512
     case COSE_ALGORITHM_SHA_512:
-        nid = NID_sha512;
+        md_type = MBEDTLS_MD_SHA512;
         break;
 #endif
 
@@ -569,24 +335,30 @@ t_cose_crypto_hash_start(struct t_cose_crypto_hash *hash_ctx,
         return T_COSE_ERR_UNSUPPORTED_HASH;
     }
 
-    message_digest = EVP_get_digestbynid(nid);
-    if(message_digest == NULL){
+    const mbedtls_md_info_t *md_info = mbedtls_md_info_from_type(md_type);
+    if(md_info == NULL){
         return T_COSE_ERR_UNSUPPORTED_HASH;
     }
 
-    hash_ctx->evp_ctx = EVP_MD_CTX_new();
-    if(hash_ctx->evp_ctx == NULL) {
+    struct hash_context_mbedtls *ctx = malloc(sizeof *ctx);
+    if (ctx == NULL) {
         return T_COSE_ERR_INSUFFICIENT_MEMORY;
     }
 
-    ossl_result = EVP_DigestInit_ex(hash_ctx->evp_ctx, message_digest, NULL);
-    if(ossl_result == 0) {
-        EVP_MD_CTX_free(hash_ctx->evp_ctx);
+    mbedtls_md_init(&ctx->md_ctx);
+    int ret = mbedtls_md_setup(&ctx->md_ctx, md_info, 0);
+    if (ret != 0) {
+        free(ctx);
+        return T_COSE_ERR_HASH_GENERAL_FAIL;
+    }
+    ret = mbedtls_md_starts(&ctx->md_ctx);
+    if (ret != 0) {
+        free(ctx);
         return T_COSE_ERR_HASH_GENERAL_FAIL;
     }
 
-    hash_ctx->cose_hash_alg_id = cose_hash_alg_id;
-    hash_ctx->update_error = 1; /* 1 is success in OpenSSL */
+    ctx->update_error = 0;
+    hash_ctx->context.ptr = ctx;
 
     return T_COSE_SUCCESS;
 }
@@ -599,15 +371,13 @@ void
 t_cose_crypto_hash_update(struct t_cose_crypto_hash *hash_ctx,
                           struct q_useful_buf_c data_to_hash)
 {
-    if(hash_ctx->update_error) { /* 1 is no error, 0 means error for OpenSSL */
-        if(data_to_hash.ptr) {
-            hash_ctx->update_error = EVP_DigestUpdate(hash_ctx->evp_ctx,
-                                                      data_to_hash.ptr,
-                                                      data_to_hash.len);
+    struct hash_context_mbedtls *ctx = hash_ctx->context.ptr;
+    if (ctx->update_error == 0) {
+        if (data_to_hash.ptr) {
+            ctx->update_error = mbedtls_md_update(&ctx->md_ctx, data_to_hash.ptr, data_to_hash.len);
         }
     }
 }
-
 
 /*
  * See documentation in t_cose_crypto.h
@@ -617,23 +387,30 @@ t_cose_crypto_hash_finish(struct t_cose_crypto_hash *hash_ctx,
                           struct q_useful_buf        buffer_to_hold_result,
                           struct q_useful_buf_c     *hash_result)
 {
-    int          ossl_result;
-    unsigned int hash_result_len;
+    struct hash_context_mbedtls *ctx = hash_ctx->context.ptr;
+    enum t_cose_err_t ret = T_COSE_ERR_HASH_GENERAL_FAIL;
 
-    if(!hash_ctx->update_error) {
-        return T_COSE_ERR_HASH_GENERAL_FAIL;
+    if (ctx->update_error != 0) {
+        goto err;
     }
 
-    hash_result_len = (unsigned int)buffer_to_hold_result.len;
-    ossl_result = EVP_DigestFinal_ex(hash_ctx->evp_ctx,
-                                     buffer_to_hold_result.ptr,
-                                     &hash_result_len);
+    size_t hash_len = mbedtls_md_get_size(ctx->md_ctx.md_info);
+    if (buffer_to_hold_result.len < hash_len) {
+        goto err;
+    }
 
-    *hash_result = (UsefulBufC){buffer_to_hold_result.ptr, hash_result_len};
+    int r = mbedtls_md_finish(&ctx->md_ctx, buffer_to_hold_result.ptr);
+    if (r != 0) {
+        goto err;
+    }
 
-    EVP_MD_CTX_free(hash_ctx->evp_ctx);
+    *hash_result = (UsefulBufC){buffer_to_hold_result.ptr, hash_len};
 
-    /* OpenSSL returns 1 for success, not 0 */
-    return ossl_result ? T_COSE_SUCCESS : T_COSE_ERR_HASH_GENERAL_FAIL;
+    ret = T_COSE_SUCCESS;
+err:
+    mbedtls_md_free(&ctx->md_ctx);
+    free(ctx);
+
+    return ret;
 }
 

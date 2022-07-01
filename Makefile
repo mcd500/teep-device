@@ -24,10 +24,11 @@ submodule:
 
 ifeq ($(TEE),pc)
 lib-FLAGS += \
+	-DCMAKE_BUILD_TYPE=Debug \
 	-DTEE_PLATFORM=$(TEE) \
 	-DCMAKE_C_FLAGS='-I$(TOPDIR)/submodule/mbedtls/include -I$(BUILD)/tee/QCBOR/inc' \
 	-DCMAKE_CXX_FLAGS=-I$(TOPDIR)/submodule/mbedtls/include \
-	-DCMAKE_LIBRARY_PATH=$(BUILD)/ree/mbedtls/library
+	-DCMAKE_LIBRARY_PATH="$(BUILD)/ree/mbedtls/library;$(BUILD)/tee/QCBOR/"
 else
 lib-FLAGS += \
 	-DTEE_PLATFORM=$(TEE) \

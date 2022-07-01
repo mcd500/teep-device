@@ -8,7 +8,7 @@ CFLAGS = \
 	-I$(TOPDIR)/include \
 	-I$(TOPDIR)/lib/include \
 	-I$(TOPDIR)/platform/pc/include \
-	-I$(BUILD)/tee/QCBOR/inc \
+	-I$(TOPDIR)/submodule/QCBOR/inc \
 	-DPLAT_PC
 
 $(out-dir)/%.o: %.c

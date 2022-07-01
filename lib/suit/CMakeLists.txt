@@ -6,6 +6,7 @@ if(${ENABLE_EXAMPLE} OR ${ENABLE_TEST})
 find_library(MBEDTLS NAMES mbedtls)
 find_library(MBEDCRYPTO NAMES mbedcrypto)
 find_library(MBEDX509 NAMES mbedx509)
+find_library(QCBOR NAMES qcbor)
 endif()
 
 if(${ENABLE_EXAMPLE})
