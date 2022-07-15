@@ -8,7 +8,7 @@ export TA_CFLAGS = $(TEE_CFLAGS) \
 	-I$(TA_DEV_KIT_DIR) \
 	-I$(TOPDIR)/include \
 	-I$(BUILD)/tee/libwebsockets/include \
-	-I$(BUILD)/tee/QCBOR/inc \
+	-I$(TOPDIR)/submodule/QCBOR/inc \
 	-I$(TOPDIR)/lib/include
 
 export TA_LDFLAGS = \
@@ -17,14 +17,11 @@ export TA_LDFLAGS = \
 
 CPPFLAGS += -DTEE_TA
 CFLAGS += $(TA_CFLAGS)
-LDADD += $(TA_LDFLAGS) -lteep -lqcbor -lteesuit -lteecbor
+LDADD += $(TA_LDFLAGS) -lteep -lqcbor -lteesuit -lt_cose -lteecbor
 
 BINARY = $(TEE_AGENT_UUID)
 
 -include $(TA_DEV_KIT_DIR)/mk/ta_dev_kit.mk
-
-$(out-dir)/$(BINARY).elf: $(BUILD)/tee/QCBOR/libqcbor.a \
-		*.c *.h
 
 .PHONY: clean
 clean:

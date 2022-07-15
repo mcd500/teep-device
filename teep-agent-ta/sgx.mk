@@ -11,7 +11,7 @@ export TA_CFLAGS = $(TEE_CFLAGS) \
 	-I$(TAREF_DIR) \
 	-I$(TAREF_DIR)/gp/include \
 	-I$(TAREF_DIR)/api/include \
-	-I$(BUILD)/tee/QCBOR/inc \
+	-I$(TOPDIR)/submodule/QCBOR/inc \
 	-I$(TOPDIR)/include \
 	-I$(TOPDIR)/lib/include \
 	-DPLAT_SGX \
@@ -24,6 +24,7 @@ TA_LIBS = \
 	-lteep \
 	-lqcbor \
 	-lteesuit \
+	-lt_cose \
 	-lteecbor \
 	-lsgx_tstdc -lsgx_tcxx -lsgx_tcrypto -lsgx_tservice$(LIBRARY_SUFFIX)
 

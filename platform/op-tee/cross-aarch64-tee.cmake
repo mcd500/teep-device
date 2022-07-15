@@ -15,9 +15,9 @@ set(CMAKE_C_COMPILER "aarch64-linux-gnu-gcc")
 set(CMAKE_CXX_COMPILER "aarch64-linux-gnu-g++")
 
 #-nostdlib
-SET(CMAKE_C_FLAGS "-DGCC_VER=\"\\\"$(GCC_VER)\\\"\" -DARM64=1 -D__LP64__=1 -Os -g3 -fpie -mstrict-align -I$ENV{TA_DEV_DIR}/include  -fPIC -ffunction-sections -fdata-sections ${CMAKE_C_FLAGS}" CACHE STRING "" FORCE)
+SET(CMAKE_C_FLAGS "-v -DGCC_VER=\"\\\"$(GCC_VER)\\\"\" -DARM64=1 -D__LP64__=1 -Os -g3 -fpie -mstrict-align -I$ENV{TA_DEV_DIR}/include  -fPIC -ffunction-sections -fdata-sections ${CMAKE_C_FLAGS}" CACHE STRING "" FORCE)
 
-set(CMAKE_SYSROOT_COMPILE "ENV{TA_DEV_DIR}/include" CACHE STRING "" FORCE)
+set(CMAKE_SYSROOT_COMPILE "$ENV{TA_DEV_DIR}/include" CACHE STRING "" FORCE)
 
 # Adjust the default behavior of the FIND_XXX() commands:
 # search programs in the host environment only.

@@ -44,7 +44,7 @@ extern "C" {
 
 typedef struct suit_digest
 {
-    uint64_t algorithm_id;
+    int algorithm_id;
     tcbor_range_t bytes;
 } suit_digest_t;
 
@@ -119,6 +119,8 @@ typedef struct suit_authentication_wrapper
 {
     suit_digest_t digest;
 } suit_authentication_wrapper_t;
+
+bool suit_authenticate_envelope(tcbor_range_t envelope_bstr, const char *key_pem);
 
 bool suit_parse_authentication_wrapper(tcbor_range_t authentication_wrapper_bstr, suit_authentication_wrapper_t *ret);
 

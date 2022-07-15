@@ -34,6 +34,8 @@
 #include "teecbor.h"
 #include "teesuit.h"
 #include "teelog.h"
+#include "t_cose/t_cose_sign1_verify.h"
+#include "mbedtls/pk.h"
 
 static bool match_key(tcbor_context_t *ctx, uint64_t key)
 {
@@ -73,7 +75,7 @@ static bool read_digest(tcbor_context_t *ctx, suit_digest_t *d)
 {
     tcbor_context_t array;
     if (!tcbor_read_array(ctx, &array)) goto err;
-    if (!tcbor_read_nint(&array, &d->algorithm_id)) goto err;
+    if (!tcbor_read_int(&array, &d->algorithm_id)) goto err;
     if (!tcbor_read_bstr(&array, &d->bytes)) goto err;
     if (!tcbor_skip_all(&array)) goto err;
     if (!tcbor_close(ctx, array)) goto err;
@@ -306,6 +308,163 @@ bool suit_parse_authentication_wrapper(tcbor_range_t authentication_wrapper_bstr
     return true;
 }
 
+static bool read_tag(tcbor_range_t bstr, uint64_t *tag)
+{
+    tcbor_context_t ctx = tcbor_toplevel(bstr);
+    if (!tcbor_read_tag(&ctx, tag)) return false;
+    return true;
+}
+
+static UsefulBufC to_UsefulBufC(tcbor_range_t r)
+{
+    if (tcbor_range_is_null(r)) {
+        return NULL_Q_USEFUL_BUF_C;
+    } else {
+        return (UsefulBufC) { r.begin, r.end - r.begin };
+    }
+}
+
+static bool verify_auth_block(tcbor_range_t auth_block, tcbor_range_t digest_bstr, const char *key_pem)
+{
+    uint64_t tag;
+    if (!read_tag(auth_block, &tag)) return false;
+
+    if (tag == CBOR_TAG_COSE_SIGN1) {
+        mbedtls_pk_context pk_ctx;
+        mbedtls_pk_init(&pk_ctx);
+        int ret = mbedtls_pk_parse_public_key(&pk_ctx, key_pem, strlen(key_pem) + 1);
+        if (ret != 0) return false;
+
+        struct t_cose_key key;
+        key.crypto_lib = T_COSE_CRYPTO_LIB_UNIDENTIFIED;
+        key.k.key_ptr = (mbedtls_ecp_keypair *)pk_ctx.pk_ctx;
+
+        struct t_cose_sign1_verify_ctx verify_ctx;
+        t_cose_sign1_verify_init(&verify_ctx, 0);
+        t_cose_sign1_set_verification_key(&verify_ctx, key);
+
+        enum t_cose_err_t r = t_cose_sign1_verify_detached(
+            &verify_ctx,
+            to_UsefulBufC(auth_block),
+            NULL_Q_USEFUL_BUF_C,
+            to_UsefulBufC(digest_bstr),
+            NULL
+        );
+
+        mbedtls_pk_free(&pk_ctx);
+
+        return r == T_COSE_SUCCESS;
+    } else {
+        return false;
+    }
+
+}
+
+static bool verify_digest(tcbor_range_t digest_bstr, tcbor_range_t manifest_bstr)
+{
+    tcbor_context_t ctx = tcbor_toplevel(digest_bstr);
+    suit_digest_t digest;
+
+    if (!read_digest(&ctx, &digest)) return false;
+
+    mbedtls_md_type_t md_type;
+    switch (digest.algorithm_id) {
+    case SUIT_DIGEST_ALG_SHA256:
+        md_type = MBEDTLS_MD_SHA256;
+        break;
+    default:
+        return false;
+    }
+
+    const mbedtls_md_info_t *md_info = mbedtls_md_info_from_type(md_type);
+    if (md_info == NULL) return false;
+
+    bool ok = false;
+
+    mbedtls_md_context_t md_ctx;
+    mbedtls_md_init(&md_ctx);
+
+    uint64_t len = manifest_bstr.end - manifest_bstr.begin;
+    uint8_t buf[9];
+    int n = 0;
+    buf[n] = 0x40;
+    if (len < 24) {
+        buf[n++] |= len;
+    } else {
+        int k;
+        if (len < 0x100) {
+            k = 0;
+        } else if (len < 0x10000) {
+            k = 1;
+        } else if (len < 0x100000000) {
+            k = 2;
+        } else {
+            k = 3;
+        }
+        buf[n++] |= 24 + k;
+        for (int i = (1 << k) - 1; i >= 0; i--) {
+            buf[n++] = (len >> i * 8) & 0xFF;
+        }
+    }
+
+    if (mbedtls_md_setup(&md_ctx, md_info, 0) != 0) goto err;
+    if (mbedtls_md_starts(&md_ctx) != 0) goto err;
+    if (mbedtls_md_update(&md_ctx, buf, n) != 0) goto err;
+    if (mbedtls_md_update(&md_ctx,
+            manifest_bstr.begin,
+            manifest_bstr.end - manifest_bstr.begin) != 0) goto err;
+
+    uint8_t manifest_digest[MBEDTLS_MD_MAX_SIZE];
+    if (mbedtls_md_finish(&md_ctx, manifest_digest) != 0) goto err;
+
+    if (!tcbor_range_equal(digest.bytes, (tcbor_range_t){
+        manifest_digest, manifest_digest + mbedtls_md_get_size(md_info)
+    })) goto err;
+
+    ok = true;
+err:
+    mbedtls_md_free(&md_ctx);
+
+    return ok;
+}
+
+bool suit_authenticate_envelope(tcbor_range_t envelope_bstr, const char *key_pem)
+{
+    tcbor_range_t authentication_wrapper_bstr;
+    if (!suit_envelope_get_field_by_key(envelope_bstr,
+           SUIT_AUTHENTICATION_WRAPPER, &authentication_wrapper_bstr)) {
+        return false;
+    }
+
+    tcbor_context_t ctx = tcbor_toplevel(authentication_wrapper_bstr);
+
+    tcbor_context_t array;
+    if (!tcbor_read_array(&ctx, &array)) return false;
+
+    tcbor_range_t digest_bstr;
+    if (!tcbor_read_bstr(&array, &digest_bstr)) return false;
+
+    bool authentecated = false;
+    while (!tcbor_is_end_of_context(array)) {
+        tcbor_range_t auth_block;
+        if (!tcbor_read_bstr(&array, &auth_block)) return false;
+        if (!verify_auth_block(auth_block, digest_bstr, key_pem)) return false;
+        authentecated = true;
+    }
+    if (!tcbor_close(&ctx, array)) return false;
+
+    if (!authentecated) return false;
+
+    tcbor_range_t manifest_bstr;
+    if (!suit_envelope_get_field_by_key(envelope_bstr,
+           SUIT_MANIFEST, &manifest_bstr)) {
+        return false;
+    }
+
+    if (!verify_digest(digest_bstr, manifest_bstr)) return false;
+
+    return true;
+}
 
 static bool suit_envelope_get_field(
     tcbor_range_t envelope_bstr,

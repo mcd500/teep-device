@@ -72,6 +72,11 @@ struct suit_component_storage
 struct suit_manifest_storage suit_manifests[2]; // TODO: multiple manifest
 struct suit_component_storage suit_components[1][1]; // suit_components[manifest_index][component_index]
 
+const unsigned char tc_singer_pubkey[] =
+	"-----BEGIN PUBLIC KEY-----\n"
+	"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAExMJmSeV+ZMSbccfu7+o/Gsw+IhTc\n"
+	"r9tM9MRNd+pnVh4mHrMozWjWaWFkMdpOEHZpSKLToh1UsIYXgf+PoPtiMw==\n"
+	"-----END PUBLIC KEY-----\n";
 
 static bool store_bstr(UsefulBufC *p, const void *buf, size_t len)
 {
@@ -90,7 +95,14 @@ static bool store_bstr(UsefulBufC *p, const void *buf, size_t len)
 static bool store_envelope(size_t index, const void *buf, size_t len)
 {
 	if (index < 2) {
-		// TODO: check sig before store envelope is better
+		tee_log_trace("verifying signature of suit manifest\n");
+		if (!suit_authenticate_envelope(
+				(tcbor_range_t) { buf, (char *)buf + len },
+				tc_singer_pubkey)) {
+			tee_log_trace("verify FAILED\n");
+			return false;
+		}
+		tee_log_trace("verify OK\n");
 		return store_bstr(&suit_manifests[index].envelope, buf, len);
 	} else {
 		return false;
@@ -708,8 +720,6 @@ TEE_Result TA_OpenSessionEntryPoint(uint32_t param_types,
 		TEE_PARAM_TYPE_NONE);
 	if (param_types != exp_param_types)
 		return TEE_ERROR_BAD_PARAMETERS;
-
-	suit_check_mbedtls_pk();
 
 	struct teep_agent_session *session = teep_agent_session_create();
 	if (!session) return TEE_ERROR_OUT_OF_MEMORY;

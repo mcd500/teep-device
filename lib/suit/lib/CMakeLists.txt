@@ -5,4 +5,4 @@ if(${ENABLE_LOG_STDOUT})
 endif()
 
 add_library(teesuit ${TEESUIT_SRC})
-target_include_directories(teesuit PUBLIC ${CMAKE_SOURCE_DIR}/include)
+target_include_directories(teesuit PUBLIC ${CMAKE_SOURCE_DIR}/include  ../../../submodule/t_cose/inc ../../../submodule/QCBOR/inc)

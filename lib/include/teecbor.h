@@ -58,7 +58,7 @@ static inline bool tcbor_range_equal(tcbor_range_t x, tcbor_range_t y)
     if (tcbor_range_is_null(x) || tcbor_range_is_null(y)) {
         return tcbor_range_is_null(x) == tcbor_range_is_null(y);
     }
-    if (x.end - x.begin != y.begin - y.end) return false;
+    if (x.end - x.begin != y.end - y.begin) return false;
     return memcmp(x.begin, y.begin, x.end - x.begin) == 0;
 }
 
@@ -308,6 +308,28 @@ static inline bool tcbor_read_nint(tcbor_context_t *ctx, uint64_t *dst)
     if (!tcbor_read_any(ctx, &any)) goto err;
     if (!tcbor_is_nint(any)) goto mismatch;
     if (dst) *dst = any.value;
+    return true;
+mismatch:
+    ctx->error = tcbor_NOT_MATCH;
+err:
+    return tcbor_fail(ctx, saved);
+}
+
+static inline bool tcbor_read_int(tcbor_context_t *ctx, int *dst)
+{
+    tcbor_context_t saved = *ctx;
+    uint64_t v;
+    int r;
+    if (tcbor_read_uint(ctx, &v)) {
+        r = (int)v;
+        if ((uint64_t)r != v) goto err;
+    } else if (tcbor_read_nint(ctx, &v)) {
+        r = (int)~v;
+        if ((uint64_t)~r != v) goto err;
+    } else {
+        goto mismatch;
+    }
+    if (dst) *dst = r;
     return true;
 mismatch:
     ctx->error = tcbor_NOT_MATCH;

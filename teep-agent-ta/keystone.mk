@@ -5,7 +5,7 @@ CFLAGS = $(TEE_CFLAGS) \
 	-Wall -fno-builtin-printf -DEDGE_IGNORE_EGDE_RESULT \
 	-I. \
 	-I$(TOPDIR)/include \
-	-I$(BUILD)/tee/QCBOR/inc \
+	-I$(TOPDIR)/submodule/QCBOR/inc \
 	-I$(TOPDIR)/lib/include \
 	-DPLAT_KEYSTONE
 
@@ -18,6 +18,7 @@ LIBS = $(TEE_LIBS) \
 	-lteep \
 	-lqcbor \
 	-lteesuit \
+	-lt_cose \
 	-lteecbor \
 	-lmbedtls \
 	-lgcc

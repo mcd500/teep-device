@@ -154,6 +154,11 @@ typedef enum suit_parameter_type
     SUIT_PARAMETER_TYPE_BOOL,
 } suit_parameter_type_t;
 
+enum suit_digest_alg
+{
+    SUIT_DIGEST_ALG_SHA256 = -16
+};
+
 #ifdef __cplusplus
 }
 #endif
