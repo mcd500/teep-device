@@ -2,7 +2,7 @@ TOPDIR = $(CURDIR)
 include $(TOPDIR)/conf.mk
 
 .PHONY: all
-all: check-tee submodule suit libteep agent broker hello-tc rootfs docs
+all: check-tee submodule suit libteep agent broker hello-tc rootfs
 
 .PHONY: clean
 clean: clean-hello-tc clean-docs
