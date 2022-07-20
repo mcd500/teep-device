@@ -2,7 +2,7 @@ TOPDIR = $(CURDIR)
 include $(TOPDIR)/conf.mk
 
 .PHONY: all
-all: check-tee submodule suit libteep agent broker hello-tc rootfs
+all: check-tee submodule suit libteep agent broker hello-tc rootfs docs
 
 .PHONY: clean
 clean: clean-hello-tc clean-docs
@@ -50,6 +50,7 @@ clean-hello-tc:
 rootfs:
 	$(MAKE) -C sample rootfs
 
+.PHONY: docs
 docs:
 	@echo "Generating doxygen files"
 	@doxygen docs/doxygen/Doxyfile
