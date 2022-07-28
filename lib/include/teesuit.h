@@ -249,8 +249,6 @@ void suit_runner_resume(suit_runner_t *r, void *user);
 
 bool suit_runner_get_parameter(suit_runner_t *r, const suit_object_t *target, uint64_t key, tcbor_range_t *dst);
 
-void suit_check_mbedtls_pk(void);
-
 #ifdef __cplusplus
 }
 #endif
