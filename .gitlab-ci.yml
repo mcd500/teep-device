@@ -12,7 +12,7 @@ stages:
 default:
     tags:
         - fast-dockers
-    image: docker.io/trasioteam/taref-dev:keystone
+    image: docker.io/aistcpsec/taref-dev:keystone
 
 suit_build:
     stage: build
@@ -62,7 +62,7 @@ teep_test:
 
 teep_test_keystone:
     stage: test
-    image: docker.io/trasioteam/taref-dev:keystone
+    image: docker.io/aistcpsec/taref-dev:keystone
     services:
         - name: docker.io/trasioteam/tamproto:latest
           alias: tamproto
@@ -75,7 +75,7 @@ teep_test_keystone:
 
 teep_test_optee:
     stage: test
-    image: docker.io/trasioteam/taref-dev:optee
+    image: docker.io/aistcpsec/taref-dev:optee
     services:
         - name: docker.io/trasioteam/tamproto:latest
           alias: tamproto
@@ -87,7 +87,7 @@ teep_test_optee:
 
 teep_test_sgx:
     stage: test
-    image: docker.io/trasioteam/taref-dev:sgx
+    image: docker.io/aistcpsec/taref-dev:sgx
     services:
         - name: docker.io/trasioteam/tamproto:latest
           alias: tamproto
@@ -102,7 +102,7 @@ teep_test_sgx:
 ### DOXYGEN - START ###
 teep_doxygen:
     stage: build
-    image: docker.io/trasioteam/taref-dev:doxygen
+    image: docker.io/aistcpsec/taref-dev:doxygen
     script:
         - make docs
     artifacts:
