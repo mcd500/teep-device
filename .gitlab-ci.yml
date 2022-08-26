@@ -50,7 +50,7 @@ teep_build:
 teep_test:
     stage: test
     services:
-        - name: docker.io/aistcpsec/teep-dev/tamproto:latest
+        - name: docker.io/aistcpsec/teep-dev:tamproto
           alias: tamproto
     script:
         - TAMIP=`python3 -c 'import socket;print(socket.gethostbyname("tamproto"))'`
@@ -64,7 +64,7 @@ teep_test_keystone:
     stage: test
     image: docker.io/aistcpsec/taref-dev:keystone
     services:
-        - name: docker.io/aistcpsec/teep-dev/tamproto:latest
+        - name: docker.io/aistcpsec/teep-dev:tamproto
           alias: tamproto
     script:
         - sudo apt-get install -y e2tools
@@ -77,7 +77,7 @@ teep_test_optee:
     stage: test
     image: docker.io/aistcpsec/taref-dev:optee
     services:
-        - name: docker.io/aistcpsec/teep-dev/tamproto:latest
+        - name: docker.io/aistcpsec/teep-dev:tamproto
           alias: tamproto
     script:
         - TAMIP=`python3 -c 'import socket;print(socket.gethostbyname("tamproto"))'`
@@ -89,7 +89,7 @@ teep_test_sgx:
     stage: test
     image: docker.io/aistcpsec/taref-dev:sgx
     services:
-        - name: docker.io/aistcpsec/teep-dev/tamproto:latest
+        - name: docker.io/aistcpsec/teep-dev:tamproto
           alias: tamproto
     script:
         - TAMIP=`python3 -c 'import socket;print(socket.gethostbyname("tamproto"))'`
