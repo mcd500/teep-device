@@ -120,4 +120,5 @@ trigger_docker-teep-dev:
     tags:
         - shell117
     script:
-        - "curl -X POST --fail -F token=${TOKEN} -F ref=main https://192.168.100.100/api/v4/projects/133/trigger/pipeline"
+        - "curl -X POST --fail -F token=${TOKEN} -F ref=main
+          https://192.168.100.100/api/v4/projects/133/trigger/pipeline"
