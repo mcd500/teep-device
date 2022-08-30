@@ -224,7 +224,7 @@ teep_error(struct teep_agent_session *session, const char *message)
 static void
 handle_tam_message(struct teep_agent_session *session, const void *buffer, size_t len)
 {
-	if (len == 0) {
+	if (len == 0 || session->state == AGENT_POSTING_ERROR) {
 		session->state = AGENT_FINISH;
 		return;
 	}
