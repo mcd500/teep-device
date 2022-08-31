@@ -221,17 +221,22 @@ teep_error(struct teep_agent_session *session, const char *message)
 	session->state = AGENT_POSTING_ERROR;
 }
 
-static void
+static TEE_Result
 handle_tam_message(struct teep_agent_session *session, const void *buffer, size_t len)
 {
+	if (len == 0) {
+		session->state = AGENT_FINISH;
+		return TEE_SUCCESS;
+	}
 	if (len == 0 || session->state == AGENT_POSTING_ERROR) {
 		session->state = AGENT_FINISH;
-		return;
+		return TEE_ERROR_BAD_FORMAT;
 	}
+
 	struct teep_message *m = parse_teep_message((UsefulBufC){ buffer, len });
 	if (!m) {
 		teep_error(session, "invalid teep message");
-		return;
+		return TEE_ERROR_BAD_FORMAT;
 	}
 	switch (m->type) {
 	case TEEP_QUERY_RESPONSE:
@@ -285,12 +290,12 @@ err:
 	free_parsed_teep_message(m);
 }
 
-static void
+static TEE_Result
 handle_component_download(struct teep_agent_session *session, const void *buffer, size_t len, const char *uri)
 {
 	if (session->state != AGENT_FETCH_COMPONENT) {
 		teep_error(session, "invalid state");
-		return;
+		return TEE_ERROR_BAD_STATE;
 	}
 	tee_log_trace("component download %"PRIu64"\n", len);
 	store_component(&session->fetch_component_path, buffer, len);
@@ -302,20 +307,22 @@ static TEE_Result
 broker_task_done(struct teep_agent_session *session, const void *buffer, size_t len)
 {
 	struct broker_task *task = session->on_going_task;
+	TEE_Result ret = TEE_SUCCESS;
+
 	if (!task) return TEE_ERROR_BAD_STATE;
 
 	switch (task->command) {
 	default:
 		return TEE_ERROR_BAD_STATE;
 	case BROKER_HTTP_POST:
-		handle_tam_message(session, buffer, len);
+		ret = handle_tam_message(session, buffer, len);
 		break;
 	case BROKER_HTTP_GET:
-		handle_component_download(session, buffer, len, task->uri);
+		ret = handle_component_download(session, buffer, len, task->uri);
 		break;
 	}
 	session->on_going_task = NULL;
-	return TEE_SUCCESS;
+	return ret;
 }
 
 static int build_query_response(struct teep_agent_session *session, void *dst, size_t *dst_len)
