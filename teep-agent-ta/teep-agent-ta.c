@@ -288,11 +288,15 @@ handle_tam_message(struct teep_agent_session *session, const void *buffer, size_
 	}
 err:
 	free_parsed_teep_message(m);
+
+	return TEE_SUCCESS;
 }
 
 static TEE_Result
 handle_component_download(struct teep_agent_session *session, const void *buffer, size_t len, const char *uri)
 {
+	TEE_Result ret = TEE_SUCCESS;
+
 	if (session->state != AGENT_FETCH_COMPONENT) {
 		teep_error(session, "invalid state");
 		return TEE_ERROR_BAD_STATE;
@@ -301,6 +305,8 @@ handle_component_download(struct teep_agent_session *session, const void *buffer
 	store_component(&session->fetch_component_path, buffer, len);
 	suit_runner_resume(&session->suit_runner, NULL);
 	session->state = AGENT_RUN_SUIT_RUNNER;
+
+	return ret;
 }
 
 static TEE_Result
