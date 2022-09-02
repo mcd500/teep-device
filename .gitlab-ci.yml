@@ -4,7 +4,7 @@ variables:
 
 stages:
     - build
-    - test
+    - run
     - example
     - trigger
 
@@ -47,8 +47,8 @@ teep_build:
         - export TEE=pc
         - make
 
-teep_test:
-    stage: test
+run_test_pc:
+    stage: run
     services:
         - name: docker.io/aistcpsec/teep-dev:tamproto
           alias: tamproto
@@ -60,8 +60,8 @@ teep_test:
         - make
         - make run-sample-session
 
-teep_test_keystone:
-    stage: test
+run_test_keystone:
+    stage: run
     image: docker.io/aistcpsec/taref-dev:keystone
     services:
         - name: docker.io/aistcpsec/teep-dev:tamproto
@@ -73,8 +73,8 @@ teep_test_keystone:
         - make
         - make run-sample-session | tr -d "\r"
 
-teep_test_optee:
-    stage: test
+run_test_optee:
+    stage: run
     image: docker.io/aistcpsec/taref-dev:optee
     services:
         - name: docker.io/aistcpsec/teep-dev:tamproto
@@ -85,8 +85,8 @@ teep_test_optee:
         - make
         - make run-sample-session | tr -d "\r"
 
-teep_test_sgx:
-    stage: test
+run_test_sgx:
+    stage: run
     image: docker.io/aistcpsec/taref-dev:sgx
     services:
         - name: docker.io/aistcpsec/teep-dev:tamproto
