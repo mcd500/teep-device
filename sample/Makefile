@@ -114,9 +114,17 @@ run-session-optee: upload-hello-tc-download
 		ROOTFS=$(BUILD)/rootfs.cpio.gz \
 		expect $(CURDIR)/session/test-optee.expect
 	cat $(OPTEE_DIR)/out/bin/serial1.log
+	! fgrep 'ERR:' $(OPTEE_DIR)/out/bin/serial1.log
+	fgrep 'Hello TEEP from TEE!' $(OPTEE_DIR)/out/bin/serial1.log
 
 run-session-keystone: upload-hello-tc-download
-	TAM_URL=$(TAM_URL) BUILD=$(BUILD) expect ./session/test-keystone.expect
+	TAM_URL=$(TAM_URL) BUILD=$(BUILD) \
+		expect ./session/test-keystone.expect | \
+		tee $(BUILD)/keystone.log
+	ls -l
+	echo $(BUILD) && ls -l $(BUILD)
+	! fgrep 'ERR:' $(BUILD)/keystone.log
+	fgrep 'Hello TEEP from TEE!' $(BUILD)/keystone.log
 
 run-session-sgx: upload-hello-tc-download
 	cd $(BUILD)/agent && \
