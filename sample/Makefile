@@ -128,7 +128,16 @@ run-session-keystone: upload-hello-tc-download
 
 run-session-sgx: upload-hello-tc-download
 	cd $(BUILD)/agent && \
-		../broker/teep-broker-app --tamurl $(TAM_URL)/api/tam_cbor
+		../broker/teep-broker-app --tamurl $(TAM_URL)/api/tam_cbor | \
+		tee $(BUILD)/sgx.log
+	cd $(BUILD)/agent && \
+		./hello-app | \
+		tee -a $(BUILD)/sgx.log
+	ls -l
+	echo $(BUILD) && ls -l $(BUILD)
+	echo $(BUILD)/agent && ls -l $(BUILD)/agent
+#	! fgrep 'ERR:' $(BUILD)/sgx.log
+#	fgrep 'Hello TEEP from TEE!' $(BUILD)/sgx.log
 
 run-session-pc: upload-hello-tc-embed
 	cd $(BUILD)/broker && \
