@@ -23,6 +23,7 @@ suit_build:
         - make
 
 suit_test:
+    stage: run
     script:
         - echo OK
 
