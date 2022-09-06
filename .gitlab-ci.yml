@@ -48,7 +48,7 @@ teep_build:
         - export TEE=pc
         - make
 
-run_test_pc:
+run_tam_pc:
     stage: run
     services:
         - name: docker.io/aistcpsec/teep-dev:tamproto
@@ -61,7 +61,7 @@ run_test_pc:
         - make
         - make run-sample-session
 
-run_test_keystone:
+run_qemu_tam_keystone:
     stage: run
     image: docker.io/aistcpsec/taref-dev:keystone
     services:
@@ -74,7 +74,7 @@ run_test_keystone:
         - make
         - make run-sample-session | tr -d "\r"
 
-run_test_optee:
+run_qemu_tam_optee:
     stage: run
     image: docker.io/aistcpsec/taref-dev:optee
     services:
@@ -86,7 +86,7 @@ run_test_optee:
         - make
         - make run-sample-session | tr -d "\r"
 
-run_test_sgx:
+run_tam_sgx:
     stage: run
     image: docker.io/aistcpsec/taref-dev:sgx
     services:
