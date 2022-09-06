@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash -ex
 
 TA_file="dummy-ta"
 PrivateKey="tc-signer-P256-priv.pem"
