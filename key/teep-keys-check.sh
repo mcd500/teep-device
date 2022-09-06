@@ -4,9 +4,22 @@ TA_file="dummy-ta"
 PrivateKey="tc-signer-P256-priv.pem"
 PublicKey="tc-signer-P256-pub.pem"
 CertFile="tc-signer-P256-cert.pem"
+ROOTCA_CERT="CAs/rootca/P256-cert.pem"
+TC_INTERCA_CERT="CAs/tc-signer-ca/P256-cert.pem"
+TC_PUB="tc-signer-P256-pub.pem"
+
 HashOutputFile="TA-Hash"
 EncryptedHashFile="tc-signature"
 DecryptedHashFile="Decrypt-TA-Hash"
+
+# Step 0 : Verify whether the pub-key is trustable
+
+# by rootca certificate
+#openssl verify -CAfile $ROOTCA_CERT $CertFile
+
+# by TC's intermidiate certificate
+#openssl verify -CAfile $TC_INTERCA_CERT $CertFile
+
 
 # Step 1 : Create a 50KB dummy TA
 dd if=/dev/urandom of=$TA_file bs=1024 count=50 2>/dev/null
