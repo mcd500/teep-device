@@ -127,6 +127,8 @@ run-session-keystone: upload-hello-tc-download
 	fgrep 'Hello TEEP from TEE!' $(BUILD)/keystone.log
 
 run-session-sgx: upload-hello-tc-download
+	echo $(BUILD)/../../hello-tc/build-sgx && \
+		ls -l $(BUILD)/../../hello-tc/build-sgx
 	cd $(BUILD)/agent && \
 		../broker/teep-broker-app --tamurl $(TAM_URL)/api/tam_cbor | \
 		tee $(BUILD)/sgx.log
@@ -143,6 +145,7 @@ run-session-sgx: upload-hello-tc-download
 	fgrep 'Hello TEEP from TEE!' $(BUILD)/sgx.log
 
 run-session-pc: upload-hello-tc-embed
+	cd $(BUILD)/../.. && find . -name *.ta
 	cd $(BUILD)/broker && \
 		./teep-broker-app --tamurl $(TAM_URL)/api/tam_cbor | tee $(BUILD)/pctest.log
 	! fgrep 'ERR:' $(BUILD)/pctest.log
