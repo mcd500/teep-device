@@ -150,6 +150,7 @@ run-session-pc: upload-hello-tc-embed
 		./teep-broker-app --tamurl $(TAM_URL)/api/tam_cbor | tee $(BUILD)/pctest.log
 	! fgrep 'ERR:' $(BUILD)/pctest.log
 	fgrep 'store component' $(BUILD)/pctest.log
+	cd $(BUILD)/../.. && find . -name *.ta
 
 
 
