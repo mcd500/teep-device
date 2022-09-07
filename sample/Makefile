@@ -130,14 +130,17 @@ run-session-sgx: upload-hello-tc-download
 	cd $(BUILD)/agent && \
 		../broker/teep-broker-app --tamurl $(TAM_URL)/api/tam_cbor | \
 		tee $(BUILD)/sgx.log
-	cd $(BUILD)/agent && \
-		./hello-app | \
+	cd $(BUILD)/../../hello-tc/build-sgx/ && \
+		./App_sgx | \
 		tee -a $(BUILD)/sgx.log
 	ls -l
-	echo $(BUILD) && ls -l $(BUILD)
-	echo $(BUILD)/agent && ls -l $(BUILD)/agent
-#	! fgrep 'ERR:' $(BUILD)/sgx.log
-#	fgrep 'Hello TEEP from TEE!' $(BUILD)/sgx.log
+	echo $(BUILD)/../../hello-tc/build-sgx && \
+		ls -l $(BUILD)/../../hello-tc/build-sgx
+	if ! [ -f $(BUILD)/../../hello-tc/build-sgx/enclave.signed.so ]; then \
+		echo ERR: No TC found; \
+	fi
+	! fgrep 'ERR:' $(BUILD)/sgx.log
+	fgrep 'Hello TEEP from TEE!' $(BUILD)/sgx.log
 
 run-session-pc: upload-hello-tc-embed
 	cd $(BUILD)/broker && \
