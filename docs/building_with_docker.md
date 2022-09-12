@@ -74,11 +74,11 @@ Make sure you have account on docker-hub. If not please create one on `dockerhub
 
 | Target | docker image |
 | ------ | ------ |
-| Keystone | trasioteam/teep-dev:keystone |
-| OP-TEE | trasioteam/teep-dev:optee |
-| Intel SGX | trasioteam/teep-dev:sgx |
-| Tamproto | trasioteam/teep-dev:tamproto |
-| Doxygen | trasioteam/teep-dev:doxygen |
+| Keystone | aistcpsec/teep-dev:keystone |
+| OP-TEE | aistcpsec/teep-dev:optee |
+| Intel SGX | aistcpsec/teep-dev:sgx |
+| Tamproto | aistcpsec/teep-dev:tamproto |
+| Doxygen | aistcpsec/teep-dev:doxygen |
 
 
 ## Prepartion for building TEEP-Device on docker
@@ -92,10 +92,10 @@ The details are mentioned below.
 
 | Target | docker image |
 | ------ | ------ |
-| Keystone | trasioteam/taref-dev:keystone |
-| OP-TEE | trasioteam/taref-dev:optee |
-| Intel SGX | trasioteam/taref-dev:sgx |
-| Doxygen | trasioteam/taref-dev:doxygen |
+| Keystone | aistcpsec/taref-dev:keystone |
+| OP-TEE | aistcpsec/taref-dev:optee |
+| Intel SGX | aistcpsec/taref-dev:sgx |
+| Doxygen | aistcpsec/taref-dev:doxygen |
 
 
 ## Building TEEP-Device with Docker
@@ -150,7 +150,7 @@ $ git submodule update --init --recursive
 
 ```sh	
 # Start the docker
-$ docker run --network tamproto_default -it --rm -v $(pwd):/home/user/teep-device trasioteam/taref-dev:keystone 
+$ docker run --network tamproto_default -it --rm -v $(pwd):/home/user/teep-device aistcpsec/taref-dev:keystone
 ```
 
 After you start the docker command, you will be logged-in inside the docker container.
@@ -313,7 +313,7 @@ $ git submodule update --init --recursive
 
 ```sh	
 # Start the docker
-$ docker run --network tamproto_default -it --rm -v $(pwd):/home/user/teep-device trasioteam/taref-dev:optee
+$ docker run --network tamproto_default -it --rm -v $(pwd):/home/user/teep-device aistcpsec/taref-dev:optee
 ```  
 
 After you start the docker command, you will be logged-in inside the docker container.
@@ -438,7 +438,7 @@ $ git submodule update --init --recursive
 
 ```sh	
 # Start the docker
-$ docker run --network tamproto_default -it --rm -v $(pwd):/home/user/teep-device trasioteam/taref-dev:sgx
+$ docker run --network tamproto_default -it --rm -v $(pwd):/home/user/teep-device aistcpsec/taref-dev:sgx
 ```  
 
 After you start the docker command, you will be logged-in inside the docker container.
