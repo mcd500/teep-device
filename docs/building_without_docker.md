@@ -1,8 +1,8 @@
 # Building TEEP-Device without docker
 
-Clone the TEEP-Device's source code and build it for Keystone, OPTEE and SGX. 
+Clone the TEEP-Device's source code and build it for Keystone, OPTEE and SGX.
 
-To build TEEP-Device for any targets, the preparation and building 
+To build TEEP-Device for any targets, the preparation and building
 of ta-ref sdk has to be done already and the path of ta-ref has to be exported
 in the following environment variable.
 
@@ -16,9 +16,24 @@ $ export TAREF_DIR=<ta-ref dir>
 
 Have tested on Ubuntu 20.04.
 
+
+## Install suit-tool
+
+The TEEP Messages use suit manifest format for acquiring TCs. The suit-tools is used for parsing and handling suit manifest.
+
+```sh
+# Cloning suit-tool
+git clone https://git.gitlab.arm.com/research/ietf-suit/suit-tool.git
+
+# Checkout the version of suit-tools compatible with current TEEP-Device
+cd suit-tool
+git checkout ca66a97bac153864617e7868e44f4b409e3e6ed4 -b for-teep-device
+python3 -m pip install --upgrade .
+```
+
 ## Run Tamproto (TAM Server) - Required by all targets
 
-Running a tamproto on a separate terminal is required as when the 
+Running a tamproto on a separate terminal is required as when the
 `make test` is executed on keystone/optee/sgx, it communicates with
 the tamproto server to execute the TA's.
 
@@ -77,7 +92,7 @@ tam_api_1  | GET /api/ 200 5.239 ms - 24
 
 Please keep the terminal open and do clone and build for the targets on seperate terminals.
 
-## Keystone 
+## Keystone
 
 Build `TEEP-Device` with Keystone. Make sure Keystone and its supporting sources have been build already.
 Please refer ta-ref.pdf document for "Preparation before building ta-ref without Docker" - Keystone section.
@@ -100,11 +115,11 @@ Clone and Build
 $ git clone https://192.168.100.100/rinkai/teep-device.git
 $ cd teep-device
 $ git checkout master
-  
+
 # Sync and update the submodules
 $ git submodule sync --recursive
 $ git submodule update --init --recursive
-  
+
 # Build the TEEP-Device
 $ make
 ```
@@ -114,11 +129,11 @@ $ make
 To check TEEP-Device on Keystone, we need to run TAM server on PC.
 
 
-```sh      
+```sh
 # After the successful build
 # Test the TEEP-Device
 $ make test
-  
+
 ```
 
 Trimmed output printing 'Hello TEEP from TEE!'
@@ -146,7 +161,7 @@ total 1367
 [debug] eyrie boot finished. drop to the user land ... (boot.c:172)
 
 Hello TEEP from TEE!
-  
+
 #### ./hello-app 8d82573a-926d-4754-9353-32dc29997f74.ta eyrie-rt
 [Keystone SDK] /home/user/keystone/sdk/src/host/ElfFile.cpp:26 : file does not exist - 8d82573a-926d-4754-9353-32dc29997f74.ta
 [Keystone SDK] /home/user/keystone/sdk/src/host/Enclave.cpp:209 : Invalid enclave ELF
@@ -159,9 +174,9 @@ uri = http://tamproto_tam_api_1:8888/api/tam_cbor, cose=0, talist=
 [debug] DRAM: 0x179800000-0x179c00000 (4096 KB) (boot.c:128)
 [debug] FREE: 0x1799c6000-0x179c00000 (2280 KB), va 0xffffffff001c6000 (boot.c:133)
 [debug] eyrie boot finished. drop to the user land ... (boot.c:172)
-  
+
 <output trimmed>
-  
+
 #### ls -l
 total 1517
 -rw-------    1 root     root        152016 Jan  1 00:00 8d82573a-926d-4754-9353-32dc29997f74.ta
@@ -175,9 +190,9 @@ total 1517
 [debug] DRAM: 0x179800000-0x179c00000 (4096 KB) (boot.c:128)
 [debug] FREE: 0x1799bd000-0x179c00000 (2316 KB), va 0xffffffff001bd000 (boot.c:133)
 [debug] eyrie boot finished. drop to the user land ... (boot.c:172)
-  
+
 Hello TEEP from TEE!
-  
+
 97f74.ta.secstor.plain-4754-9353-32dc29997f74.ta 8d82573a-926d-4754-9353-32dc2999
 cmp: 8d82573a-926d-4754-9353-32dc29997f74.ta.secstor.plain: No such file or directory
 ####  done
@@ -202,7 +217,7 @@ $ scp platform/keystone/build/hello-ta/hello-ta root@192.168.0.6:/root/teep-devi
 $ scp platform/keystone/build/hello-app/hello-app root@192.168.0.6:/root/teep-device
 $ scp platform/keystone/build/teep-agent-ta/teep-agent-ta root@192.168.0.6:/root/teep-device
 $ scp platform/keystone/build/teep-broker-app/teep-broker-app root@192.168.0.6:/root/teep-device
-  
+
 $ scp $KEYSTONE_DIR/sdk/rts/eyrie/eyrie-rt root@192.168.0.6:/root/teep-device
 $ scp platform/keystone/build/libteep/ree/mbedtls/library/lib* root@192.168.0.6:/usr/lib/
 $ scp platform/keystone/build/libteep/ree/libwebsockets/lib/lib* root@192.168.0.6:/usr/lib/
@@ -238,15 +253,15 @@ $ insmod keystone-driver.ko
 **Run hello-app**
 
 ```sh
-$ source env.sh 
+$ source env.sh
 [ 2380.618514] keystone_driver: loading out-of-tree module taints kernel.
 [ 2380.625305] keystone_enclave: keystone enclave v0.2
 
 $ cd teep-device/
-  
+
 $ ./hello-app hello-ta eyrie-rt
 Hello TEEP from TEE!
-$ 
+$
 ```
 
 **Run teep-broker-app**
@@ -261,9 +276,9 @@ Upon execution, you see following log
 
 ```console
 teep-bro[ 2932.269897] ------------[ cut here ]------------
-[ 2932.274191] WARNING: CPU: 4 PID: 164 
+[ 2932.274191] WARNING: CPU: 4 PID: 164
 [ 2932.287053] Modules linked in: keystone_driver(O)
-[ 2932.291716] CPU: 4 PID: 164 Comm: teep-broker-app Tainted: G     
+[ 2932.291716] CPU: 4 PID: 164 Comm: teep-broker-app Tainted: G
 [ 2932.301867] Call Trace:
 [ 2932.304314] [<0000000036e46dc0>] walk_stackframe+0x0/0xa2
 [ 2932.309686] [<00000000893dfe1c>] show_stack+0x26/0x34
@@ -286,17 +301,17 @@ uri = http://192.168.11.4:8888/api/tam_cbor, cose=0, talist=
 [1970/01/01 00:48:56:0798] NOTICE: (hexdump: zero length)
 [1970/01/01 00:48:56:0801] NOTICE: created client ssl context for default
 [1970/01/01 00:48:56:0802] NOTICE: http://192.168.11.4:8888/api/tam_cbor
-[1970/01/01 00:48:56:0861] NOTICE: 
+[1970/01/01 00:48:56:0861] NOTICE:
 [1970/01/01 00:48:56:0862] NOTICE: 0000: 83 01 A4 01 81 01 03 81 00 14 1A 77 77 77 77 04    ...........wwww.
-[1970/01/01 00:48:56:0862] NOTICE: 0010: 43 01 02 03 02                                     C....           
-[1970/01/01 00:48:56:0862] NOTICE: 
+[1970/01/01 00:48:56:0862] NOTICE: 0010: 43 01 02 03 02                                     C....
+[1970/01/01 00:48:56:0862] NOTICE:
 [1970/01/01 00:48:56:0871] NOTICE: POST: http://192.168.11.4:8888/api/tam_cbor
-[1970/01/01 00:48:56:0871] NOTICE: 
-[1970/01/01 00:48:56:0871] NOTICE: 0000: 82 02 A4 14 1A 77 77 77 77 08 80 0E 80 0F 80       .....wwww...... 
-[1970/01/01 00:48:56:0872] NOTICE: 
+[1970/01/01 00:48:56:0871] NOTICE:
+[1970/01/01 00:48:56:0871] NOTICE: 0000: 82 02 A4 14 1A 77 77 77 77 08 80 0E 80 0F 80       .....wwww......
+[1970/01/01 00:48:56:0872] NOTICE:
 [1970/01/01 00:48:56:0873] NOTICE: created client ssl context for default
 [1970/01/01 00:48:56:0874] NOTICE: http://192.168.11.4:8888/api/tam_cbor
-[1970/01/01 00:48:56:0962] NOTICE: 
+[1970/01/01 00:48:56:0962] NOTICE:
 [1970/01/01 00:48:56:0962] NOTICE: 0000: 82 03 A2 0A 81 59 01 37 A2 02 58 72 81 58 6F D2    .....Y.7..Xr.Xo.
 [1970/01/01 00:48:56:0963] NOTICE: 0010: 84 43 A1 01 26 A0 58 24 82 02 58 20 75 80 7C 54    .C..&.X$..X u.|T
 [1970/01/01 00:48:56:0963] NOTICE: 0020: 62 40 D2 14 E5 7B D5 C4 6A 7C E5 2D ED B0 3D 0E    b@...{..j|.-..=.
@@ -317,12 +332,12 @@ uri = http://192.168.11.4:8888/api/tam_cbor, cose=0, talist=
 [1970/01/01 00:48:56:0970] NOTICE: 0110: 64 38 32 35 37 33 61 2D 39 32 36 64 2D 34 37 35    d82573a-926d-475
 [1970/01/01 00:48:56:0971] NOTICE: 0120: 34 2D 39 33 35 33 2D 33 32 64 63 32 39 39 39 37    4-9353-32dc29997
 [1970/01/01 00:48:56:0971] NOTICE: 0130: 66 37 34 2E 74 61 15 F6 03 F6 0A 43 82 03 F6 14    f74.ta.....C....
-[1970/01/01 00:48:56:0972] NOTICE: 0140: 1A 77 77 77 78                                     .wwwx           
-[1970/01/01 00:48:56:0972] NOTICE: 
-[1970/01/01 00:48:56:0983] NOTICE: 
+[1970/01/01 00:48:56:0972] NOTICE: 0140: 1A 77 77 77 78                                     .wwwx
+[1970/01/01 00:48:56:0972] NOTICE:
+[1970/01/01 00:48:56:0983] NOTICE:
 GET: http://192.168.11.4:8888/TAs/8d82573a-926d-4754-9353-32dc29997f74.ta
 [1970/01/01 00:48:56:0984] NOTICE: created client ssl context for default
-[1970/01/01 00:48:56:0985] NOTICE: 
+[1970/01/01 00:48:56:0985] NOTICE:
 http://192.168.11.4:8888/TAs/8d82573a-926d-4754-9353-32dc29997f74.ta
 teep_message_unwrap_ta_image: msg len 234110
 Decrypt
@@ -331,16 +346,16 @@ Verify
 Signature OK 0 130552
 ta_store_install: ta_image_len = 130552 ta_name=8d82573a-926d-4754-9353-32dc29997f74
 [1970/01/01 00:49:01:9453] NOTICE: POST: http://192.168.11.4:8888/api/tam_cbor
-[1970/01/01 00:49:01:9454] NOTICE: 
-[1970/01/01 00:49:01:9454] NOTICE: 0000: 82 05 A1 14 1A 77 77 77 77                         .....wwww       
-[1970/01/01 00:49:01:9454] NOTICE: 
+[1970/01/01 00:49:01:9454] NOTICE:
+[1970/01/01 00:49:01:9454] NOTICE: 0000: 82 05 A1 14 1A 77 77 77 77                         .....wwww
+[1970/01/01 00:49:01:9454] NOTICE:
 [1970/01/01 00:49:01:9456] NOTICE: created client ssl context for default
 [1970/01/01 00:49:01:9457] NOTICE: http://192.168.11.4:8888/api/tam_cbor
 [1970/01/01 00:49:01:9505] NOTICE: (hexdump: zero length)
 
 ```
 
-## OPTEE 
+## OPTEE
 
 Build `TEEP-Device` with OPTEE. So make sure OPTEE and its supporting sources have been build already.
 Please refer ta-ref.pdf document for "Preparation before building ta-ref without Docker" - OP-TEE section.
@@ -362,11 +377,11 @@ Clone and Build
 $ git clone https://192.168.100.100/rinkai/teep-device.git
 $ cd teep-device
 $ git checkout master
-  
+
 # Sync and update the submodules
 $ git submodule sync --recursive
 $ git submodule update --init --recursive
-  
+
 # Build the TEEP-Device
 $ make
 ```
@@ -376,16 +391,16 @@ $ make
 To check TEEP-Device on OP-TEE, we need to run TAM server on PC.
 
 
-```sh      
+```sh
 # Install the TA on qemu
 $ make optee_install_qemu
-    
+
 # After the successful build
 # Test the TEEP-Device
 $ make test
 ```
 
-Trimmed output of the test 
+Trimmed output of the test
 
 ```console
 M/TA: command: 20
@@ -426,9 +441,9 @@ D/TC:? 0 system_open_ta_binary:260 res=0x0
 D/LD:  ldelf:169 ELF (8d82573a-926d-4754-9353-32dc29997f74) at 0x40066000
 D/TC:? 0 tee_ta_close_session:499 csess 0xc0948820 id 1
 D/TC:? 0 tee_ta_close_session:518 Destroy session
-  
+
 Hello TEEP from TEE!
-  
+
 D/TC:? 0 tee_ta_close_session:499 csess 0xc0949020 id 1
 D/TC:? 0 tee_ta_close_session:518 Destroy session
 D/TC:? 0 destroy_context:298 Destroy TA ctx (0xc0948fc0)
@@ -517,11 +532,11 @@ Clone and Build
 $ git clone https://192.168.100.100/rinkai/teep-device.git
 $ cd teep-device
 $ git checkout master
-  
+
 # Sync and update the submodules
 $ git submodule sync --recursive
 $ git submodule update --init --recursive
-  
+
 # Build the TEEP-Device
 $ make
 ```
@@ -569,11 +584,11 @@ Above packages required to generate PDF using doxygen.
 ### Build and Install Doxygen
 
 ```sh
-$ git clone https://github.com/doxygen/doxygen.git 
+$ git clone https://github.com/doxygen/doxygen.git
 $ cd doxygen
-$ mkdir build 
-$ cd build 
-$ cmake -G "Unix Makefiles" .. 
+$ mkdir build
+$ cd build
+$ cmake -G "Unix Makefiles" ..
 $ make
-$ sudo make install 
+$ sudo make install
 ```
