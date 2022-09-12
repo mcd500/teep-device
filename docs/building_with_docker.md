@@ -268,18 +268,16 @@ cmp: 8d82573a-926d-4754-9353-32dc29997f74.ta.secstor.plain: No such file or dire
 ####  done
 ```
 
-Cleaning built binaries. Deleting the binaries are required when starting to build TEEP-Device on other CPU architectures otherwise will generate errors.
+Cleaning built binaries. Deleting the built binaries are required when starting to build TEEP-Device on other CPU architectures otherwise will generate errors.
 
 ```sh
-$ make run-sample-session
-
+$ make clean
 ```
 
 
 ### Building TEEP-Device for OP-TEE with docker
 
-To run TEEP-Device, first we need to run tamproto inside the same
-host. Let's clone the tamproto and start it.
+To run TEEP-Device, first we need to run tamproto inside the same host. Let's clone the tamproto and start it.
 
 **tamproto**
 
@@ -397,12 +395,17 @@ D/TC:? 0 destroy_context:298 Destroy TA ctx (0xc0948fc0)
 make[1]: Leaving directory '/home/user/teep-device/platform/op-tee'
 ```
 
+Cleaning built binaries. Deleting the built binaries are required when starting to build TEEP-Device on other CPU architectures otherwise will generate errors.
+
+```sh
+$ make clean
+```
+
 
 ### Building TEEP-Device for SGX with docker
 
 
-To run TEEP-Device, first we need to run tamproto inside the same
-host. Let's clone the tamproto and start it.
+To run TEEP-Device, first we need to run tamproto inside the same host. Let's clone the tamproto and start it.
 
 **tamproto**
 
@@ -524,13 +527,18 @@ main end
 Info: Enclave successfully returned.
 ```
 
+Cleaning built binaries. Deleting the built binaries are required when starting to build TEEP-Device on other CPU architectures otherwise will generate errors.
 
-### Building TEEP-Device for PC with docker
+```sh
+$ make clean
+```
 
-The building PC is
 
-To run TEEP-Device, first we need to run tamproto inside the same
-host. Let's clone the tamproto and start it.
+# Building TEEP-Device for PC without docker
+
+The building PC is prepared for debugging purposes during developing TEEP-Device itself. This method does not require any TEEs installed in the local machine and it is meant to build and run on TEEP-Device on any x64 PC.
+
+To run TEEP-Device, first we need to run tamproto inside the same host. Let's clone the tamproto and start it.
 
 **tamproto**
 
@@ -611,5 +619,5 @@ drwxr-xr-x 2 build-user build-user 4096 Feb 15 10:28 teep-broker-app
 build-user@c4435c23705c:~/teep-device$ cat /home/user/teep-device/platform/pc/
 build/8d82573a-926d-4754-9353-32dc29997f74.ta
 Hello TEEP from TEE!
-
 ```
+
