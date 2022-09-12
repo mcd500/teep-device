@@ -105,6 +105,17 @@ Docker images with all necessary packages for building TEEP-Device for all three
 
 ## Building TEEP-Device with Docker
 
+The build environment is in three terminals for convenient development.
+
+* Terminal of running tamproto
+    - Shows log messages of tamproto while developing TEEP-Device
+
+* Terminal of running Docker of TEE
+    - For building and manipulating TEEP-Device
+
+* Terminal of editing TEEP-Device
+    - For editing source codes of TEEP-Device by watching above two terminals.
+
 ### Building TEEP-Device for Keystone with Docker
 
 Following commands are to be executed on Ubuntu 20.04.
