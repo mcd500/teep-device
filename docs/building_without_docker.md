@@ -19,7 +19,7 @@ Have tested on Ubuntu 20.04.
 
 ## Install suit-tool
 
-The TEEP Messages use suit manifest format for acquiring TCs. The suit-tools is used for parsing and handling suit manifest.
+The TEEP Messages use SUIT manifest format for acquiring TCs. The suit-tools is used for parsing and handling SUIT manifests.
 
 ```sh
 # Cloning suit-tool
