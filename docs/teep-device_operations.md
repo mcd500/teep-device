@@ -5,9 +5,9 @@
 
 TEEP Protocol defines four messages, QueryRequest, QueryResponse, Update, and Success-Error.
 
-The device initiates the first packet by sending an empty HTTP POST to the TAM server, and then the TAM will be sending the QueryRequest to ask the capability of the device. All the consequent TEEP messages after the first empty HTTP POST are carried over HTTP Response/Request. The return message of the QueryResponse contains the supported cryptographic algorithm, installed TCs, and etc.
+The device initiates the first message by sending an empty HTTP POST Method macket to the TAM server, and then the TAM will be sending the QueryRequest to ask the capability of the device. All the consequent TEEP messages after the first empty HTTP POST are carried over HTTP Request/Response. The return message of the QueryResponse contains the information of supported cryptographic algorithms, installed TCs, etc on the device.
 
 If the TAM decides the TC must be installed to the device or update the previously installed TC, then the TAM will send the Update message and the device will process it. The Update message could contain the TC in the body of the Update message or have URI pointing to the location of the TC hosted elsewhere. The result of processing the Update message in the device is reported to the TAM with a Success-Error message.
 
-All the messages are transmitted over HTTP packets in the current implementation. The type of transport layer in the drafts is not limited to HTTP, could be HTTPS or any other method.
+All the messages are transmitted over HTTP packets in the current implementation. The type of transport layer in the drafts is not limited to HTTP, may use HTTPS or any other method.
 
