@@ -40,7 +40,7 @@ $ sudo apt install docker-ce
 
 ### Executing Docker without sudo
 
-By default, the docker command can only be run by the root user or by a user in the docker group, which is automatically created during Docker’s installation process. If you attempt to run the docker command without prefixing it with sudo or without being in the docker group, you’ll get an output like this:
+By default, the docker command can only be run by the root user or by a user in the docker group, which is automatically created during Docker's installation process. If you attempt to run the docker command without prefixing it with sudo or without being in the docker group, you will get an output like this:
 
 ```console
 docker: Cannot connect to the Docker daemon. Is the docker daemon running on this host?.
@@ -114,7 +114,10 @@ The build environment is in three terminals for convenient development.
     - For building and manipulating TEEP-Device
 
 * Terminal of editing TEEP-Device
-    - For editing source codes of TEEP-Device by watching above two terminals.
+    - For editing source codes of TEEP-Device by watching the above two terminals.
+
+The terminals may be a local fast computer or login with ssh to a remote build machine with each terminal. In any case, the speed of the build machine affects the efficiency of the development.
+
 
 ### Building TEEP-Device for Keystone with Docker
 
@@ -123,6 +126,8 @@ Following commands are to be executed on Ubuntu 20.04.
 To run TEEP-Device, first we need to run tamproto inside the same host. Let's clone the tamproto and start it.
 
 **Running tamproto**
+
+Open the first terminal for the tamproto.
 
 ```sh
 # Clone the tamproto repo and checkout master branch
@@ -149,6 +154,8 @@ tam_api_1  | Express HTTPS server listening on port 8443
 
 **Cloning TEEP-Device**
 
+Open the second terminal for editing the sources of TEEP-Device. The directory of cloning sources is mounted when running Docker in the next step.
+
 ```sh
 # Clone the teep-device repo and checkout master branch
 $ git clone https://192.168.100.100/rinkai/teep-device.git
@@ -161,6 +168,8 @@ $ git submodule update --init --recursive
 ```
 
 **Start the Docker**
+
+Open the third terminal. Here we build the TEEP-Device and run it to talk with tamproto opened on the first terminal. If any error occurs, edit the sources on the second terminal to debug.
 
 ```sh
 # Start the docker
