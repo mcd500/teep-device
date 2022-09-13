@@ -3,10 +3,10 @@
 Clone the TEEP-Device's source code and build it for Keystone, OPTEE and SGX.
 
 To build TEEP-Device for any targets, the preparation and building
-of ta-ref sdk has to be done already and the path of ta-ref has to be exported
+of TA-Ref sdk has to be done already and the path of TA-Ref has to be exported
 in the following environment variable.
 
-The detailed steps of preparation and building ta-ref can be found in ta-ref.pdf.
+The detailed steps of preparation and building TA-Ref can be found in ta-ref.pdf.
 
 ```sh
 $ export TAREF_DIR=<ta-ref dir>
@@ -95,7 +95,7 @@ Please keep the terminal open and do clone and build for the targets on seperate
 ## Keystone
 
 Build `TEEP-Device` with Keystone. Make sure Keystone and its supporting sources have been build already.
-Please refer ta-ref.pdf document for "Preparation before building ta-ref without Docker" - Keystone section.
+Please refer ta-ref.pdf document for "Preparation before building TA-Ref without Docker" - Keystone section.
 
 ### Clone and Build
 
@@ -358,7 +358,7 @@ ta_store_install: ta_image_len = 130552 ta_name=8d82573a-926d-4754-9353-32dc2999
 ## OPTEE
 
 Build `TEEP-Device` with OPTEE. So make sure OPTEE and its supporting sources have been build already.
-Please refer ta-ref.pdf document for "Preparation before building ta-ref without Docker" - OP-TEE section.
+Please refer ta-ref.pdf document for "Preparation before building TA-Ref without Docker" - OP-TEE section.
 
 ### Clone and Build
 
@@ -511,7 +511,7 @@ TODO - Further update required
 ## SGX
 
 Build `TEEP-Device` with SGX. Make sure SGX and its supporting sources have been build already.
-Please refer ta-ref.pdf document for "Preparation before building ta-ref without Docker" - SGX section.
+Please refer ta-ref.pdf document for "Preparation before building TA-Ref without Docker" - SGX section.
 
 ### Clone and Build
 
