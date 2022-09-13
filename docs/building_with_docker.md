@@ -1,18 +1,18 @@
-# Building TEEP-Device with docker
+# Building TEEP-Device with Docker
 
 We have prepared Docker images to provide the environment of building and developing TEEP-Device to reduce the overhead of preparing them individually.
 
 The TEEP-Device requires TA-Ref which provides a unified SDK among different TEEs for three CPU architectures, Keystone for RISC-V, OP-TEE for Arm64 and SGX for Intel.
 
-Without the prepared docker images, the developer will be required to build a massing software stack of Keystone, OP-TEE and SGX and install them on his/her development machine which needs downloading large sizes of source codes, a long time for building them. Also it may result in every individual having a slightly different environment which makes it difficult to reproduce when encountering errors.
+Without the prepared Docker images, the developer will be required to build a massing software stack of Keystone, OP-TEE and SGX and install them on his/her development machine which needs downloading large sizes of source codes, a long time for building them. Also it may result in every individual having a slightly different environment which makes it difficult to reproduce when encountering errors.
 
 The Docker images provide an easy to prepare development environment for TEEP-Device.
 
 ## Preparation for Docker
 
-For building TEEP-Device with docker, it is required to install docker on Ubuntu.
+For building TEEP-Device with Docker, it is required to install Docker on Ubuntu.
 
-For the first time users of docker, please have a look on https://docs.docker.com/engine/
+For the first time users of Docker, please have a look on https://docs.docker.com/engine/
 
 The following installation steps is for Ubuntu 20.04
 
@@ -40,7 +40,7 @@ $ sudo apt install docker-ce
 
 ### Executing Docker without sudo
 
-By default, the docker command can only be run by the root user or by a user in the docker group, which is automatically created during Docker's installation process. If you attempt to run the docker command without prefixing it with sudo or without being in the docker group, you will get an output like this:
+By default, the Docker command can only be run by the root user or by a user in the Docker group, which is automatically created during Docker's installation process. If you attempt to run the Docker command without prefixing it with sudo or without being in the Docker group, you will get an output like this:
 
 ```console
 docker: Cannot connect to the Docker daemon. Is the docker daemon running on this host?.
@@ -56,7 +56,7 @@ $ sudo gpasswd -a $USER docker
 # Logout and then log-in again to apply the changes to the group
  ```
 
-After you logout and login, you can probably run the docker command without `sudo`.
+After you logout and login, you can probably run the Docker command without `sudo`.
 
 ```sh
 $ docker run hello-world
@@ -95,7 +95,7 @@ We use Docker images of TA-Ref for building the TEEP-Device since TEEP-Device is
 Docker images with all necessary packages for building TEEP-Device for all three targets are already available. The details are mentioned below.
 
 
-| Target | docker image |
+| Target | Docker image |
 | ------ | ------ |
 | Keystone | aistcpsec/taref-dev:keystone |
 | OP-TEE | aistcpsec/taref-dev:optee |
@@ -176,8 +176,8 @@ Open the third terminal. Here we build the TEEP-Device and run it to talk with t
 $ docker run --network tamproto_default -it --rm -v $(pwd):/home/user/teep-device aistcpsec/taref-dev:keystone
 ```
 
-After you start the docker command, you will be logged-in inside the docker container.
-Following are the  commands to be executed inside the docker.
+After you start the Docker command, you will be logged-in inside the Docker container.
+Following are the  commands to be executed inside the Docker.
 
 ```sh
 # [Inside docker image]
@@ -295,7 +295,7 @@ $ make clean
 ```
 
 
-### Building TEEP-Device for OP-TEE with docker
+### Building TEEP-Device for OP-TEE with Docker
 
 To run TEEP-Device, first we need to run tamproto inside the same host. Let's clone the tamproto and start it.
 
@@ -344,8 +344,8 @@ $ git submodule update --init --recursive
 $ docker run --network tamproto_default -it --rm -v $(pwd):/home/user/teep-device aistcpsec/taref-dev:optee
 ```
 
-After you start the docker command, you will be logged-in inside the docker container.
-Following are the commands to be executed inside the docker.
+After you start the Docker command, you will be logged-in inside the Docker container.
+Following are the commands to be executed inside the Docker.
 
 ```sh
 # [Inside docker image]
@@ -422,7 +422,7 @@ $ make clean
 ```
 
 
-### Building TEEP-Device for SGX with docker
+### Building TEEP-Device for SGX with Docker
 
 
 To run TEEP-Device, first we need to run tamproto inside the same host. Let's clone the tamproto and start it.
@@ -472,8 +472,8 @@ $ git submodule update --init --recursive
 $ docker run --network tamproto_default -it --rm -v $(pwd):/home/user/teep-device aistcpsec/taref-dev:sgx
 ```
 
-After you start the docker command, you will be logged-in inside the docker container.
-Following are the commands to be executed inside the docker
+After you start the Docker command, you will be logged-in inside the Docker container.
+Following are the commands to be executed inside the Docker
 
 ```sh
 # [Inside docker image]
@@ -554,7 +554,7 @@ $ make clean
 ```
 
 
-# Building TEEP-Device for PC without docker
+# Building TEEP-Device for PC without Docker
 
 The building PC is prepared for debugging purposes during developing TEEP-Device itself. This method does not require any TEEs installed in the local machine and it is meant to build and run on TEEP-Device on any x64 PC.
 

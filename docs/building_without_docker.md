@@ -1,4 +1,4 @@
-# Building TEEP-Device without docker
+# Building TEEP-Device without Docker
 
 Clone the TEEP-Device's source code and build it for Keystone, OPTEE and SGX.
 
@@ -516,7 +516,7 @@ Please refer ta-ref.pdf document for "Preparation before building TA-Ref without
 ### Clone and Build
 
 As a preparation step, it is required to setup the Intel SGX SDK.
-Please refer the preparation steps for building without docker for SGX in ta-ref.pdf
+Please refer the preparation steps for building without Docker for SGX in ta-ref.pdf
 
 
 ```sh
