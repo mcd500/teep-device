@@ -451,17 +451,17 @@ make[1]: Leaving directory '/home/user/teep-device/platform/op-tee'
 ```
 
 
-### Check TEEP-Device by running hello-app and teep-broker-app on RPI3
+### Check TEEP-Device by running hello-app and teep-broker-app on Raspberry PI 3
 
-To check TEEP-Device on RPI3, we need to run TAM server on PC and networking with RPI3 board
+To check TEEP-Device on Raspberry PI 3, we need to run TAM server on PC and networking with Raspberry PI 3 board
 
-#### Copy the hello-app and teep-broker-app binaries to RPI3
+#### Copy the hello-app and teep-broker-app binaries to Raspberry PI 3
 <br/>
 
-**Copy binaries over SSH to RPI3**
+**Copy binaries over SSH to Raspberry PI 3**
 
-- Connect to RPI3 over serial console(/dev/ttryUSB0) then assign IP address `ifconfig eth0 192.168.0.7`
-- Copy the binaries from build PC over SSH (user:root) to RPI3
+- Connect to Raspberry PI 3 over serial console(/dev/ttryUSB0) then assign IP address `ifconfig eth0 192.168.0.7`
+- Copy the binaries from build PC over SSH (user:root) to Raspberry PI 3
 
 ```
 TODO - Further update required
@@ -472,15 +472,15 @@ TODO - Further update required
 Please follow below steps to write the TEEP-Device binaries to SD-card
 - Insert SD card to your PC for Unleashed
 - Copy the binaries to SD card
-- Move the sd to RPI3 board and boot it
+- Move the sd to Raspberry PI 3 board and boot it
 
 ```
 TODO - Further update required
 ```
 
-#### Check hello-app and teep-broker-app on RPI3
+#### Check hello-app and teep-broker-app on Raspberry PI 3
 <br/>
-There are two methods to connect to RPI3.
+There are two methods to connect to Raspberry PI 3.
 - Serial Port using minicom (/dev/ttyUSB0)
 - Over SSH: `ssh root@192.168.0.7`
 
