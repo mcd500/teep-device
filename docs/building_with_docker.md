@@ -640,4 +640,3 @@ build-user@c4435c23705c:~/teep-device$ cat /home/user/teep-device/platform/pc/
 build/8d82573a-926d-4754-9353-32dc29997f74.ta
 Hello TEEP from TEE!
 ```
-

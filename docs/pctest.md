@@ -19,7 +19,7 @@ make
 
 Usage:
 ```sh
-./teep-broker-app --tamurl http://{ip_adress_of_tam}:{port}{path} [--jose]  
+./teep-broker-app --tamurl http://{ip_adress_of_tam}:{port}{path} [--jose]
          [--talist uuid_of_deleting_ta]
 ```
 
