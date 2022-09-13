@@ -453,7 +453,7 @@ make[1]: Leaving directory '/home/user/teep-device/platform/op-tee'
 
 ### Check TEEP-Device by running hello-app and teep-broker-app on Raspberry PI 3
 
-To check TEEP-Device on Raspberry PI 3, we need to run TAM server on PC and networking with Raspberry PI 3 board
+To check TEEP-Device on Raspberry PI 3, we need to run TAM server on PC and networking with Raspberry PI 3 board.
 
 #### Copy the hello-app and teep-broker-app binaries to Raspberry PI 3
 <br/>
@@ -516,7 +516,7 @@ Please refer ta-ref.pdf document for "Preparation before building TA-Ref without
 ### Clone and Build
 
 As a preparation step, it is required to setup the Intel SGX SDK.
-Please refer the preparation steps for building without Docker for SGX in ta-ref.pdf
+Please refer the preparation steps for building without Docker for SGX in ta-ref.pdf.
 
 
 ```sh
@@ -543,7 +543,7 @@ $ make
 
 ### Check TEEP-Device by running hello-app & teep-broker-app on QEMU Environment
 
-To check TEEP-Device on SGX, we need to run TAM server on PC and networking with SGX machine
+To check TEEP-Device on SGX, we need to run TAM server on PC and networking with SGX machine.
 
 ```sh
 $ cd ~/teep-device

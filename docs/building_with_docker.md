@@ -12,7 +12,7 @@ The Docker images provide an easy to prepare development environment for TEEP-De
 
 For building TEEP-Device with Docker, it is required to install Docker on Ubuntu.
 
-For the first time users of Docker, please have a look on https://docs.docker.com/engine/
+For the first time users of Docker, please have a look on https://docs.docker.com/engine/.
 
 The following installation steps is for Ubuntu 20.04
 
