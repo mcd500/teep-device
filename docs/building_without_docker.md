@@ -574,7 +574,7 @@ TODO - Further update required
 
 ## Generating Documentation
 
-This PDF (teep-device.pdf) was generated using Doxygen version 1.9.2. To install `doxygen-1.9.2` following procedure is necessary.
+This PDF (teep-device.pdf) was generated using Doxygen. To install Doxygen following procedure is necessary.
 
 ### Required Packages
 
