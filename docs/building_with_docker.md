@@ -35,7 +35,7 @@ $ sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ub
 $ apt-cache policy docker-ce
 
 #Finally, install Docker
-$ sudo apt install docker-ce
+$ sudo apt install docker-ce docker-compose
 ```
 
 ### Executing Docker without sudo
@@ -60,6 +60,11 @@ After you logout and login, you can probably run the Docker command without `sud
 
 ```sh
 $ docker run hello-world
+```
+
+Login to the docker to be able to access docker images.
+```sh
+$ docker login -u ${YOUR_USERNAME} -p ${YOUR_PASSWD}
 ```
 
 ### Create a Docker network tamproto
@@ -165,6 +170,12 @@ $ git checkout master
 # Sync and update the submodules
 $ git submodule sync --recursive
 $ git submodule update --init --recursive
+
+# Match the user privilege with it is used in container
+# Container uses build-user account with 1000:1000
+$ sudo chown -R 1000:1000 teep-device/
+$ sudo chmod -R o+w teep-device/
+$ git config --global --add safe.directory $(pwd)/teep-device
 ```
 
 **Start the Docker**
@@ -179,6 +190,9 @@ $ docker run --network tamproto_default -it --rm -v $(pwd):/home/user/teep-devic
 After you start the Docker command, you will be logged-in inside the Docker container.
 Following are the  commands to be executed inside the Docker.
 
+
+**Build**
+
 ```sh
 # [Inside docker image]
 
@@ -188,6 +202,7 @@ $ cd ~/teep-device/
 # Build the teep-device
 $ make
 ```
+**Run**
 
 After the successful build, run the sample TEEP session with tamproto.
 
