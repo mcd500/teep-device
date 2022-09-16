@@ -16,10 +16,15 @@ $ export TAREF_DIR=<ta-ref dir>
 
 Have tested on Ubuntu 20.04.
 
+Install some of the packages for compiling.
 
-## Install suit-tool
+```sh
+sudo apt-get -y install build-essential git autoconf automake cmake
+```
 
-The TEEP Messages use SUIT manifest format for acquiring TCs. The suit-tools is used for parsing and handling SUIT manifests.
+**Install suit-tool**
+
+The TEEP_Device uses SUIT manifest format for acquiring TCs. The suit-tools is used for parsing and handling SUIT manifests.
 
 ```sh
 # Cloning suit-tool
@@ -31,11 +36,11 @@ git checkout ca66a97bac153864617e7868e44f4b409e3e6ed4 -b for-teep-device
 python3 -m pip install --upgrade .
 ```
 
-## Run Tamproto (TAM Server) - Required by all targets
+## Run Tamproto (TAM Server) - Required by all Kestone/OP-TEE/SGX
 
 Running a tamproto on a separate terminal is required as when the
-`make test` is executed on keystone/optee/sgx, it communicates with
-the tamproto server to execute the TA's.
+TEEP_Device is executed which communicates with
+the tamproto server to install the TC's.
 
 
 ```sh
@@ -567,9 +572,9 @@ Hello TEEP from TEE!
 TODO - Further update required
 ```
 
-## Doxygen
+## Generating Documentation
 
-This PDF (ta-ref.pdf) was generated using Doxygen version 1.9.2. To install `doxygen-1.9.2` following procedure is necessary.
+This PDF (teep-device.pdf) was generated using Doxygen version 1.9.2. To install `doxygen-1.9.2` following procedure is necessary.
 
 ### Required Packages
 
@@ -591,4 +596,17 @@ $ cd build
 $ cmake -G "Unix Makefiles" ..
 $ make
 $ sudo make install
+```
+
+### Generate pdf and html documentation
+
+```sh
+$ make docs
+```
+
+Location of created documentation.
+
+```
+docs/teep-device.pdf
+docs/teep-device_readme_html.tar.gz
 ```
