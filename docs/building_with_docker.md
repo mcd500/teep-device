@@ -63,6 +63,7 @@ $ docker run hello-world
 ```
 
 Login to the docker to be able to access docker images.
+
 ```sh
 $ docker login -u ${YOUR_USERNAME} -p ${YOUR_PASSWD}
 ```
@@ -234,6 +235,12 @@ There is a script to initiate teep-agent with tamproto.
 # ./ita.sh
 ```
 
+To exit from qemu.
+
+```sh
+# poweroff
+```
+
 The log massage of tamproto will be show on the terminal of running tamproto.
 ```
 tam_api_1  | POST /api/tam_cbor 200 2.816 ms - 399
@@ -348,8 +355,6 @@ Starting dropbear sshd: OK
 Welcome to Buildroot
 buildroot login: root
 Password: 
-# 
-# 
 # ls
 keystone-driver.ko  teep-device         tests.ke
 # cd teep-device/
@@ -418,6 +423,21 @@ end of command seq
 [1970/01/01 00:06:41:5451] N: 
 [1970/01/01 00:06:41:5462] N: http://tamproto_tam_api_1:8888/api/tam_cbor
 [1970/01/01 00:06:41:5634] N: (hexdump: zero length)
+# poweroff
+# Stopping dropbear sshd: OK
+Stopping network: OK
+Saving random seed: OK
+Stopping klogd: OK
+Stopping syslogd: OK
+umount: devtmpfs busy - remounted read-only
+[ 1672.639348] EXT4-fs (vda): re-mounted. Opts: (null)
+The system is going down NOW!
+logout
+Sent SIGTERM to all processes
+Sent SIGKILL to all processes
+Requesting system poweroff
+[ 1674.667156] reboot: Power down
+make[1]: Leaving directory '/home/user/teep-device/sample
 ```
 
 
