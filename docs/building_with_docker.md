@@ -751,3 +751,26 @@ Cleaning built binaries. Deleting the built binaries are required when starting 
 ```sh
 $ make clean
 ```
+
+## Generating Documentation
+
+This PDF (teep-device.pdf) was generated using Doxygen.
+
+### Starting container
+
+```sh
+docker run -it --rm -v $(pwd):/home/user/teep-device aistcpsec/teep-dev:doxygen
+```
+
+### Generate pdf and html documentation
+
+```sh
+$ make docs
+```
+
+Location of created documentation.
+
+```
+docs/teep-device.pdf
+docs/teep-device_readme_html.tar.gz
+```
