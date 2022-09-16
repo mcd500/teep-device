@@ -110,21 +110,21 @@ The diagram is the ideal implementation of TEEP-Device on SGX. The current TEEP-
 +-- teep-broker-app     --- Main body of handling TEEP Protocol on Linux side
 +-- tiny-tam            --- Small TAM implementation
 ```
-# Building TEEP-Device with docker
+# Building TEEP-Device with Docker
 
 We have prepared Docker images to provide the environment of building and developing TEEP-Device to reduce the overhead of preparing them individually.
 
 The TEEP-Device requires TA-Ref which provides a unified SDK among different TEEs for three CPU architectures, Keystone for RISC-V, OP-TEE for Arm64 and SGX for Intel.
 
-Without the prepared docker images, the developer will be required to build a massing software stack of Keystone, OP-TEE and SGX and install them on his/her development machine which needs downloading large sizes of source codes, a long time for building them. Also it may result in every individual having a slightly different environment which makes it difficult to reproduce when encountering errors.
+Without the prepared Docker images, the developer will be required to build a massing software stack of Keystone, OP-TEE and SGX and install them on his/her development machine which needs downloading large sizes of source codes, a long time for building them. Also it may result in every individual having a slightly different environment which makes it difficult to reproduce when encountering errors.
 
 The Docker images provide an easy to prepare development environment for TEEP-Device.
 
 ## Preparation for Docker
 
-For building TEEP-Device with docker, it is required to install docker on Ubuntu.
+For building TEEP-Device with Docker, it is required to install Docker on Ubuntu.
 
-For the first time users of docker, please have a look on https://docs.docker.com/engine/
+For the first time users of Docker, please have a look on https://docs.docker.com/engine/.
 
 The following installation steps is for Ubuntu 20.04
 
@@ -147,12 +147,12 @@ $ sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ub
 $ apt-cache policy docker-ce
 
 #Finally, install Docker
-$ sudo apt install docker-ce
+$ sudo apt install docker-ce docker-compose
 ```
 
 ### Executing Docker without sudo
 
-By default, the docker command can only be run by the root user or by a user in the docker group, which is automatically created during Docker's installation process. If you attempt to run the docker command without prefixing it with sudo or without being in the docker group, you will get an output like this:
+By default, the Docker command can only be run by the root user or by a user in the Docker group, which is automatically created during Docker's installation process. If you attempt to run the Docker command without prefixing it with sudo or without being in the Docker group, you will get an output like this:
 
 ```console
 docker: Cannot connect to the Docker daemon. Is the docker daemon running on this host?.
@@ -168,10 +168,16 @@ $ sudo gpasswd -a $USER docker
 # Logout and then log-in again to apply the changes to the group
  ```
 
-After you logout and login, you can probably run the docker command without `sudo`.
+After you logout and login, you can probably run the Docker command without `sudo`.
 
 ```sh
 $ docker run hello-world
+```
+
+Login to the docker to be able to access docker images.
+
+```sh
+$ docker login -u ${YOUR_USERNAME} -p ${YOUR_PASSWD}
 ```
 
 ### Create a Docker network tamproto
@@ -207,7 +213,7 @@ We use Docker images of TA-Ref for building the TEEP-Device since TEEP-Device is
 Docker images with all necessary packages for building TEEP-Device for all three targets are already available. The details are mentioned below.
 
 
-| Target | docker image |
+| Target | Docker image |
 | ------ | ------ |
 | Keystone | aistcpsec/taref-dev:keystone |
 | OP-TEE | aistcpsec/taref-dev:optee |
@@ -219,21 +225,19 @@ Docker images with all necessary packages for building TEEP-Device for all three
 
 The build environment is in three terminals for convenient development.
 
-* Terminal of running tamproto
+* First Terminal for running tamproto
     - Shows log messages of tamproto while developing TEEP-Device
 
-* Terminal of running Docker of TEE
+* Second Terminal for running Docker of TEE
     - For building and manipulating TEEP-Device
 
-* Terminal of editing TEEP-Device
+* Third Terminal for editing sources of TEEP-Device
     - For editing source codes of TEEP-Device by watching the above two terminals.
 
 The terminals may be a local fast computer or login with ssh to a remote build machine with each terminal. In any case, the speed of the build machine affects the efficiency of the development.
 
 
-### Building TEEP-Device for Keystone with Docker
-
-Following commands are to be executed on Ubuntu 20.04.
+## Run Tamproto (TAM Server) - Required by all Keystone/OP-TEE/SGX
 
 To run TEEP-Device, first we need to run tamproto inside the same host. Let's clone the tamproto and start it.
 
@@ -247,8 +251,7 @@ $ git clone https://192.168.100.100/rinkai/tamproto.git
 $ cd tamproto
 $ git checkout master
 $ docker-compose build
-$ docker-compose up &
-$ cd ..
+$ docker-compose up
 ```
 
 Trimmed output of starting tamproto
@@ -264,6 +267,9 @@ tam_api_1  | Express HTTP  server listening on port 8888
 tam_api_1  | Express HTTPS server listening on port 8443
 ```
 
+
+### Building TEEP-Device for Keystone with Docker
+
 **Cloning TEEP-Device**
 
 Open the second terminal for editing the sources of TEEP-Device. The directory of cloning sources is mounted when running Docker in the next step.
@@ -277,6 +283,12 @@ $ git checkout master
 # Sync and update the submodules
 $ git submodule sync --recursive
 $ git submodule update --init --recursive
+
+# Match the user privilege with it is used in container
+# Container uses build-user account with 1000:1000
+$ sudo chown -R 1000:1000 teep-device/
+$ sudo chmod -R o+w teep-device/
+$ git config --global --add safe.directory $(pwd)/teep-device
 ```
 
 **Start the Docker**
@@ -288,8 +300,11 @@ Open the third terminal. Here we build the TEEP-Device and run it to talk with t
 $ docker run --network tamproto_default -it --rm -v $(pwd):/home/user/teep-device aistcpsec/taref-dev:keystone
 ```
 
-After you start the docker command, you will be logged-in inside the docker container.
-Following are the  commands to be executed inside the docker.
+After you start the Docker command, you will be logged-in inside the Docker container.
+Following are the  commands to be executed inside the Docker.
+
+
+**Build**
 
 ```sh
 # [Inside docker image]
@@ -301,7 +316,246 @@ $ cd ~/teep-device/
 $ make
 ```
 
+**Run manually**
+
 After the successful build, run the sample TEEP session with tamproto.
+
+Launch qemu of RISC-V with Keystone.
+The password for root is 'sifive'
+
+```sh
+make run-qemu
+```
+
+After login, start from installing driver for Keystone.
+
+```sh
+# cd teep-device/
+# ls
+env.sh           hello-app        ita.sh           teep-agent-ta
+eyrie-rt         hello-ta         showtamurl.sh    teep-broker-app
+# source env.sh
+```
+
+There is a script to initiate teep-agent with tamproto.
+
+```sh
+# cat ita.sh
+#!/bin/bash -x
+
+./teep-broker-app --tamurl ${TAM_URL}/api/tam_cbor
+# ./ita.sh
+```
+
+To exit from qemu.
+
+```sh
+# poweroff
+```
+
+The log massage of tamproto will be show on the terminal of running tamproto.
+```
+tam_api_1  | POST /api/tam_cbor 200 2.816 ms - 399
+tam_api_1  | Access from: ::ffff:172.18.0.3
+tam_api_1  | {
+tam_api_1  |   pragma: 'no-cache',
+tam_api_1  |   'cache-control': 'no-cache',
+tam_api_1  |   host: 'example.com',
+tam_api_1  |   origin: 'http://192.168.11.3',
+tam_api_1  |   connection: 'close',
+tam_api_1  |   accept: 'application/teep+cbor',
+tam_api_1  |   'content-length': '13',
+tam_api_1  |   'content-type': 'application/teep+cbor'
+tam_api_1  | }
+tam_api_1  | <Buffer 82 05 a1 14 48 77 77 77 77 77 77 77 77>
+tam_api_1  | {
+tam_api_1  |   TYPE: 5,
+tam_api_1  |   token: <Buffer 77 77 77 77 77 77 77 77>,
+tam_api_1  |   TOKEN: <Buffer 77 77 77 77 77 77 77 77>
+tam_api_1  | }
+tam_api_1  | TAM ProcessTeepMessage instance
+tam_api_1  | TEEP-Protocol:parse
+tam_api_1  | {
+tam_api_1  |   TYPE: 5,
+tam_api_1  |   token: <Buffer 77 77 77 77 77 77 77 77>,
+tam_api_1  |   TOKEN: <Buffer 77 77 77 77 77 77 77 77>
+tam_api_1  | }
+tam_api_1  | object
+tam_api_1  | *parseSuccessMessage
+tam_api_1  | <Buffer 77 77 77 77 77 77 77 77>
+tam_api_1  | undefined
+tam_api_1  | TAM ProcessTeepMessage response
+tam_api_1  | undefined
+tam_api_1  | WARNING: Agent may sent invalid contents. TAM responses null.
+tam_api_1  | POST /api/tam_cbor 204 1.357 ms - -
+```
+
+These are trimmed output of all procedure above on the terminal of running container.
+
+```
+boot ROM size: 53869
+fdt dumped at 57968
+
+OpenSBI v0.8
+   ____                    _____ ____ _____
+  / __ \                  / ____|  _ \_   _|
+ | |  | |_ __   ___ _ __ | (___ | |_) || |
+ | |  | | '_ \ / _ \ '_ \ \___ \|  _ < | |
+ | |__| | |_) |  __/ | | |____) | |_) || |_
+  \____/| .__/ \___|_| |_|_____/|____/_____|
+        | |
+        |_|
+
+Platform Name             : riscv-virtio,qemu
+Platform Features         : timer,mfdeleg
+Platform HART Count       : 1
+Firmware Base             : 0x80000000
+Firmware Size             : 204 KB
+Runtime SBI Version       : 0.2
+
+Domain0 Name              : root
+Domain0 Boot HART         : 0
+Domain0 HARTs             : 0*
+Domain0 Region00          : 0x0000000080000000-0x000000008003ffff ()
+Domain0 Region01          : 0x0000000000000000-0xffffffffffffffff (R,W,X)
+Domain0 Next Address      : 0x0000000080200000
+Domain0 Next Arg1         : 0x0000000082200000
+Domain0 Next Mode         : S-mode
+Domain0 SysReset          : yes
+
+[SM] Initializing ... hart [0]
+[SM] Keystone security monitor has been initialized!
+Boot HART ID              : 0
+Boot HART Domain          : root
+Boot HART ISA             : rv64imafdcsu
+Boot HART Features        : scounteren,mcounteren,time
+Boot HART PMP Count       : 16
+Boot HART PMP Granularity : 4
+Boot HART PMP Address Bits: 54
+Boot HART MHPM Count      : 0
+Boot HART MHPM Count      : 0
+Boot HART MIDELEG         : 0x0000000000000222
+Boot HART MEDELEG         : 0x000000000000b109
+[    0.000000] OF: fdt: Ignoring memory range 0x80000000 - 0x80200000
+[    0.000000] Linux version 5.7.0-dirty (build-user@e0a0fb59dcba) (gcc version 10.2.0 (GCC), GNU ld (GNU Binutils) 2.35) #1 SMP Sat Aug 27 10:56:19 UTC 2022
+[    0.000000] initrd not found or empty - disabling initrd
+
+...
+
+[    0.394578] Key type dns_resolver registered
+[    0.410713] EXT4-fs (vda): mounting ext2 file system using the ext4 subsystem
+[    0.419345] EXT4-fs (vda): mounted filesystem without journal. Opts: (null)
+[    0.419888] VFS: Mounted root (ext2 filesystem) readonly on device 254:0.
+[    0.422839] devtmpfs: mounted
+[    0.459143] Freeing unused kernel memory: 232K
+[    0.460036] Run /sbin/init as init process
+[    0.636529] EXT4-fs (vda): re-mounted. Opts: (null)
+Starting syslogd: OK
+Starting klogd: OK
+Running sysctl: OK
+Initializing random number generator: OK
+Saving random seed: OK
+Starting network: udhcpc: started, v1.32.0
+udhcpc: sending discover
+udhcpc: sending select for 192.168.100.128
+udhcpc: lease of 192.168.100.128 obtained, lease time 86400
+deleting routers
+adding dns 192.168.100.3
+OK
+Starting dropbear sshd: OK
+
+Welcome to Buildroot
+buildroot login: root
+Password: 
+# ls
+keystone-driver.ko  teep-device         tests.ke
+# cd teep-device/
+# ls
+env.sh           hello-app        ita.sh           teep-agent-ta
+eyrie-rt         hello-ta         showtamurl.sh    teep-broker-app
+# source env.sh 
+[  268.206116] keystone_driver: loading out-of-tree module taints kernel.
+[  268.214659] keystone_enclave: keystone enclave v1.0.0
+# ./showtamurl.sh 
+--tamurl http://tamproto_tam_api_1:8888/api/tam_cbor
+# cat ita.sh
+#!/bin/bash -x
+
+./teep-broker-app --tamurl ${TAM_URL}/api/tam_cbor
+# ./ita.sh 
++ ./teep-broker-app --tamurl http://tamproto_tam_api_1:8888/api/tam_cbor
+teep-broker.c compiled at Sep 16 2022 09:33:37
+uri = http://tamproto_tam_api_1:8888/api/tam_cbor, cose=0, talist=
+[debug] UTM : 0xffffffff80000000-0xffffffff80100000 (1024 KB) (boot.c:127)
+[debug] DRAM: 0x179800000-0x179c00000 (4096 KB) (boot.c:128)
+[debug] FREE: 0x1799c6000-0x179c00000 (2280 KB), va 0xffffffff001c6000 (boot.c:133)
+[debug] eyrie boot finished. drop to the user land ... (boot.c:172)
+[1970/01/01 00:06:41:3854] N: POST: http://tamproto_tam_api_1:8888/api/tam_cbor
+[1970/01/01 00:06:41:3867] N: (hexdump: zero length)
+[1970/01/01 00:06:41:3917] N: http://tamproto_tam_api_1:8888/api/tam_cbor
+[1970/01/01 00:06:41:4563] N: 
+[1970/01/01 00:06:41:4580] N: 0000: 83 01 A5 01 81 01 03 81 00 04 43 01 02 05 14 48    ..........C....H
+[1970/01/01 00:06:41:4588] N: 0010: 77 77 77 77 77 77 77 77 15 81 00 02                wwwwwwww....    
+[1970/01/01 00:06:41:4594] N: 
+[1970/01/01 00:06:41:4690] N: POST: http://tamproto_tam_api_1:8888/api/tam_cbor
+[1970/01/01 00:06:41:4696] N: 
+[1970/01/01 00:06:41:4701] N: 0000: 82 02 A4 14 48 77 77 77 77 77 77 77 77 08 80 0E    ....Hwwwwwwww...
+[1970/01/01 00:06:41:4708] N: 0010: 80 0F 80                                           ...             
+[1970/01/01 00:06:41:4714] N: 
+[1970/01/01 00:06:41:4751] N: http://tamproto_tam_api_1:8888/api/tam_cbor
+[1970/01/01 00:06:41:4978] N: 
+[1970/01/01 00:06:41:4984] N: 0000: 82 03 A2 0A 81 59 01 7D D8 6B A3 02 58 73 82 58    .....Y.}.k..Xs.X
+
+...
+
+[1970/01/01 00:06:41:5149] N: 0170: 65 20 54 45 45 50 2D 44 65 76 69 63 65 03 66 74    e TEEP-Device.ft
+[1970/01/01 00:06:41:5156] N: 0180: 63 2E 6F 72 67 14 48 AB A1 A2 A3 A4 A5 A6 A7       c.org.H........ 
+[1970/01/01 00:06:41:5164] N: 
+command: 19
+execute suit-set-parameters
+command: 1
+execute suit-condition-vendor-identifier
+command: 2
+execute suit-condition-class-identifier
+command: 19
+execute suit-set-parameters
+command: 21
+execute suit-directive-fetch
+local uri
+store component
+  device   = TEEP-Device
+  storage  = SecureFS
+  filename = 8d82573a-926d-4754-9353-32dc29997f74.ta
+command: 3
+execute suit-condition-image-match
+end of command seq
+[1970/01/01 00:06:41:5433] N: POST: http://tamproto_tam_api_1:8888/api/tam_cbor
+[1970/01/01 00:06:41:5439] N: 
+[1970/01/01 00:06:41:5445] N: 0000: 82 05 A1 14 48 77 77 77 77 77 77 77 77             ....Hwwwwwwww   
+[1970/01/01 00:06:41:5451] N: 
+[1970/01/01 00:06:41:5462] N: http://tamproto_tam_api_1:8888/api/tam_cbor
+[1970/01/01 00:06:41:5634] N: (hexdump: zero length)
+# poweroff
+# Stopping dropbear sshd: OK
+Stopping network: OK
+Saving random seed: OK
+Stopping klogd: OK
+Stopping syslogd: OK
+umount: devtmpfs busy - remounted read-only
+[ 1672.639348] EXT4-fs (vda): re-mounted. Opts: (null)
+The system is going down NOW!
+logout
+Sent SIGTERM to all processes
+Sent SIGKILL to all processes
+Requesting system poweroff
+[ 1674.667156] reboot: Power down
+make[1]: Leaving directory '/home/user/teep-device/sample
+```
+
+
+**Run automatically**
+
+This command will run all the manual procedure above, mainly prepared for CI.
 
 ```sh
 $ make run-sample-session
@@ -407,36 +661,9 @@ $ make clean
 ```
 
 
-### Building TEEP-Device for OP-TEE with docker
+### Building TEEP-Device for OP-TEE with Docker
 
-To run TEEP-Device, first we need to run tamproto inside the same host. Let's clone the tamproto and start it.
-
-**tamproto**
-
-```sh
-# Clone the tamproto repo and checkout master branch
-$ git clone https://192.168.100.100/rinkai/tamproto.git
-$ cd tamproto
-$ git checkout master
-$ docker-compose build
-$ docker-compose up &
-$ cd ..
-```
-
-Trimmed output of starting tamproto
-```console
-tam_api_1  |   TEE_pub: 'teep.jwk' }
-tam_api_1  | Load key TAM_priv
-tam_api_1  | Load key TAM_pub
-tam_api_1  | Load key TEE_priv
-tam_api_1  | Load key TEE_pub
-tam_api_1  | Key binary loaded
-tam_api_1  | 192.168.11.4
-tam_api_1  | Express HTTP  server listening on port 8888
-tam_api_1  | Express HTTPS server listening on port 8443
-```
-
-**TEEP-Device**
+**Cloning TEEP-Device**
 
 ```sh
 # Clone the teep-device repo and checkout master branch
@@ -456,8 +683,8 @@ $ git submodule update --init --recursive
 $ docker run --network tamproto_default -it --rm -v $(pwd):/home/user/teep-device aistcpsec/taref-dev:optee
 ```
 
-After you start the docker command, you will be logged-in inside the docker container.
-Following are the commands to be executed inside the docker.
+After you start the Docker command, you will be logged-in inside the Docker container.
+Following are the commands to be executed inside the Docker.
 
 ```sh
 # [Inside docker image]
@@ -534,37 +761,9 @@ $ make clean
 ```
 
 
-### Building TEEP-Device for SGX with docker
+### Building TEEP-Device for SGX with Docker
 
-
-To run TEEP-Device, first we need to run tamproto inside the same host. Let's clone the tamproto and start it.
-
-**tamproto**
-
-```sh
-# Clone the tamproto repo and checkout master branch
-$ git clone https://192.168.100.100/rinkai/tamproto.git
-$ cd tamproto
-$ git checkout master
-$ docker-compose build
-$ docker-compose up &
-$ cd ..
-```
-
-Trimmed output of starting tamproto
-```console
-tam_api_1  |   TEE_pub: 'teep.jwk' }
-tam_api_1  | Load key TAM_priv
-tam_api_1  | Load key TAM_pub
-tam_api_1  | Load key TEE_priv
-tam_api_1  | Load key TEE_pub
-tam_api_1  | Key binary loaded
-tam_api_1  | 192.168.11.4
-tam_api_1  | Express HTTP  server listening on port 8888
-tam_api_1  | Express HTTPS server listening on port 8443
-```
-
-**TEEP-Device**
+**Cloning TEEP-Device**
 
 ```sh
 # Clone the teep-device repo and checkout master branch
@@ -584,8 +783,8 @@ $ git submodule update --init --recursive
 $ docker run --network tamproto_default -it --rm -v $(pwd):/home/user/teep-device aistcpsec/taref-dev:sgx
 ```
 
-After you start the docker command, you will be logged-in inside the docker container.
-Following are the commands to be executed inside the docker
+After you start the Docker command, you will be logged-in inside the Docker container.
+Following are the commands to be executed inside the Docker
 
 ```sh
 # [Inside docker image]
@@ -665,8 +864,29 @@ Cleaning built binaries. Deleting the built binaries are required when starting 
 $ make clean
 ```
 
+## Generating Documentation
 
-# Building TEEP-Device for PC without docker
+This PDF (teep-device.pdf) was generated using Doxygen.
+
+### Starting container
+
+```sh
+docker run -it --rm -v $(pwd):/home/user/teep-device aistcpsec/teep-dev:doxygen
+```
+
+### Generate pdf and html documentation
+
+```sh
+$ make docs
+```
+
+Location of created documentation.
+
+```
+docs/teep-device.pdf
+docs/teep-device_readme_html.tar.gz
+```
+# Building TEEP-Device for PC without Docker
 
 The building PC is prepared for debugging purposes during developing TEEP-Device itself. This method does not require any TEEs installed in the local machine and it is meant to build and run on TEEP-Device on any x64 PC.
 
@@ -684,7 +904,8 @@ $ docker-compose up &
 $ cd ..
 ```
 
-Trimmed output of starting tamproto
+Trimmed output of starting tamproto.
+
 ```console
 tam_api_1  |   TEE_pub: 'teep.jwk' }
 tam_api_1  | Load key TAM_priv
@@ -732,7 +953,7 @@ $ make run-sample-session
 ```
 
 Trimmed output of the run.
-The output can be found in /home/user/teep-device/platform/pc/build/8d82573a-926d-4754-9353-32dc29997f74.ta
+The TC can be found in /home/user/teep-device/platform/pc/build/8d82573a-926d-4754-9353-32dc29997f74.ta
 
 
 ```console
@@ -752,3 +973,4 @@ build-user@c4435c23705c:~/teep-device$ cat /home/user/teep-device/platform/pc/
 build/8d82573a-926d-4754-9353-32dc29997f74.ta
 Hello TEEP from TEE!
 ```
+
