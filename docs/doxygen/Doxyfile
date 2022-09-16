@@ -861,7 +861,7 @@ INPUT		       = ./docs/overview_of_teep-device.md \
                          ./docs/cbor_teep.md \
                          ./docs/building_with_docker.md \
                          ./docs/building_without_docker.md \
-                         ./docs/building_pc.md
+                         ./docs/building_notee.md
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
