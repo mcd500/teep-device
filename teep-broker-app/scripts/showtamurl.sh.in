@@ -1,0 +1,7 @@
+#!/bin/bash
+
+if [ -z ${TAM_URL} ]; then
+	TAM_URL=`get-ip.sh`
+fi
+
+echo --tamurl ${TAM_URL}/api/tam_cbor

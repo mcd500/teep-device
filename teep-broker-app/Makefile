@@ -1,9 +1,21 @@
 TOPDIR = $(CURDIR)/..
 include $(TOPDIR)/conf.mk
 
+SCRIPTS := env.sh get-ip.sh itc.sh rtc.sh showtamurl.sh
+
 out-dir = $(BUILD)/broker
 
-all: $(out-dir)/teep-broker-app
+.PHONY: all
+all: $(out-dir)/teep-broker-app $(SCRIPTS)
+
+$(SCRIPTS): %: scripts/%.in
+	mkdir -p $(BUILD)/scripts
+	for i in $< ; do \
+		sed -e 's!@TAM_URL@!$(TAM_URL)!' \
+			-e 's!@PLAT@!$(PLAT)!' \
+			$$i > $(BUILD)/scripts/$@; \
+		chmod +x $(BUILD)/scripts/$@; \
+	done
 
 CFLAGS = \
 	$(REE_CFLAGS) \
@@ -69,6 +81,7 @@ $(out-dir)/%.o: %.cpp
 	mkdir -p $(out-dir)
 	$(CROSS_COMPILE)g++ $(CFLAGS) $< -c -o $@
 
+.PHONY: clean
 clean:
 	rm -f $(out-dir)/teep-broker-app
 	rm -f $(out-dir)/*.o

@@ -12,41 +12,43 @@ run-session: run-session-$(TEE)
 
 .PHONY: scripts
 scripts:
-	mkdir -p $(BUILD)/scripts
-	for i in ita.sh showtamurl.sh env.sh ; do \
-		sed -e 's!@TAM_URL@!$(TAM_URL)!' \
-			-e 's!@PLAT@!$(PLAT)!' \
-			rootfs/scripts/$$i.in >$(BUILD)/scripts/$$i; \
-		chmod +x $(BUILD)/scripts/$$i; \
-	done
+#	mkdir -p $(BUILD)/scripts
+#	for i in ita.sh showtamurl.sh env.sh ; do \
+#		sed -e 's!@TAM_URL@!$(TAM_URL)!' \
+#			-e 's!@PLAT@!$(PLAT)!' \
+#			rootfs/scripts/$$i.in >$(BUILD)/scripts/$$i; \
+#		chmod +x $(BUILD)/scripts/$$i; \
+#	done
 
 .PHONY: rootfs-keystone
 rootfs-keystone: scripts
 	cp $(KEYSTONE_DIR)/build/buildroot.build/images/rootfs.ext2 $(BUILD)/rootfs.ext2
-	e2mkdir -O root -G root $(BUILD)/rootfs.ext2:/root/teep-device
-	e2cp -O root -G root -p $(BUILD)/hello-tc/Enclave $(BUILD)/rootfs.ext2:/root/teep-device/hello-ta
-	e2cp -O root -G root -p $(BUILD)/hello-tc/App-keystone $(BUILD)/rootfs.ext2:/root/teep-device/hello-app
-	e2cp -O root -G root -p $(BUILD)/agent/teep-agent-ta $(BUILD)/rootfs.ext2:/root/teep-device
-	e2cp -O root -G root -p $(BUILD)/broker/teep-broker-app $(BUILD)/rootfs.ext2:/root/teep-device
-	e2cp -O root -G root -p $(BUILD)/scripts/ita.sh $(BUILD)/rootfs.ext2:/root/teep-device
-	e2cp -O root -G root -p $(BUILD)/scripts/env.sh $(BUILD)/rootfs.ext2:/root/teep-device
-	e2cp -O root -G root -p $(BUILD)/scripts/showtamurl.sh $(BUILD)/rootfs.ext2:/root/teep-device
-	e2cp -O root -G root -p $(KEYSTONE_SDK_DIR)/runtime/eyrie-rt $(BUILD)/rootfs.ext2:/root/teep-device
+	e2mkdir -O root -G root $(BUILD)/rootfs.ext2:/root/teep-broker
+	e2cp -O root -G root -p $(BUILD)/hello-tc/Enclave $(BUILD)/rootfs.ext2:/root/teep-broker/hello-ta
+	e2cp -O root -G root -p $(BUILD)/hello-tc/App-keystone $(BUILD)/rootfs.ext2:/root/teep-broker/hello-app
+	e2cp -O root -G root -p $(BUILD)/agent/teep-agent-ta $(BUILD)/rootfs.ext2:/root/teep-broker
+	e2cp -O root -G root -p $(BUILD)/broker/teep-broker-app $(BUILD)/rootfs.ext2:/root/teep-broker
+	e2cp -O root -G root -p $(BUILD)/scripts/env.sh $(BUILD)/rootfs.ext2:/root/teep-broker
+	e2cp -O root -G root -p $(BUILD)/scripts/itc.sh $(BUILD)/rootfs.ext2:/root/teep-broker
+	e2cp -O root -G root -p $(BUILD)/scripts/rtc.sh $(BUILD)/rootfs.ext2:/root/teep-broker
+	e2cp -O root -G root -p $(BUILD)/scripts/showtamurl.sh $(BUILD)/rootfs.ext2:/root/teep-broker
+	e2cp -O root -G root -p $(KEYSTONE_SDK_DIR)/runtime/eyrie-rt $(BUILD)/rootfs.ext2:/root/teep-broker
 	e2cp -O root -G root -p $(BUILD)/ree/mbedtls/library/lib* $(BUILD)/rootfs.ext2:/usr/lib
 	e2cp -O root -G root -p $(BUILD)/ree/libwebsockets/lib/lib* $(BUILD)/rootfs.ext2:/usr/lib
 
 .PHONY: rootfs-optee
 rootfs-optee: scripts
 	rm -rf $(BUILD)/rootfs-ext
-	mkdir -p $(BUILD)/rootfs-ext/root/teep-device
+	mkdir -p $(BUILD)/rootfs-ext/root/teep-broker
 	mkdir -p $(BUILD)/rootfs-ext/lib/optee_armtz
 	mkdir -p $(BUILD)/rootfs-ext/usr/lib
-	install $(BUILD)/hello-tc/App-optee $(BUILD)/rootfs-ext/root/teep-device/hello-app
+	install $(BUILD)/hello-tc/App-optee $(BUILD)/rootfs-ext/root/teep-broker/hello-app
 	install $(BUILD)/agent/$(TEE_AGENT_UUID).ta $(BUILD)/rootfs-ext/lib/optee_armtz
-	install $(BUILD)/broker/teep-broker-app $(BUILD)/rootfs-ext/root/teep-device
-	install $(BUILD)/scripts/ita.sh $(BUILD)/rootfs-ext/root/teep-device
-	install $(BUILD)/scripts/env.sh $(BUILD)/rootfs-ext/root/teep-device
-	install $(BUILD)/scripts/showtamurl.sh $(BUILD)/rootfs-ext/root/teep-device
+	install $(BUILD)/broker/teep-broker-app $(BUILD)/rootfs-ext/root/teep-broker
+	install $(BUILD)/scripts/env.sh $(BUILD)/rootfs-ext/root/teep-broker
+	install $(BUILD)/scripts/itc.sh $(BUILD)/rootfs-ext/root/teep-broker
+	install $(BUILD)/scripts/rtc.sh $(BUILD)/rootfs-ext/root/teep-broker
+	install $(BUILD)/scripts/showtamurl.sh $(BUILD)/rootfs-ext/root/teep-broker
 	install $(BUILD)/ree/mbedtls/library/lib* $(BUILD)/rootfs-ext/usr/lib
 	install $(BUILD)/ree/libwebsockets/lib/lib* $(BUILD)/rootfs-ext/usr/lib
 

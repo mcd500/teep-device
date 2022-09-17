@@ -1,0 +1,5 @@
+#!/bin/bash -x
+
+echo Running downloaded TC from the TAM
+
+./hello-app 8d82573a-926d-4754-9353-32dc29997f74.ta eyrie-rt

@@ -1,6 +1,8 @@
 TOPDIR = $(CURDIR)
 include $(TOPDIR)/conf.mk
 
+TAM_URL ?= http://tamproto_tam_api_1:8888
+
 .PHONY: all
 all: check-tee submodule suit libteep agent broker hello-tc rootfs
 
@@ -33,7 +35,7 @@ agent:
 
 .PHONY: broker
 broker:
-	$(MAKE) -C teep-broker-app
+	$(MAKE) TAM_URL=$(TAM_URL) -C teep-broker-app
 
 .PHONY: hello-tc
 hello-tc:
