@@ -272,7 +272,7 @@ To exit from qemu.
 # poweroff
 ```
 
-The log massage of tamproto will be show on the terminal of running tamproto.
+The log massage of tamproto will be shown on the terminal of running tamproto.
 ```
 tam_api_1  | POST /api/tam_cbor 200 2.816 ms - 399
 tam_api_1  | Access from: ::ffff:172.18.0.3
