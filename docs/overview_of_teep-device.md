@@ -7,7 +7,7 @@ The TEEP Protocol provides the protocol on a wide range of devices for install, 
 
 The TEEP-Device is an implementation for defining the draft of Trusted Execution Environment Provisioning (TEEP) Protocol at the Internet Engineering Task Force (IETF). The chart above is a simplified diagram of components described in the TEEP Protocol and TEEP Architecture drafts. The TEEP Protocol on the TEEP-Device uses HTTP packets defined by HTTP Transport for Trusted Execution Environment Provisioning.
 
-Following are the explanation of each components on the above diagram.
+Following are the explanations of each component on the above diagram.
 
 Trusted Application (TA): An application that runs in a TEE.
 
@@ -33,7 +33,7 @@ More details can be found in the below URL.
   * https://datatracker.ietf.org/doc/html/draft-ietf-teep-protocol
 - HTTP Transport for Trusted Execution Environment Provisioning
   * https://datatracker.ietf.org/doc/html/draft-ietf-teep-otrp-over-http
-- TEEP Architecutre:
+- TEEP Architecture:
   * https://datatracker.ietf.org/doc/draft-ietf-teep-architecture/
 
 The terminology of Trusted Application (TA) in the old draft was changed to Trusted Component (TC) to express the files installed from TAM to devices that could have both binaries of trusted applications and data files of personalization data. The TA and TC are interchangeable in this documentation.
@@ -53,7 +53,7 @@ Typical use cases for TEEP Protocol is a firmware update Over The Air (OTA) whic
 
 - Implemented on top of TA-Ref which provides a portable TEE programming environment among different TEEs on Intel CPU, ARM Cortex-A and RISC-V 64G to provide uniform source codes over OP-TEE on ARM-TrustZone for Cortex-A series and Keystone on RISC-V.
 
-- The required features of TEEP-Agent in the draft is implemented as a application in user application privilege level inside TEE in this TEEP-Device to simplify the implementation which ideally should be combined with implementation in higher privilege levels, such as, the runtime in S-Mode and Secure Monitor in M-mode on RISC-V. Therefore, some of the assumed requirements on the draft are not fulfilled with the TEEP-Device. In the product, the features of TEEP-Agent must be enabled through root-of-trust from the boot up of the CPUs, the TCs must be saved in secure manner and have protection of installed TCs.
+- The required features of TEEP-Agent in the draft is implemented as a application in user application privilege level inside TEE in this TEEP-Device to simplify the implementation which ideally should be combined with implementation in higher privilege levels, such as, the runtime in S-Mode and Secure Monitor in M-mode on RISC-V. Therefore, some of the assumed requirements on the draft are not fulfilled with the TEEP-Device. In the product, the features of TEEP-Agent must be enabled through root-of-trust from the boot up of the CPUs, the TCs must be saved in a secure manner and have protection of installed TCs.
 
 - Supports Concise Binary Object Representation (CBOR) for current four TEEP messages.
   * https://datatracker.ietf.org/doc/html/rfc7049
@@ -63,7 +63,7 @@ Typical use cases for TEEP Protocol is a firmware update Over The Air (OTA) whic
 
 ## Components of TEEP-Device and TA-Ref
 
-The Trusted Application Reference (TA-Ref) is a different software stack from this TEEP-Devie. The TA-Ref provides portable API and SDK among Intel SGX, ARM TrustZone-A and RISC-V Keystone and enables portability for source codes of Trusted Applications among different CPUs.
+The Trusted Application Reference (TA-Ref) is a different software stack from this TEEP-Devie. The TA-Ref provides a portable API and SDK among Intel SGX, ARM TrustZone-A and RISC-V Keystone and enables portability for source codes of Trusted Applications among different CPUs.
 
 The API of TA-Ref is a subset of TEE Internal Core API Specification defined by Global Platform.
  - https://globalplatform.org/specs-library/tee-internal-core-api-specification/
@@ -91,26 +91,3 @@ It is on OP-TEE but highly utilizes the programming environment provided by TA-R
 @image latex docs/images/teep-and-taref-on-sgx.png width=\textwidth
 
 The diagram is the ideal implementation of TEEP-Device on SGX. The current TEEP-Device is not utilizing SGX libraries and the SGX enabled CPU which provides SGX capability with SGX SDK. The TEEP-Device is built and executed as a regular user space application at the moment, and enabling the SGX capability is a future activity.
-
-## Directory structure
-
-```
-.
-+-- README.md
-+-- docs                --- Files for generating documentations
-+-- hello-app           --- Sample Trusted Application on Linux side for TEEP Protocol
-+-- hello-ta            --- Sample Trusted Application on TEE side for TEEP Protocol
-+-- include             --- Header files to build hello-app/ta and teep-broker-app/teep-agent-ta
-+-- key                 --- Cryptographic keys for TEEP Protocol
-+-- libteep             --- Contains libraries used on TEEP-Device
-|   +-- libwebsockets   --- HTTP/HTTPS library  https://github.com/warmcat/libwebsockets
-|   +-- mbedtls         --- Cryptographic library  https://github.com/ARMmbed/mbed-crypto
-|   +-- QCBOR           --- CBOR library  https://github.com/laurencelundblade/QCBOR.git
-|   +-- t_cose          --- COSE library  https://github.com/laurencelundblade/t_cose.git
-+-- pctest              --- TEEP-Device runs only on PC with Linux for development purpose
-+-- platform            --- Build files for supported CPUs
-+-- scripts             --- Scripts used for build and running TEEP-Device
-+-- teep-agent-ta       --- Main body of handling TEEP Protocol on TEE side
-+-- teep-broker-app     --- Main body of handling TEEP Protocol on Linux side
-+-- tiny-tam            --- Small TAM implementation
-```

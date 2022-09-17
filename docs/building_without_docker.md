@@ -52,7 +52,7 @@ $ docker-compose build
 $ docker-compose up
 ```
 
-Once TAM server is up, waiting incoming packets from TEEP-Device.
+Once the TAM server is up, waiting for incoming packets from TEEP-Device.
 
 ```console
 naga@smartie:~/Aist_Dev/test/tamproto$ docker-compose up
@@ -95,12 +95,12 @@ tam_api_1  | Express HTTPS server listening on port 8443
 tam_api_1  | GET /api/ 200 5.239 ms - 24
 ```
 
-Please keep the terminal open and do clone and build for the targets on seperate terminals.
+Please keep the terminal open and clone and build for the targets on separate terminals.
 
 ## Keystone
 
 Build `TEEP-Device` with Keystone. Make sure Keystone and its supporting sources have been built already.
-Please refer Keystone section of the "Preparation before building TA-Ref without Docker" in the ta-ref.pdf document.
+Please refer to the Keystone section of the "Preparation before building TA-Ref without Docker" in the ta-ref.pdf document.
 
 ### Clone and Build
 
@@ -203,14 +203,14 @@ cmp: 8d82573a-926d-4754-9353-32dc29997f74.ta.secstor.plain: No such file or dire
 
 ### Running hello-app and teep-broker-app on RISC-V Unleashed
 
-To check TEEP-Device on Unleased, we need to run TAM server (refer above
-to run tamproto) and networking with Unleased dev board
+To check TEEP-Device on Unleashed, we need to run TAM server (refer above
+to run tamproto) and networking with Unleashed dev board
 
-#### Copy the hello-app and teep-broker-app binaries to Unleased
+#### Copy the hello-app and teep-broker-app binaries to Unleashed
 
 **Manual Copy**
 
-- Conneect to Unleased over serial console then assign IP address `ifconfig eth0 192.168.0.6`
+- Connect to Unleased over serial console then assign IP address `ifconfig eth0 192.168.0.6`
 - Copy the binaries from build PC over SSH (user:root, password: sifive)
 
 Here `192.168.0.6` is IP Address of Unleased board
@@ -232,10 +232,10 @@ Please follow below steps to write the TEEP-Device binaries to SD-card
 
 - Insert SD card to your PC for Unleashed
 - Edit `platform/keystone/script/sktinst.sh`
- - Check SD-card device name detected on yor PC and fix `prefix=?`
- - `export prefix=/dev/mmcblk0`
+- Check SD-card device name detected on yor PC and fix `prefix=?`
+- `export prefix=/dev/mmcblk0`
 - execute `script/sktinst.sh` as follows
- - `cd platform/keystone; script/sktinst.sh`
+- `cd platform/keystone; script/sktinst.sh`
 - Move the sd to unleashed board and boot it
 
 #### Check hello-app and teep-broker-app on Unleased
@@ -244,7 +244,7 @@ There are two methods to connect to Unleased.
 - Serial Port using minicom (/dev/ttyUSB0)
 - Over SSH: `ssh root@192.168.0.6`; password is `sifive`
 
-Setup envrionment in Unleased (create /root/env.sh file and add following lines)
+Setup environment in Unleashed (create /root/env.sh file and add following lines)
 
 ```
 $ export PATH=$PATH:/root/teep-device
@@ -360,8 +360,8 @@ ta_store_install: ta_image_len = 130552 ta_name=8d82573a-926d-4754-9353-32dc2999
 
 ## OPTEE
 
-Build `TEEP-Device` with OPTEE. So make sure OPTEE and its supporting sources have been build already.
-Please refer ta-ref.pdf document for "Preparation before building TA-Ref without Docker" - OP-TEE section.
+Build `TEEP-Device` with OPTEE. So make sure OPTEE and its supporting sources have been built already.
+Please refer to the OP-TEE section of the "Preparation before building TA-Ref without Docker" in the ta-ref.pdf document.
 
 ### Clone and Build
 
@@ -456,7 +456,7 @@ make[1]: Leaving directory '/home/user/teep-device/platform/op-tee'
 
 ### Check TEEP-Device by running hello-app and teep-broker-app on Raspberry PI 3
 
-To check TEEP-Device on Raspberry PI 3, we need to run TAM server on PC and networking with Raspberry PI 3 board.
+To check TEEP-Device on Raspberry PI 3, we need to run the TAM server on PC and network with Raspberry PI 3 board.
 
 #### Copy the hello-app and teep-broker-app binaries to Raspberry PI 3
 <br/>
@@ -513,13 +513,13 @@ TODO - Further update required
 
 ## SGX
 
-Build `TEEP-Device` with SGX. Make sure SGX and its supporting sources have been build already.
+Build `TEEP-Device` with SGX. Make sure SGX and its supporting sources have been built already.
 Please refer ta-ref.pdf document for "Preparation before building TA-Ref without Docker" - SGX section.
 
 ### Clone and Build
 
-As a preparation step, it is required to setup the Intel SGX SDK.
-Please refer the preparation steps for building without Docker for SGX in ta-ref.pdf.
+As a preparation step, it is required to set up the Intel SGX SDK.
+Please refer to the preparation steps for building without Docker for SGX in ta-ref.pdf.
 
 
 ```sh
@@ -546,7 +546,7 @@ $ make
 
 ### Check TEEP-Device by running hello-app & teep-broker-app on QEMU Environment
 
-To check TEEP-Device on SGX, we need to run TAM server on PC and networking with SGX machine.
+To check TEEP-Device on SGX, we need to run the TAM server on PC and network with the SGX machine.
 
 ```sh
 $ cd ~/teep-device
@@ -572,11 +572,11 @@ TODO - Further update required
 
 ## Generating Documentation
 
-This documentation (teep-device.pdf) is generated by using Doxygen. To install Doxygen following procedure is necessary.
+This documentation (teep-device.pdf) is generated by using Doxygen. To install Doxygen the following procedure is necessary.
 
 ### Required Packages
 
-Install following packages on Ubuntu.
+Install the following packages on Ubuntu.
 
 ```sh
 $ sudo apt install doxygen-latex graphviz texlive-full texlive-latex-base latex-cjk-all

@@ -10,7 +10,7 @@ The Docker images provide an easy to prepare development environment for TEEP-De
 
 ## Preparation for Docker
 
-For building TEEP-Device with Docker, it is required to install Docker on Ubuntu.
+To build the TEEP-Device with Docker, it is required to install Docker on Ubuntu.
 
 For the first time users of Docker, please have a look on https://docs.docker.com/engine/.
 
@@ -63,6 +63,7 @@ $ docker run hello-world
 ```
 
 Login to the docker to be able to access docker images.
+Make sure you have an account on docker-hub. If not please create one on `dockerhub.com`.
 
 ```sh
 $ docker login -u ${YOUR_USERNAME} -p ${YOUR_PASSWD}
@@ -80,8 +81,6 @@ $ docker network create tamproto_default
 ## Pre-built Docker Images without necessity of building
 
 The following are the docker images that have pre-built and tested binaries of TEEP-Device with TA-Ref. Since these images are already prepared and built already, you can start using it directly without building the TEEP-Device again.
-
-Make sure you have an account on docker-hub. If not please create one on `dockerhub.com`
 
 | Target | docker image |
 | ------ | ------ |
@@ -173,7 +172,7 @@ $ git submodule sync --recursive
 $ git submodule update --init --recursive
 ```
 
-Match the user privilege with the one used in container to prevent permission errors when editing sources. Container uses build-user account with 1000:1000.
+Match the user privilege with the one used in the container to prevent permission errors when editing sources. Container uses a build-user account with 1000:1000.
 
 ```sh
 $ sudo chown -R 1000:1000 teep-device/
@@ -226,7 +225,7 @@ Password:
 #
 ```
 
-After login, start from installing driver for Keystone.
+After login, start from installing the driver for Keystone.
 
 ```sh
 # cd teep-broker/
@@ -238,9 +237,9 @@ eyrie-rt         hello-ta         showtamurl.sh    teep-broker-app
 [  294.151830] keystone_enclave: keystone enclave v1.0.0
 ```
 
-There are helper scripts to handle teep-broker.
+There are helper scripts to handle the teep-broker.
 
-Initiate teep-agent with tamproto.
+Initiate teep-agent with tamproto. This command is for debugging the confirmative and handling of formats of TEEP messages and SUIT manifests in teep-agent and tamproto.
 
 ```sh
 # cat ita.sh
@@ -250,7 +249,7 @@ Initiate teep-agent with tamproto.
 # ./itc.sh
 ```
 
-Run downloaded TC from the tamproto.
+Execute the downloaded TC from the tamproto. This command is for debugging the implementation of the TC.
 
 ```sh
 # ./rtc.sh
@@ -272,7 +271,7 @@ To exit from qemu.
 # poweroff
 ```
 
-The log massage of tamproto will be shown on the terminal of running tamproto.
+The log message of tamproto will be shown on the terminal of running tamproto.
 ```
 tam_api_1  | POST /api/tam_cbor 200 2.816 ms - 399
 tam_api_1  | Access from: ::ffff:172.18.0.3
@@ -309,7 +308,7 @@ tam_api_1  | WARNING: Agent may sent invalid contents. TAM responses null.
 tam_api_1  | POST /api/tam_cbor 204 1.357 ms - -
 ```
 
-These are trimmed output of all procedure above on the terminal of running container.
+These are trimmed outputs of all procedures above on the terminal of the running container.
 
 ```
 boot ROM size: 53869
@@ -474,7 +473,7 @@ make[1]: Leaving directory '/home/user/teep-device/sample
 
 **Run automatically**
 
-This command will run all the previous manual procedure. It is mainly prepared for running TEEP-Device in CI.
+This command will run all the previous manual procedures. It is mainly prepared for running TEEP-Device in CI.
 
 ```sh
 $ make run-sample-session
