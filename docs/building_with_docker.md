@@ -171,11 +171,13 @@ $ git checkout master
 # Sync and update the submodules
 $ git submodule sync --recursive
 $ git submodule update --init --recursive
+```
 
-# Match the user privilege with it is used in container
-# Container uses build-user account with 1000:1000
+Match the user privilege with the one used in container to prevent permission errors when editing sources. Container uses build-user account with 1000:1000.
+
+```sh
 $ sudo chown -R 1000:1000 teep-device/
-$ sudo chmod -R o+w teep-device/
+$ sudo chmod -R a+w teep-device/
 $ git config --global --add safe.directory $(pwd)/teep-device
 ```
 
@@ -213,26 +215,55 @@ The password for root is 'sifive'
 
 ```sh
 make run-qemu
+
+.....
+
+Starting dropbear sshd: OK
+
+Welcome to Buildroot
+buildroot login: root
+Password: 
+#
 ```
 
 After login, start from installing driver for Keystone.
 
 ```sh
-# cd teep-device/
+# cd teep-broker/
 # ls
 env.sh           hello-app        ita.sh           teep-agent-ta
 eyrie-rt         hello-ta         showtamurl.sh    teep-broker-app
 # source env.sh
+[  294.143274] keystone_driver: loading out-of-tree module taints kernel.
+[  294.151830] keystone_enclave: keystone enclave v1.0.0
 ```
 
-There is a script to initiate teep-agent with tamproto.
+There are helper scripts to handle teep-broker.
+
+Initiate teep-agent with tamproto.
 
 ```sh
 # cat ita.sh
 #!/bin/bash -x
 
 ./teep-broker-app --tamurl ${TAM_URL}/api/tam_cbor
-# ./ita.sh
+# ./itc.sh
+```
+
+Run downloaded TC from the tamproto.
+
+```sh
+# ./rtc.sh
++ echo Running downloaded TC from the TAM
+Running downloaded TC from the TAM
++ ./hello-app 8d82573a-926d-4754-9353-32dc29997f74.ta eyrie-rt
+[debug] UTM : 0xffffffff80000000-0xffffffff80100000 (1024 KB) (boot.c:127)
+[debug] DRAM: 0x179800000-0x179c00000 (4096 KB) (boot.c:128)
+[debug] FREE: 0x1799bd000-0x179c00000 (2316 KB), va 0xffffffff001bd000 (boot.c:133)
+[debug] eyrie boot finished. drop to the user land ... (boot.c:172)
+main start
+Hello TEEP from TEE!
+main end
 ```
 
 To exit from qemu.
