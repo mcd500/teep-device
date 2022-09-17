@@ -1,6 +1,6 @@
 # Building TEEP-Device without having TEE installed
 
-The building without TEE is prepared for debugging purposes during developing TEEP-Device itself. This method does not require any TEEs installed in the local machine and it is meant to build and run on TEEP-Device on any x64 PC.
+The building without TEE is prepared for debugging purposes during developing TEEP-Device itself. This method does not require any TEE hardware (TrustZone, SGX and etc) and TEE SDK (Keystone, OP_TEE and SGX SDK) installed in the local machine and it is meant to build and run on TEEP-Device on any x64 PC.
 
 To run TEEP-Device, first we need to run tamproto inside the same host. Let's clone the tamproto and start it.
 
