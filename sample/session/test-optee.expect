@@ -32,7 +32,7 @@ puts " done, guest is booted.\n"
 send -- "export LD_LIBRARY_PATH=/lib:/lib/arm-linux-gnueabihf\r"
 expect "# "
 
-send -- "cd teep-device\r"
+send -- "cd teep-broker\r"
 expect "# "
 send -- "./hello-app\r"
 expect "# "

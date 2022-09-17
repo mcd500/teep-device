@@ -30,7 +30,7 @@ expect {
 	"#### "
 }
 
-send "cd /root/teep-device\r"
+send "cd /root/teep-broker\r"
 expect "#### "
 
 send -- "ls -l\r"
