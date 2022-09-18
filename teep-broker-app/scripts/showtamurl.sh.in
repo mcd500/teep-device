@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 if [ -z ${TAM_URL} ]; then
 	TAM_URL=`get-ip.sh`
