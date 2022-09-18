@@ -24,6 +24,9 @@ send "sifive\r"
 send "PS1='##''## '\r"
 expect "#### "
 
+send -- "export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/lib\r"
+expect "#### "
+
 send "insmod keystone-driver.ko || echo 'err''or'\r"
 expect {
 	"error" { exit 1 }
