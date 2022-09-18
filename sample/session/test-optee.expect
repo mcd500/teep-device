@@ -30,7 +30,7 @@ expect "# "
 puts " done, guest is booted.\n"
 
 # Toolchain libraries might be here or there
-send -- "export LD_LIBRARY_PATH=/lib:/lib/arm-linux-gnueabihf:lib/optee_armtz:/usr/lib\r"
+send -- "export LD_LIBRARY_PATH=/lib:/lib/arm-linux-gnueabihf:/lib/optee_armtz:/usr/lib\r"
 expect "# "
 
 send -- "cd teep-broker\r"
