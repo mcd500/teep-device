@@ -4,6 +4,9 @@ include $(TOPDIR)/conf.mk
 .PHONY: rootfs
 rootfs: rootfs-$(TEE)
 
+.PHONY: install
+install: install-$(TEE)
+
 .PHONY: run-qemu
 run-qemu: run-qemu-$(TEE)
 
@@ -50,6 +53,47 @@ rootfs-optee:
 rootfs-sgx:
 .PHONY: rootfs-pc
 rootfs-pc:
+
+INST_DIR = $(prefix)/$(prefix_bin)
+
+.PHONY: install-keystone
+install-keystone:
+	mkdir -p $(INST_DIR)
+	install $(BUILD)/hello-tc/Enclave $(INST_DIR)/hello-ta
+	install $(BUILD)/hello-tc/App-keystone $(INST_DIR)/hello-app
+	install $(BUILD)/agent/teep-agent-ta $(INST_DIR)
+	install $(BUILD)/broker/teep-broker-app $(INST_DIR)
+	install $(BUILD)/scripts/env.sh $(INST_DIR)
+	install $(BUILD)/scripts/itc.sh $(INST_DIR)
+	install $(BUILD)/scripts/rtc.sh $(INST_DIR)
+	install $(BUILD)/scripts/showtamurl.sh $(INST_DIR)
+	install $(KEYSTONE_SDK_DIR)/runtime/eyrie-rt $(INST_DIR)
+	install $(BUILD)/ree/mbedtls/library/lib* $(prefix_lib)
+	install $(BUILD)/ree/libwebsockets/lib/lib* $(prefix_lib)
+	ldconfig $(prefix_lib)
+
+.PHONY: install-optee
+install-optee:
+	mkdir -p $(INST_DIR)
+	mkdir -p /lib/optee_armtz
+	mkdir -p /usr/lib
+	install $(BUILD)/hello-tc/App-optee $(INST_DIR)/hello-app
+	install $(BUILD)/agent/$(TEE_AGENT_UUID).ta /lib/optee_armtz
+	install $(BUILD)/broker/teep-broker-app $(INST_DIR)
+	install $(BUILD)/scripts/env.sh $(INST_DIR)
+	install $(BUILD)/scripts/itc.sh $(INST_DIR)
+	install $(BUILD)/scripts/rtc.sh $(INST_DIR)
+	install $(BUILD)/scripts/showtamurl.sh $(INST_DIR)
+	install $(BUILD)/ree/mbedtls/library/lib* $(prefix_lib)
+	install $(BUILD)/ree/libwebsockets/lib/lib* $(prefix_lib)
+	ldconfig $(prefix_lib)
+
+.PHONY: install-sgx
+install-sgx:
+
+.PHONY: install-pc
+install-pc:
+
 
 .PHONY: run-qemu-optee
 run-qemu-optee:

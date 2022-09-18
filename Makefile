@@ -3,6 +3,10 @@ TOPDIR = $(CURDIR)
 # Declared $(BUILD) here
 include $(TOPDIR)/conf.mk
 
+prefix      ?= /usr/local
+prefix_bin  ?= teep-broker # Historically it is bin
+prefix_lib  ?= $(prefix)/lib
+
 TAM_IP  ?= tamproto_tam_api_1
 TAM_URL ?= http://$(TAM_IP):8888
 
@@ -56,6 +60,11 @@ clean-hello-tc:
 .PHONY: rootfs
 rootfs:
 	$(MAKE) -C sample rootfs TAM_URL=$(TAM_URL)
+
+.PHONY: install
+install:
+	$(MAKE) -C sample install prefix=$(prefix) prefix_bin=$(prefix_bin) \
+		prefix_lib=$(prefix_lib)
 
 .PHONY: docs
 docs:
