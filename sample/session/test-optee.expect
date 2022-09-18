@@ -34,6 +34,10 @@ expect "# "
 
 send -- "cd teep-broker\r"
 expect "# "
+
+send -- "ls -l\r"
+expect "# "
+
 send -- "./hello-app\r"
 expect "# "
 
@@ -43,6 +47,9 @@ expect {
 	timeout { exit 1 }
 	"# "
 }
+
+send -- "ls -l\r"
+expect "# "
 
 send -- "./hello-app\r"
 expect "# "
