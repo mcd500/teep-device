@@ -1,8 +1,8 @@
-.PHONY: manifest clean-manifest upload-download-manifest upload-embed-manifest
-.PHONY: upload-download-manifest upload-embed-manifest
 
+.PHONY: manifest
 manifest: $(MANIFEST_OUT_DIR)/signed-download-tc.suit $(MANIFEST_OUT_DIR)/signed-embed-tc.suit
 
+.PHONY: clean-manifest
 clean-manifest:
 	rm -f $(MANIFEST_OUT_DIR)/signed-download-tc.suit $(MANIFEST_OUT_DIR)/signed-embed-tc.suit
 	rm -f $(MANIFEST_OUT_DIR)/download-tc.suit $(MANIFEST_OUT_DIR)/embed-tc.suit
@@ -33,12 +33,14 @@ $(MANIFEST_OUT_DIR)/signed-download-tc.suit: $(MANIFEST_OUT_DIR)/download-tc.sui
 $(MANIFEST_OUT_DIR)/signed-embed-tc.suit: $(MANIFEST_OUT_DIR)/embed-tc.suit
 	suit-tool sign -m $< -k $(SUIT_PRIV_KEY) -o $@
 
+.PHONY: upload-download-manifest
 upload-download-manifest:
 	curl $(TAM_URL)/panel/upload \
 		-F "file=@$(MANIFEST_OUT_DIR)/signed-download-tc.suit;filename=integrated-payload-manifest.cbor"
 	curl $(TAM_URL)/panel/upload \
 		-F "file=@$(TC_BINARY);filename=8d82573a-926d-4754-9353-32dc29997f74.ta"
 
+.PHONY: upload-embed-manifest
 upload-embed-manifest:
 	curl $(TAM_URL)/panel/upload \
 		-F "file=@$(MANIFEST_OUT_DIR)/signed-embed-tc.suit;filename=integrated-payload-manifest.cbor"

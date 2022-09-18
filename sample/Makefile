@@ -100,14 +100,17 @@ run-qemu-sgx:
 	@echo 'pc does not need qemu'
 	false
 
+.PHONY: upload-hello-tc-download
 TAM_URL ?= http://tamproto_tam_api_1:8888
 
 upload-hello-tc-download:
 	$(MAKE) -C $(TOPDIR)/hello-tc/build-$(PLAT) SOURCE=$(TOPDIR)/hello-tc upload-download-manifest
 
+.PHONY: upload-hello-tc-embed
 upload-hello-tc-embed:
 	$(MAKE) -C $(TOPDIR)/hello-tc/build-$(PLAT) SOURCE=$(TOPDIR)/hello-tc upload-embed-manifest
 
+.PHONY: run-session-optee
 run-session-optee: upload-hello-tc-download
 	cd $(OPTEE_DIR)/out/bin && \
 		QEMU=$(OPTEE_DIR)/qemu/aarch64-softmmu/qemu-system-aarch64 \
@@ -119,6 +122,7 @@ run-session-optee: upload-hello-tc-download
 	! fgrep 'ERR:' $(OPTEE_DIR)/out/bin/serial1.log
 	fgrep 'Hello TEEP from TEE!' $(OPTEE_DIR)/out/bin/serial1.log
 
+.PHONY: run-session-keystone
 run-session-keystone: upload-hello-tc-download
 	TAM_URL=$(TAM_URL) BUILD=$(BUILD) \
 		expect ./session/test-keystone.expect | \
@@ -128,6 +132,7 @@ run-session-keystone: upload-hello-tc-download
 	! fgrep 'ERR:' $(BUILD)/keystone.log
 	fgrep 'Hello TEEP from TEE!' $(BUILD)/keystone.log
 
+.PHONY: run-session-sgx
 run-session-sgx: upload-hello-tc-download
 	echo $(BUILD)/../../hello-tc/build-sgx && \
 		ls -l $(BUILD)/../../hello-tc/build-sgx
@@ -146,6 +151,7 @@ run-session-sgx: upload-hello-tc-download
 	! fgrep 'ERR:' $(BUILD)/sgx.log
 	fgrep 'Hello TEEP from TEE!' $(BUILD)/sgx.log
 
+.PHONY: run-session-pc
 run-session-pc: upload-hello-tc-embed
 	cd $(BUILD)/../.. && find . -name *.ta
 	cd $(BUILD)/broker && \

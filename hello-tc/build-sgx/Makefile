@@ -4,15 +4,18 @@ endif
 
 export MACHINE ?= SIM
 
-.PHONY: build app enclave manifest
+.PHONY: build
 build: app enclave manifest
 
+.PHONY: app
 app:
 	make -f app.mk
 
+.PHONY: enclave
 enclave:
 	make -f enclave.mk
 
+.PHONY: clean
 clean: clean-manifest
 	rm -f *.o App_sgx *.so
 

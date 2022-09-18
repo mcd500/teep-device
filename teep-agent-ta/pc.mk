@@ -1,6 +1,7 @@
 TOPDIR = $(CURDIR)/..
 include $(TOPDIR)/conf.mk
 
+.PHONY: all
 all: $(out-dir)/agent.a
 
 CFLAGS = \

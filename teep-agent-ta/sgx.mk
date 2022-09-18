@@ -44,6 +44,7 @@ LDFLAGS = $(TA_LDFLAGS)
 
 out-dir ?= .
 
+.PHONY: all
 all: $(out-dir)/teep-agent-ta.signed.so
 
 $(out-dir)/%.o: %.c

@@ -7,6 +7,7 @@ CFLAGS = \
 	$(TEE_CFLAGS) \
 	-I$(BUILD)/tee/QCBOR/inc
 
+.PHONY: all
 all: $(B)/libteep.a
 
 $(B)/libteep.a: $(B)/libteep.o $(B)/qcbor-ext.o

@@ -1,11 +1,14 @@
 TOPDIR = $(CURDIR)/../..
 include $(TOPDIR)/conf.mk
 
+.PHONY: all
 all: dir manifest
 
+.PHONY: dir
 dir:
 	mkdir -p $(BUILD)/hello-tc
 
+.PHONY: clean
 clean: clean-manifest
 
 TAM_URL ?= http://tamproto_tam_api_1:8888

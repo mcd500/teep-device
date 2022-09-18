@@ -49,8 +49,8 @@ ENCLAVE_CONFIG_FILE = config/Enclave.config.xml
 
 ENCLAVE_LIBRARY = enclave.so
 SIGNED_ENCLAVE_LIBRARY = $(ENCLAVE_LIBRARY:.so=.signed.so)
-.PHOHY: all clean
 
+.PHONY: all
 all: enclave.signed.so
 
 Enclave.o: ../Enclave.c
@@ -66,5 +66,6 @@ enclave.signed.so: enclave.so
 		-out $@ \
 		-config $(ENCLAVE_CONFIG_FILE)
 
+.PHONY: clean
 clean:
 	$(RM) *.o *.so

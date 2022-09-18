@@ -1,16 +1,18 @@
 TOPDIR = $(CURDIR)/../..
 include $(TOPDIR)/conf.mk
 
-.PHONY: build app enclave image run
-
+.PHONY: build
 build: app enclave manifest
 
+.PHONY: all
 app:
 	make -f app.mk
 
+.PHONY: enclave
 enclave:
 	make -f enclave.mk out-dir=$(BUILD)/hello-tc
 
+.PHONY: clean
 clean: clean-manifest
 	rm -rf $(BUILD)/hello-tc
 

@@ -22,6 +22,7 @@ LIBS = $(TEE_LIBS) \
 	-lteesuit \
 	-lgcc
 
+.PHONY: all
 all: $(out-dir)/teep-agent-ta
 
 $(out-dir)/%.o: %.c
