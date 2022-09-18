@@ -1,7 +1,10 @@
 TOPDIR = $(CURDIR)
+
+# Declared $(BUILD) here
 include $(TOPDIR)/conf.mk
 
-TAM_URL ?= http://tamproto_tam_api_1:8888
+TAM_IP  ?= tamproto_tam_api_1
+TAM_URL ?= http://$(TAM_IP):8888
 
 .PHONY: all
 all: check-tee submodule suit libteep agent broker hello-tc rootfs
@@ -39,7 +42,9 @@ broker:
 
 .PHONY: hello-tc
 hello-tc:
-	$(MAKE) -C hello-tc/build-$(PLAT) SOURCE=$(TOPDIR)/hello-tc
+	$(MAKE) -C hello-tc/build-$(PLAT) \
+		SOURCE=$(TOPDIR)/hello-tc \
+		TAM_URL=$(TAM_URL)
 
 .PHONY: clean-hello-tc
 clean-hello-tc:
@@ -50,7 +55,7 @@ clean-hello-tc:
 
 .PHONY: rootfs
 rootfs:
-	$(MAKE) -C sample rootfs
+	$(MAKE) -C sample rootfs TAM_URL=$(TAM_URL)
 
 .PHONY: docs
 docs:
@@ -79,11 +84,11 @@ clean-docs:
 
 .PHONY: run-sample-session
 run-sample-session: check-tee
-	$(MAKE) -C sample run-session
+	$(MAKE) -C sample run-session TAM_URL=$(TAM_URL)
 
 .PHONY: run-qemu
 run-qemu: check-tee
-	$(MAKE) -C sample run-qemu
+	$(MAKE) -C sample run-qemu TAM_URL=$(TAM_URL)
 
 .PHONY: check-tee
 ifeq ($(TEE),)

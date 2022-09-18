@@ -77,8 +77,8 @@ $ make
 After the successful build, run the sample TEEP session with tamproto.
 
 ```sh
-$ export TAMIP=localhost
-$ export TAM_URL="http://$TAMIP:8888"
+$ export TAM_IP=localhost
+$ export TAM_URL="http://$TAM_IP:8888"
 $ make run-sample-session
 ```
 

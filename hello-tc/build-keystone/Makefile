@@ -27,8 +27,6 @@ $(out-dir)/Enclave: $(out-dir)/Enclave.o
 clean: clean-manifest
 	rm -f $(out-dir)/App-keystone.o $(out-dir)/App-keystone $(out-dir)/Enclave.o $(out-dir)/Enclave
 
-TAM_URL ?= http://tamproto_tam_api_1:8888
-
 MANIFEST_OUT_DIR = $(out-dir)
 MANIFEST_DIR = ../manifest
 SUIT_PRIV_KEY = ../../key/tc-provider-priv.pem

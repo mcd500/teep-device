@@ -91,8 +91,6 @@ run-qemu-sgx:
 	false
 
 .PHONY: upload-hello-tc-download
-TAM_URL ?= http://tamproto_tam_api_1:8888
-
 upload-hello-tc-download:
 	$(MAKE) -C $(TOPDIR)/hello-tc/build-$(PLAT) SOURCE=$(TOPDIR)/hello-tc upload-download-manifest
 
@@ -149,6 +147,4 @@ run-session-pc: upload-hello-tc-embed
 	! fgrep 'ERR:' $(BUILD)/pctest.log
 	fgrep 'store component' $(BUILD)/pctest.log
 	cd $(BUILD)/../.. && find . -name *.ta
-
-
 

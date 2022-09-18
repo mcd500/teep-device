@@ -19,8 +19,6 @@ enclave:
 clean: clean-manifest
 	rm -f *.o App_sgx *.so
 
-TAM_URL ?= http://tamproto_tam_api_1:8888
-
 MANIFEST_OUT_DIR = $(CURDIR)
 MANIFEST_DIR = ../manifest
 SUIT_PRIV_KEY = ../../key/tc-provider-priv.pem

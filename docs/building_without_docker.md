@@ -248,7 +248,7 @@ Setup environment in Unleashed (create /root/env.sh file and add following lines
 
 ```
 $ export PATH=$PATH:/root/teep-device
-$ export TAM_HOST=tamproto_tam_api_1
+$ export TAM_IP=tamproto_tam_api_1
 $ export TAM_PORT=8888
 $ insmod keystone-driver.ko
 ```
