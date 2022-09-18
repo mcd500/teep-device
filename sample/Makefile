@@ -10,18 +10,8 @@ run-qemu: run-qemu-$(TEE)
 .PHONY: run-session
 run-session: run-session-$(TEE)
 
-.PHONY: scripts
-scripts:
-#	mkdir -p $(BUILD)/scripts
-#	for i in ita.sh showtamurl.sh env.sh ; do \
-#		sed -e 's!@TAM_URL@!$(TAM_URL)!' \
-#			-e 's!@PLAT@!$(PLAT)!' \
-#			rootfs/scripts/$$i.in >$(BUILD)/scripts/$$i; \
-#		chmod +x $(BUILD)/scripts/$$i; \
-#	done
-
 .PHONY: rootfs-keystone
-rootfs-keystone: scripts
+rootfs-keystone:
 	cp $(KEYSTONE_DIR)/build/buildroot.build/images/rootfs.ext2 $(BUILD)/rootfs.ext2
 	e2mkdir -O root -G root $(BUILD)/rootfs.ext2:/root/teep-broker
 	e2cp -O root -G root -p $(BUILD)/hello-tc/Enclave $(BUILD)/rootfs.ext2:/root/teep-broker/hello-ta
