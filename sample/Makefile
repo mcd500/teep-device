@@ -27,7 +27,7 @@ rootfs-keystone:
 	e2cp -O root -G root -p $(BUILD)/ree/libwebsockets/lib/lib* $(BUILD)/rootfs.ext2:/usr/lib
 
 .PHONY: rootfs-optee
-rootfs-optee: scripts
+rootfs-optee:
 	rm -rf $(BUILD)/rootfs-ext
 	mkdir -p $(BUILD)/rootfs-ext/root/teep-broker
 	mkdir -p $(BUILD)/rootfs-ext/lib/optee_armtz
