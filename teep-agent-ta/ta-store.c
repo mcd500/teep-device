@@ -94,10 +94,30 @@ static bool install_ta(const char *filename, const void *image, size_t image_len
 #endif
 
 #ifdef PLAT_PC
+#include<stdio.h>
 
 static bool install_ta(const char *filename, const void *image, size_t image_len)
 {
-	return true;
+	FILE* fd = NULL;
+	bool ret = true;
+	size_t bytes = 0;
+
+	fd = fopen(filename, "w+");
+	if (NULL == fd) {
+		tee_log_error("install_ta(): fopen(): error");
+		return false;
+	}
+
+	bytes = fwrite(image, image_len, 1, fd);
+	if (bytes < image_len) {
+		tee_log_error("install_ta(): fwrite(): error");
+		ret = false; goto bail_2;
+	}
+
+bail_2:
+	fclose(fd);
+
+	return ret;
 }
 
 #endif
