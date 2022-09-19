@@ -47,6 +47,7 @@ teep_build:
         - sudo apt-get install -y libcap-dev
         - export TEE=pc
         - make
+        - make clean
 
 run_tam_pc:
     stage: run
