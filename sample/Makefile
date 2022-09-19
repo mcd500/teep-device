@@ -168,19 +168,19 @@ run-session-keystone: upload-hello-tc-download
 
 .PHONY: run-session-sgx
 run-session-sgx: upload-hello-tc-download
-	echo $(BUILD)/../../hello-tc/build-sgx && \
-		ls -l $(BUILD)/../../hello-tc/build-sgx
 	cd $(BUILD)/agent && \
 		../broker/teep-broker-app --tamurl $(TAM_URL)/api/tam_cbor | \
 		tee $(BUILD)/sgx.log
 	cd $(BUILD)/../../hello-tc/build-sgx/ && \
 		./App_sgx | \
 		tee -a $(BUILD)/sgx.log
-	ls -l
-	echo $(BUILD)/../../hello-tc/build-sgx && \
-		ls -l $(BUILD)/../../hello-tc/build-sgx
+	echo BUILD=$(BUILD)
+	ls -l $(BUILD)
+	echo PWD=`pwd`
+	ls -l `pwd`
+	ls -l $(BUILD)/../../hello-tc/build-sgx
 	if ! [ -f $(BUILD)/../../hello-tc/build-sgx/enclave.signed.so ]; then \
-		echo ERR: No TC found; \
+		echo ERR: No TC found | tee -a $(BUILD)/sgx.log; \
 	fi
 	! fgrep 'ERR:' $(BUILD)/sgx.log
 	fgrep 'Hello TEEP from TEE!' $(BUILD)/sgx.log
