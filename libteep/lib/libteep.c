@@ -95,7 +95,7 @@ static int parse_buffer_array(struct teep_buffer_array *p, QCBORDecodeContext *D
 	return 1;
 }
 
-static int parse_component_id(teep_component_id *p, QCBORDecodeContext *DC, const QCBORItemWithOffset *component_id)
+static int teep_parse_component_id(teep_component_id *p, QCBORDecodeContext *DC, const QCBORItemWithOffset *component_id)
 {
 	if (component_id->item.uDataType != QCBOR_TYPE_ARRAY) {
 		return 0;
@@ -139,7 +139,7 @@ static int parse_tc_info_array(struct teep_tc_info_array *p, QCBORDecodeContext 
 			switch (label) {
 			case TEEP_OPTION_COMPONENT_ID:
 				{
-					if (!parse_component_id(&p->array[i].component_id, DC, &Item)) {
+					if (!teep_parse_component_id(&p->array[i].component_id, DC, &Item)) {
 						return 0;
 					}
 				}
@@ -183,7 +183,7 @@ static int parse_component_id_array(struct teep_component_id_array *p, QCBORDeco
 	for (size_t i = 0; i < p->len; i++) {
 		QCBORItemWithOffset Item;
 		QCBORDecode_GetNextWithOffset(DC, &Item);
-		if (!parse_component_id(&p->array[i], DC, &Item)) {
+		if (!teep_parse_component_id(&p->array[i], DC, &Item)) {
 			return 0;
 		}
 	}
