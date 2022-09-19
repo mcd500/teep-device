@@ -148,11 +148,12 @@ bail_1:
 
 bool store_component(const struct component_path *path, const void *image, size_t image_len)
 {
-	tee_log_trace("store component\n");
+	tee_log_trace("ta-store.c: store_component() store component\n");
 	tee_log_trace("  device   = %s\n", path->device);
 	tee_log_trace("  storage  = %s\n", path->storage);
 	//tee_log_trace("  uuid     = %s\n", path.uuid);
 	tee_log_trace("  filename = %s\n", path->filename);
+	tee_log_trace("  image_len = %ud\n", image_len);
 
 	return install_ta(path->filename, image, image_len);
 }

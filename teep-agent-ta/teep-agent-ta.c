@@ -500,13 +500,14 @@ static bool parse_component_id(suit_component_t *component, struct component_pat
 static bool store(suit_runner_t *runner, void *user, const suit_object_t *target, nocbor_range_t body)
 {
 	if (target->is_component) {
-		tee_log_trace("store component\n");
+		tee_log_trace("teep-agent-ta.c: store(): store component\n");
 		struct component_path path;
 		if (!parse_component_id(target->component, &path)) return false;
 		tee_log_trace("  device   = %s\n", path.device);
 		tee_log_trace("  storage  = %s\n", path.storage);
 		//tee_log_trace("  uuid     = %s\n", path.uuid);
 		tee_log_trace("  filename = %s\n", path.filename);
+		tee_log_trace("TODO: call store_component() in ta-store.c\n");
 	} else {
 		tee_log_trace("store dependency\n");
 	}
