@@ -6,6 +6,8 @@ export TA_CFLAGS = $(TEE_CFLAGS) \
 	-g \
 	$(SGX_CFLAGS) $(DEBUG_FLAGS) \
 	$(addprefix -I, $(INCLUDE_DIRS)) \
+	-I/opt/intel/sgxsdk/include/tlibc \
+	-I$(TAREF_DIR) \
 	-I$(TAREF_DIR)/gp/include \
 	-I$(TAREF_DIR)/api/include \
 	-I$(BUILD)/tee/QCBOR/inc \
