@@ -12,7 +12,7 @@ stages:
 default:
     tags:
         - fast-dockers
-    image: docker.io/aistcpsec/taref-dev:keystone
+    image: docker.io/aistcpsec/tee-distro-dev:x64-20.04
 
 suit_build:
     stage: build
@@ -103,7 +103,7 @@ run_tam_sgx:
 ### DOXYGEN - START ###
 teep_doxygen:
     stage: build
-    image: docker.io/aistcpsec/taref-dev:doxygen
+    image: docker.io/aistcpsec/tee-distro-dev:doxygen-20.04
     script:
         - make docs
     artifacts:
