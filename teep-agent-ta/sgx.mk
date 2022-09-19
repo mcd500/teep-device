@@ -6,6 +6,7 @@ export TA_CFLAGS = $(TEE_CFLAGS) \
 	-g \
 	$(SGX_CFLAGS) $(DEBUG_FLAGS) \
 	$(addprefix -I, $(INCLUDE_DIRS)) \
+	-DCRYPTLIB=$(CRYPTLIB) \
 	-I/opt/intel/sgxsdk/include/tlibc \
 	-I$(TAREF_DIR) \
 	-I$(TAREF_DIR)/gp/include \

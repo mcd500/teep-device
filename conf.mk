@@ -1,3 +1,7 @@
+# Select which crypt lib to use
+CRYPTLIB := MBEDCRYPT
+#CRYPTLIB := WOLFCRYPT
+
 ifeq ($(TEE),)
 else
 BUILD = $(TOPDIR)/build/$(TEE)
