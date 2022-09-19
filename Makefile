@@ -1,4 +1,5 @@
-TOPDIR = $(CURDIR)
+TOPDIR := $(CURDIR)
+export TOPDIR
 
 # Declared $(BUILD) here
 include $(TOPDIR)/conf.mk
