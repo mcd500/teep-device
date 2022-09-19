@@ -157,6 +157,9 @@ teep_agent_session_destroy(struct teep_agent_session *session)
 static TEE_Result
 set_dev_option(struct teep_agent_session *session, enum agent_dev_option option, const char *value)
 {
+	int index = 0;
+	int n = 1;
+
 	if (session->state != AGENT_INIT) return TEE_ERROR_BAD_STATE;
 
 	// XXX: disable developper options on production.
@@ -171,7 +174,6 @@ set_dev_option(struct teep_agent_session *session, enum agent_dev_option option,
 		if (strlen(value) == 0) {
 			return TEE_SUCCESS;
 		}
-		int n = 1;
 		for (const char *s = value; *s; s++) {
 			if (*s == ',') {
 				n++;
@@ -180,7 +182,6 @@ set_dev_option(struct teep_agent_session *session, enum agent_dev_option option,
 		if (n > 16) {
 			return TEE_ERROR_BAD_PARAMETERS;
 		}
-		int index = 0;
 		for (const char *s = value; index < n; index++) {
 			size_t len = sizeof session->requests[index].id;
 			memset(session->requests[index].id, 0, len);
@@ -238,6 +239,8 @@ handle_tam_message(struct teep_agent_session *session, const void *buffer, size_
 		teep_error(session, "invalid teep message");
 		return TEE_ERROR_BAD_FORMAT;
 	}
+
+	UsefulBuf buf;
 	switch (m->type) {
 	case TEEP_QUERY_RESPONSE:
 	case TEEP_SUCCESS:
@@ -250,10 +253,10 @@ handle_tam_message(struct teep_agent_session *session, const void *buffer, size_
 			goto err;
 		}
 		session->state = AGENT_POSTING_QUERY_RESPONSE;
-		UsefulBuf p = (UsefulBuf){malloc(m->token.len), m->token.len };
+		buf = (UsefulBuf){malloc(m->token.len), m->token.len };
 		// TODO: check
-		UsefulBuf_Copy(p, m->token);
-		session->token = UsefulBuf_Const(p);
+		UsefulBuf_Copy(buf, m->token);
+		session->token = UsefulBuf_Const(buf);
 		session->data_item_requested = m->query_request.data_item_requested;
 		break;
 	case TEEP_UPDATE:
