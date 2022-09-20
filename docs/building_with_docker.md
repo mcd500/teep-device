@@ -186,7 +186,7 @@ Open the third terminal. Here we build the TEEP-Device and run it to talk with t
 
 ```sh
 # Start the docker
-$ docker run --network tamproto_default -it --rm -v $(pwd):/home/user/teep-device aistcpsec/taref-dev:keystone
+$ docker run --network tamproto_default -w /home/user/teep-device -it --rm -v $(pwd):/home/user/teep-device aistcpsec/taref-dev:keystone
 ```
 
 After you start the Docker command, you will be logged-in inside the Docker container.
@@ -598,7 +598,7 @@ $ git submodule update --init --recursive
 
 ```sh
 # Start the Docker
-$ docker run --network tamproto_default -it --rm -v $(pwd):/home/user/teep-device aistcpsec/taref-dev:optee
+$ docker run --network tamproto_default -w /home/user/teep-device -it --rm -v $(pwd):/home/user/teep-device aistcpsec/taref-dev:optee
 ```
 
 After you start the Docker command, you will be logged-in inside the Docker container.
@@ -698,7 +698,7 @@ $ git submodule update --init --recursive
 
 ```sh
 # Start the Docker
-$ docker run --network tamproto_default -it --rm -v $(pwd):/home/user/teep-device aistcpsec/taref-dev:sgx
+$ docker run --network tamproto_default -w /home/user/teep-device -it --rm -v $(pwd):/home/user/teep-device aistcpsec/taref-dev:sgx
 ```
 
 After you start the Docker command, you will be logged-in inside the Docker container.
