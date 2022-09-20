@@ -153,7 +153,7 @@ bool store_component(const struct component_path *path, const void *image, size_
 	tee_log_trace("  storage  = %s\n", path->storage);
 	//tee_log_trace("  uuid     = %s\n", path.uuid);
 	tee_log_trace("  filename = %s\n", path->filename);
-	tee_log_trace("  image_len = %ud\n", image_len);
+	tee_log_trace("  image_len = %u\n", image_len);
 
 	return install_ta(path->filename, image, image_len);
 }

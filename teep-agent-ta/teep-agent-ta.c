@@ -507,7 +507,10 @@ static bool store(suit_runner_t *runner, void *user, const suit_object_t *target
 		tee_log_trace("  storage  = %s\n", path.storage);
 		//tee_log_trace("  uuid     = %s\n", path.uuid);
 		tee_log_trace("  filename = %s\n", path.filename);
-		tee_log_trace("TODO: call store_component() in ta-store.c\n");
+		tee_log_trace("  body.begin = %u\n", body.begin);
+		tee_log_trace("  body.end   = %u\n", body.end);
+		tee_log_trace("  size       = %u\n", body.end - body.begin);
+		store_component(&path, body.begin, body.end - body.begin);
 	} else {
 		tee_log_trace("store dependency\n");
 	}
