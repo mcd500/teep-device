@@ -57,7 +57,7 @@ $(out-dir)/%.o: %.c
 $(out-dir)/teep-agent-ta.o: teep-agent-ta.c teep-agent-ta.h ta-store.h
 $(out-dir)/ta-store.o: ta-store.c teep-agent-ta.h ta-store.h
 
-$(out-dir)/teep-agent-ta.so: $(out-dir)/teep-agent-ta.o $(out-dir)/ta-store.o $(out-dir)/tools.o
+$(out-dir)/teep-agent-ta.so: $(out-dir)/teep-agent-ta.o $(out-dir)/ta-store.o
 	$(CROSS_COMPILE)gcc -nostdlib -o $@ -static $^ $(LDFLAGS)
 
 $(out-dir)/teep-agent-ta.signed.so: $(out-dir)/teep-agent-ta.so

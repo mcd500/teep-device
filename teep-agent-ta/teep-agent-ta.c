@@ -42,8 +42,8 @@
 #include "teelog.h"
 
 /* Keystone do not have strcpy, implimented in tools.c */
-#ifdef PLAT_KEYSTONE
-char *strcpy(char *dest, const char *src);
+#if defined(PLAT_KEYSTONE)
+char *strncpy(char *dest, const char *src, size_t len);
 #endif
 
 enum agent_state
@@ -173,7 +173,7 @@ set_dev_option(struct teep_agent_session *session, enum agent_dev_option option,
 		if (sizeof session->tam_uri < strlen(value) + 1) {
 			return TEE_ERROR_BAD_PARAMETERS;
 		}
-		strcpy(session->tam_uri, value);
+		strncpy(session->tam_uri, value, sizeof(session->tam_uri));
 		return TEE_SUCCESS;
 	case AGENT_OPTION_SET_CURRENT_TA_LIST:
 		if (strlen(value) == 0) {
@@ -559,26 +559,26 @@ query_next_broker_task(struct teep_agent_session *session)
 			session->state = AGENT_POSTING_INITIAL_REQUEST;
 		} else if (session->state == AGENT_POSTING_INITIAL_REQUEST) {
 			task->command = BROKER_HTTP_POST;
-			strcpy(task->uri, session->tam_uri);
+			strncpy(task->uri, session->tam_uri, sizeof(task->uri));
 			task->post_data_len = 0;
 			session->on_going_task = task;
 		} else if (session->state == AGENT_POSTING_QUERY_RESPONSE) {
 			task->command = BROKER_HTTP_POST;
-			strcpy(task->uri, session->tam_uri);
+			strncpy(task->uri, session->tam_uri, sizeof(task->uri));
 			task->post_data_len = sizeof (task->post_data);
 			// TODO: handle return value
 			build_query_response(session, task->post_data, &task->post_data_len);
 			session->on_going_task = task;
 		} else if (session->state == AGENT_POSTING_SUCCESS) {
 			task->command = BROKER_HTTP_POST;
-			strcpy(task->uri, session->tam_uri);
+			strncpy(task->uri, session->tam_uri, sizeof(task->uri));
 			task->post_data_len = sizeof (task->post_data);
 			// TODO: handle return value
 			build_success(session, task->post_data, &task->post_data_len);
 			session->on_going_task = task;
 		} else if (session->state == AGENT_POSTING_ERROR) {
 			task->command = BROKER_HTTP_POST;
-			strcpy(task->uri, session->tam_uri);
+			strncpy(task->uri, session->tam_uri, sizeof(task->uri));
 			task->post_data_len = sizeof (task->post_data);
 			// TODO: handle return value
 			build_error(session, task->post_data, &task->post_data_len);
@@ -645,7 +645,7 @@ query_next_broker_task(struct teep_agent_session *session)
 			session->on_going_task = task;
 		} else {
 			task->command = BROKER_FINISH;
-			strcpy(task->uri, "");
+			task->uri[0] = '\0';
 			task->post_data_len = 0;
 			session->on_going_task = task;
 		}

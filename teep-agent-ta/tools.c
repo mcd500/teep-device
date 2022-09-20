@@ -43,12 +43,14 @@
  *
  * @return	It returns a pointer to the destination string dest.
  */
-char *strcpy(char *dst, const char *src)
+char *strncpy(char *dst, const char *src, size_t n)
 {
   char *d = dst;
   const char *s = src;
-  while ((*d++ = *s++))
+  size_t i = 0;
+  while (i++ != n && (*d++ = *s++))
     ;
+  *(dst + n) = '\0';
   return dst;
 }
 #endif
