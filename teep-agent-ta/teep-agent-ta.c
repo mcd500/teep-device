@@ -41,6 +41,11 @@
 #include "ta-store.h"
 #include "teelog.h"
 
+/* Keystone do not have strcpy, implimented in tools.c */
+#ifdef PLAT_KEYSTONE
+char *strcpy(char *dest, const char *src);
+#endif
+
 enum agent_state
 {
 	AGENT_INIT,

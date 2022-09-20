@@ -396,7 +396,7 @@ int http_post(const char *url, const void *in, size_t in_len, void *out, size_t 
 	lws_explicit_bzero(laoa, sizeof(*laoa));
 
 	struct lao_rpc_io io = {
-		.in = in,
+		.in = (void *)in,
 		.in_len = in_len,
 		.out = out,
 		.out_len = 0

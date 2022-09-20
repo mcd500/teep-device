@@ -269,7 +269,7 @@ void ocall_put_invoke_command_result(invoke_command_t cmd, unsigned int result)
     return queue.put_invoke_command_result(cmd, result);
 }
 
-int ocall_invoke_command_callback(invoke_command_t cb_cmd) {}
+int ocall_invoke_command_callback(invoke_command_t cb_cmd) { return 0; }
 
 EDGE_EXTERNC_END
 

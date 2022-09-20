@@ -23,7 +23,15 @@ LIBS = $(TEE_LIBS) \
 	-lgcc
 
 .PHONY: all
-all: $(out-dir)/teep-agent-ta
+all: patch_strlen $(out-dir)/teep-agent-ta
+
+# fixing untypical strlen(char* str); to typical strlen(const char* str);
+# to avoid many warnings
+STRINGHS = $(KEYSTONE_DIR)/sdk/include/app/string.h \
+	   $(KEYSTONE_DIR)/sdk/build64/include/app/string.h
+.PHONY: patch_strlen
+patch_strlen: $(STRINGHS)
+	sed '/^strlen/ s/(char\*/(const\ char\*/' -i $^
 
 $(out-dir)/%.o: %.c
 	mkdir -p $(out-dir)
