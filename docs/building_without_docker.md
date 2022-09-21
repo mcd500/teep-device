@@ -2,11 +2,7 @@
 
 Clone the TEEP-Device's source code and build it for Keystone, OPTEE and SGX.
 
-To build TEEP-Device for any targets, the preparation and building
-of TA-Ref sdk has to be done already and the path of TA-Ref has to be exported
-in the following environment variable.
-
-The detailed steps of preparation and building TA-Ref can be found in ta-ref.pdf.
+To build TEEP-Device for any TEE, the preparation of the TA-Ref sdk has to be done in advance. The detailed steps of building TA-Ref can be found in the TA-Ref documentation. Export the path of TA-Ref in the following environment variable.
 
 ```sh
 $ export TAREF_DIR=<ta-ref dir>
@@ -95,7 +91,7 @@ tam_api_1  | Express HTTPS server listening on port 8443
 tam_api_1  | GET /api/ 200 5.239 ms - 24
 ```
 
-Please keep the terminal open and clone and build for the targets on separate terminals.
+Please keep opening this terminal running tamproto. Cloning and building the TEEP-Device  will be done on separate terminals.
 
 ## Keystone
 
