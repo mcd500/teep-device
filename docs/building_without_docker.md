@@ -234,7 +234,7 @@ Please follow below steps to write the TEEP-Device binaries to SD-card
 - `cd platform/keystone; script/sktinst.sh`
 - Move the sd to unleashed board and boot it
 
-#### Check hello-app and teep-broker-app on Unleased
+#### Running hello-app and teep-broker-app on Unleased
 
 There are two methods to connect to Unleased.
 - Serial Port using minicom (/dev/ttyUSB0)
@@ -385,7 +385,7 @@ $ git submodule update --init --recursive
 $ make
 ```
 
-### Check TEEP-Device by running hello-app & teep-broker-app on QEMU Environment
+### Running hello-app & teep-broker-app on QEMU Environment
 
 To check TEEP-Device on OP-TEE, we need to run TAM server on PC.
 
@@ -450,7 +450,7 @@ make[1]: Leaving directory '/home/user/teep-device/platform/op-tee'
 ```
 
 
-### Check TEEP-Device by running hello-app and teep-broker-app on Raspberry PI 3
+### Running hello-app and teep-broker-app on Raspberry PI 3
 
 To check TEEP-Device on Raspberry PI 3, we need to run the TAM server on PC and network with Raspberry PI 3 board.
 
@@ -477,7 +477,7 @@ Please follow below steps to write the TEEP-Device binaries to SD-card
 TODO - Further update required
 ```
 
-#### Check hello-app and teep-broker-app on Raspberry PI 3
+#### Running hello-app and teep-broker-app on Raspberry PI 3
 <br/>
 There are two methods to connect to Raspberry PI 3.
 - Serial Port using minicom (/dev/ttyUSB0)
@@ -540,7 +540,7 @@ $ git submodule update --init --recursive
 $ make
 ```
 
-### Check TEEP-Device by running hello-app & teep-broker-app on QEMU Environment
+### Running hello-app & teep-broker-app on QEMU Environment
 
 To check TEEP-Device on SGX, we need to run the TAM server on PC and network with the SGX machine.
 
@@ -560,7 +560,7 @@ $ cat ~/teep-device/platform/pc/build/8d82573a-926d-4754-9353-32dc29997f74.ta
 Hello TEEP from TEE!
 ```
 
-### Check TEEP-Device by running hello-app & teep-broker-app on Intel SGX
+### Running hello-app & teep-broker-app on Intel SGX
 
 ```sh
 TODO - Further update required
