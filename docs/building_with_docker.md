@@ -1,12 +1,37 @@
 # Building TEEP-Device with Docker
 
-We have prepared Docker images to provide the environment of building and developing TEEP-Device to reduce the overhead of preparing them individually.
+The benefit of Docker images is to provide the environment of building and developing TEEP-Device to reduce the overhead of preparing them individually.
 
 The TEEP-Device requires TA-Ref which provides a unified SDK among different TEEs for three CPU architectures, Keystone for RISC-V, OP-TEE for Arm64 and SGX for Intel.
 
 Without the prepared Docker images, the developer will be required to build a massing software stack of Keystone, OP-TEE and SGX and install them on his/her development machine which needs downloading large sizes of source codes, a long time for building them. Also it may result in every individual having a slightly different environment which makes it difficult to reproduce when encountering errors.
 
 The Docker images provide an easy to prepare development environment for TEEP-Device.
+
+
+## Consideration of build machine and development environment
+
+It is essential to have a fast machine as much as possible for building the sources and using multiple terminals for efficient development.
+
+This one of example of using three terminals for effective development.
+
+* First Terminal for running tamproto
+    - Shows log messages of tamproto while developing TEEP-Device
+
+* Second Terminal for running Docker of TEE
+    - For building and manipulating TEEP-Device
+
+* Third Terminal for editing sources of TEEP-Device
+    - For editing source codes of TEEP-Device by watching the above two terminals.
+
+The three terminals may be on a local fast computer or logging in to a remote build machine with ssh.
+
+Prepare a fast computer since the speed of the build machine affects the efficiency of the development. Often developers using a laptop are logging in to a fast remote computer and not building the sources on a local laptop.
+
+The three key components of the fast build machine are CPU, storage and memory size. The laptop will be slower than the server or desktop machine because of the limited capability of the three key components.
+
+The frequency of the CPU is above 3.8Ghz is ideal. The write speed of the storage has a significant impact on the build time. It is almost a must to use SSD than HDD and the SSD should be above 3000MB/s write speed which is only available with M.2 form factor with NVMe interface. The 32GB or higher memory size is recommended, since it will prevent disk swapping when running out the memory which significantly reduces the build speed. Please request reasonable development machines if you are working at a corporate or organization.
+
 
 ## Preparation for Docker
 
@@ -78,9 +103,9 @@ $ docker network create tamproto_default
 ```
 
 
-## Pre-built Docker Images without necessity of building
+## Docker Images with pre-built TEEP-Device
 
-The following are the docker images that have pre-built binaries of TEEP-Device with TA-Ref. Since these images are already prepared and built already, you can start using it directly without building the TEEP-Device again. The Doxygen image is for generating documentation.
+The following are the docker images that have pre-built binaries of TEEP-Device with TA-Ref. Since these images are already prepared and built already, you can start using it directly without building the TEEP-Device oneself. The Doxygen image is for generating documentation.
 
 | Target | docker image |
 | ------ | ------ |
@@ -93,33 +118,17 @@ The following are the docker images that have pre-built binaries of TEEP-Device 
 
 ## Preparation for building TEEP-Device on Docker
 
-### Docker images details for building
+### List of Docker images for building TEEP-Device
 
-We use Docker images of TA-Ref for building the TEEP-Device since TEEP-Device is developed on top of TA-Ref SDK.
+It requires Docker images of TA-Ref for building the TEEP-Device since TEEP-Device is developed on top of TA-Ref SDK. The TEEP-Device is one of the applications of TA-Ref.
 
-Docker images with all necessary packages for building TEEP-Device for all three TEEs are already available. The instructions usage of the images are in the next chapters.
+Docker images have all necessary development packages for building TEEP-Device for all three TEEs. The instructions of usage are described from the next chapters.
 
 | Target | Docker image |
 | ------ | ------ |
 | Keystone | aistcpsec/taref-dev:keystone |
 | OP-TEE | aistcpsec/taref-dev:optee |
 | Intel SGX | aistcpsec/taref-dev:sgx |
-
-
-## Building TEEP-Device with Docker
-
-The build environment is in three terminals for convenient development.
-
-* First Terminal for running tamproto
-    - Shows log messages of tamproto while developing TEEP-Device
-
-* Second Terminal for running Docker of TEE
-    - For building and manipulating TEEP-Device
-
-* Third Terminal for editing sources of TEEP-Device
-    - For editing source codes of TEEP-Device by watching the above two terminals.
-
-The terminals may be a local fast computer or login with ssh to a remote build machine with each terminal. In any case, the speed of the build machine affects the efficiency of the development.
 
 
 ## Run tamproto (TAM Server) - Required by all Keystone/OP-TEE/SGX
@@ -782,7 +791,7 @@ $ make clean
 
 ## Generating Documentation
 
-These TEEP-Device documentations in pdf and html format are generated by using Doxygen.
+These TEEP-Device documentations in pdf and html format are generated by using Doxygen.
 
 ### Starting container
 
