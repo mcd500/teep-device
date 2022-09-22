@@ -1,7 +1,8 @@
 #!/bin/sh
 
-if [ -z ${TAM_URL} ]; then
-	TAM_URL=`get-ip.sh`
+if [ -z ${TAM_IP} ]; then
+	TAM_IP=`get-ip.sh`
+	TAM_URL="http://${TAM_IP}:8888"
 fi
 
 echo --tamurl ${TAM_URL}/api/tam_cbor
