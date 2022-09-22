@@ -1,6 +1,6 @@
 # Building TEEP-Device without Docker
 
-Clone the TEEP-Device's source code and build it for Keystone, OPTEE and SGX.
+Clone the TEEP-Device's source code and build it for Keystone, OP-TEE and SGX.
 
 To build TEEP-Device for any TEE, the preparation of the TA-Ref sdk has to be done in advance. The detailed steps of building TA-Ref can be found in the TA-Ref documentation. Export the path of TA-Ref in the following environment variable.
 
@@ -353,7 +353,7 @@ ta_store_install: ta_image_len = 130552 ta_name=8d82573a-926d-4754-9353-32dc2999
 
 ```
 
-## OPTEE
+## OP-TEE
 
 instruction to build `TEEP-Device` with OP-TEE. The OP-TEE and its supporting sources must be built and installed on the build environment beforehand. Refer to the OP-TEE section of the "Preparation before building TA-Ref without Docker" in the TA-Ref document.
 
