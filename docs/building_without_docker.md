@@ -96,7 +96,7 @@ Please keep opening this terminal running tamproto. Cloning and building the TEE
 ## Keystone
 
 Build `TEEP-Device` with Keystone. Make sure Keystone and its supporting sources have been built already.
-Please refer to the Keystone section of the "Preparation before building TA-Ref without Docker" in the ta-ref.pdf document.
+Please refer to the Keystone section of the "Preparation before building TA-Ref without Docker" in the TA-Ref document.
 
 ### Clone and Build
 
@@ -357,7 +357,7 @@ ta_store_install: ta_image_len = 130552 ta_name=8d82573a-926d-4754-9353-32dc2999
 ## OPTEE
 
 Build `TEEP-Device` with OPTEE. So make sure OPTEE and its supporting sources have been built already.
-Please refer to the OP-TEE section of the "Preparation before building TA-Ref without Docker" in the ta-ref.pdf document.
+Please refer to the OP-TEE section of the "Preparation before building TA-Ref without Docker" in the TA-Ref document.
 
 ### Clone and Build
 
@@ -510,12 +510,12 @@ TODO - Further update required
 ## SGX
 
 Build `TEEP-Device` with SGX. Make sure SGX and its supporting sources have been built already.
-Please refer ta-ref.pdf document for "Preparation before building TA-Ref without Docker" - SGX section.
+Please refer TA-Ref document for "Preparation before building TA-Ref without Docker" - SGX section.
 
 ### Clone and Build
 
 As a preparation step, it is required to set up the Intel SGX SDK.
-Please refer to the preparation steps for building without Docker for SGX in ta-ref.pdf.
+Please refer to the preparation steps for building without Docker for SGX in TA-Ref documentation.
 
 
 ```sh
