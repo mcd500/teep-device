@@ -12,10 +12,10 @@ $ export TAREF_DIR=<ta-ref dir>
 
 Have tested on Ubuntu 20.04.
 
-Install some of the packages for compiling.
+Install packages for compiling.
 
 ```sh
-sudo apt-get -y install build-essential git autoconf automake cmake
+sudo apt-get -y install build-essential git autoconf automake cmake git wget curl expect python3-pip libcap-dev
 ```
 
 **Install suit-tool**
@@ -48,7 +48,7 @@ $ docker-compose build
 $ docker-compose up
 ```
 
-Once the TAM server is up, waiting for incoming packets from TEEP-Device.
+Once the TAM server is up, it will wait for incoming packets from TEEP-Device.
 
 ```console
 naga@smartie:~/Aist_Dev/test/tamproto$ docker-compose up
@@ -95,8 +95,7 @@ Please keep opening this terminal running tamproto. Cloning and building the TEE
 
 ## Keystone
 
-Build `TEEP-Device` with Keystone. Make sure Keystone and its supporting sources have been built already.
-Please refer to the Keystone section of the "Preparation before building TA-Ref without Docker" in the TA-Ref document.
+instruction to build `TEEP-Device` with Keystone. The Keystone and its supporting sources must be built and installed on the build environment beforehand. Refer to the Keystone section of the "Preparation before building TA-Ref without Docker" in the TA-Ref document.
 
 ### Clone and Build
 
@@ -356,8 +355,7 @@ ta_store_install: ta_image_len = 130552 ta_name=8d82573a-926d-4754-9353-32dc2999
 
 ## OPTEE
 
-Build `TEEP-Device` with OPTEE. So make sure OPTEE and its supporting sources have been built already.
-Please refer to the OP-TEE section of the "Preparation before building TA-Ref without Docker" in the TA-Ref document.
+instruction to build `TEEP-Device` with OP-TEE. The OP-TEE and its supporting sources must be built and installed on the build environment beforehand. Refer to the OP-TEE section of the "Preparation before building TA-Ref without Docker" in the TA-Ref document.
 
 ### Clone and Build
 
@@ -459,7 +457,11 @@ To check TEEP-Device on Raspberry PI 3, we need to run the TAM server on PC and 
 
 **Copy binaries over SSH to Raspberry PI 3**
 
-- Connect to Raspberry PI 3 over serial console(/dev/ttryUSB0) then assign IP address `ifconfig eth0 192.168.0.7`
+- Connect to Raspberry PI 3 over serial console(typically at /dev/ttryUSB0) then acquire IP address. One of the commands to obtain an ip address.
+
+```sh
+ip address
+```
 - Copy the binaries from build PC over SSH (user:root) to Raspberry PI 3
 
 ```
@@ -509,8 +511,7 @@ TODO - Further update required
 
 ## SGX
 
-Build `TEEP-Device` with SGX. Make sure SGX and its supporting sources have been built already.
-Please refer TA-Ref document for "Preparation before building TA-Ref without Docker" - SGX section.
+instruction to build `TEEP-Device` with SGX. The SGX and its supporting sources must be built and installed on the build environment beforehand. Refer to the SGX section of the "Preparation before building TA-Ref without Docker" in the TA-Ref document.
 
 ### Clone and Build
 
@@ -519,7 +520,6 @@ Please refer to the preparation steps for building without Docker for SGX in TA-
 
 
 ```sh
-$ export TEE=pc
 $ source /opt/intel/sgxsdk/environment
 $ export TAREF_DIR=<ta-ref dir>
 ```
@@ -537,34 +537,31 @@ $ git submodule sync --recursive
 $ git submodule update --init --recursive
 
 # Build the TEEP-Device
+$ export TEE=sgx
 $ make
-```
-
-### Running hello-app & teep-broker-app on QEMU Environment
-
-To check TEEP-Device on SGX, we need to run the TAM server on PC and network with the SGX machine.
-
-```sh
-$ cd ~/teep-device
-
-# make has to completed first
-# tamproto has to be executed in another terminal
-$ make run-sample-session
-```
-
-After the make test has been completed successfully, output can be found
-in the `teep-device/platform/pc/build/8d82573a-926d4754-9353-32dc29997f74.ta`
-
-```console
-$ cat ~/teep-device/platform/pc/build/8d82573a-926d-4754-9353-32dc29997f74.ta
-Hello TEEP from TEE!
 ```
 
 ### Running hello-app & teep-broker-app on Intel SGX
 
+To run TEEP-Device on SGX, confirm that the make is completed first and the tamproto is executed in another terminal.
+
+Unlide Keystone and OP-TEE, it is directly executed on PC without using QEMU.
+
 ```sh
-TODO - Further update required
+$ cd ~/teep-device
+$ make run-sample-session
 ```
+
+The output would contain the string `Hello TEEP from TEE!`
+The messages between TEEP-Device and tamproto are printed out as the log on the terminals.
+
+```console
+main start
+Hello TEEP from TEE!
+main end
+Info: Enclave successfully returned.
+```
+
 
 ## Generating Documentation
 
