@@ -17,12 +17,135 @@ This one of example of using three terminals for effective development.
 
 * First Terminal for running tamproto
     - Shows log messages of tamproto while developing TEEP-Device
+**Running tamproto**
+
+Open the first terminal for the tamproto.
+
+```sh
+# Clone the tamproto repo and checkout master branch
+$ git clone https://192.168.100.100/rinkai/tamproto.git
+$ cd tamproto
+$ git checkout fb1961bc964857384c9ed8696c0d5fc0a76a319d -b for-teep-device
+$ docker-compose build
+$ docker-compose up
+```
+
+Trimmed output of running tamproto
+
+```sh
+Unable to find image 'aistcpsec/taref-dev:keystone' locally
+keystone: Pulling from aistcpsec/taref-dev
+8e5c1b329fe3: Already exists 
+e05607c9dd5d: Already exists 
+06ea0f2cfe6f: Already exists 
+6381126c9756: Already exists 
+616b03bd014d: Already exists 
+03f60ae821fe: Pull complete 
+c2ce6c51e912: Pull complete 
+0ae8544f94d0: Pull complete 
+ed69f77ce805: Pull complete 
+0b1e894f1c2b: Pull complete 
+54c248882cab: Pull complete 
+ce4c6cdaeee8: Pull complete 
+f47d19834a97: Pull complete 
+17815ee50321: Pull complete 
+03ce92741257: Pull complete 
+0bde0526d66b: Pull complete 
+f1676f0d8a08: Pull complete 
+e0a9ee24f2b5: Pull complete 
+00b9955e91a0: Pull complete 
+f5a8b38f8c4d: Pull complete 
+d630df1dd484: Pull complete 
+b4eb24718e7f: Pull complete 
+cfbb2212c561: Pull complete 
+6315be6e3213: Pull complete 
+3de739c912ee: Pull complete 
+a3682a292bfd: Pull complete 
+ae27cf98eaef: Pull complete 
+74199411f7f6: Pull complete 
+9bdc7ae9f248: Pull complete 
+51c6c2b9fca0: Pull complete 
+0348dd5d5ddc: Pull complete 
+bd4fa9b39afa: Pull complete 
+cc5b6cadbced: Pull complete 
+c492128e6414: Pull complete 
+efe06c6d0b68: Pull complete 
+Digest: sha256:5354b7d6a84bd5900b3b8aa89c918040d5bbd1220b808fa238ef59cb5a01a49d
+Status: Downloaded newer image for aistcpsec/taref-dev:keystone
+To run a command as administrator (user "root"), use "sudo <command>".
+See "man sudo_root" for details.
+```
+
+@image html docs/images/terminal-1-tamproto.png
+@image latex docs/images/terminal-1-tamproto.png width=\textwidth
 
 * Second Terminal for running Docker of TEE
     - For building and manipulating TEEP-Device
 
+**TEEP-Device**
+
+Open the second terminal for the TEE Docker.
+
+```sh
+# Clone the teep-device repo and checkout master branch
+$ git clone https://192.168.100.100/rinkai/teep-device.git
+$ cd teep-device
+$ git checkout master
+
+# Sync and update the submodules
+$ git submodule sync --recursive
+$ git submodule update --init --recursive
+```
+**Running Docker of TEE**
+```sh
+# Start the docker
+$ docker run --network tamproto_default -it --rm -v $(pwd):/home/user/teep-device aistcpsec/taref-dev:optee
+```
+Trimmed output after running docker
+```sh
+make -C sample rootfs TAM_URL=http://tamproto_tam_api_1:8888
+make[1]: Entering directory '/home/user/teep-device/sample'
+cp /home/user/keystone/build/buildroot.build/images/rootfs.ext2 /home/user/teep-device/sample/../build/keystone/rootfs.ext2
+e2mkdir -O root -G root /home/user/teep-device/sample/../build/keystone/rootfs.ext2:/root/teep-broker
+e2cp -O root -G root -p /home/user/teep-device/sample/../build/keystone/hello-tc/Enclave /home/user/teep-device/sample/../build/keystone/rootfs.ext2:/root/teep-broker/hello-ta
+e2cp -O root -G root -p /home/user/teep-device/sample/../build/keystone/hello-tc/App-keystone /home/user/teep-device/sample/../build/keystone/rootfs.ext2:/root/teep-broker/hello-app
+e2cp -O root -G root -p /home/user/teep-device/sample/../build/keystone/agent/teep-agent-ta /home/user/teep-device/sample/../build/keystone/rootfs.ext2:/root/teep-broker
+e2cp -O root -G root -p /home/user/teep-device/sample/../build/keystone/broker/teep-broker-app /home/user/teep-device/sample/../build/keystone/rootfs.ext2:/root/teep-broker
+e2cp -O root -G root -p /home/user/teep-device/sample/../build/keystone/scripts/env.sh /home/user/teep-device/sample/../build/keystone/rootfs.ext2:/root/teep-broker
+e2cp -O root -G root -p /home/user/teep-device/sample/../build/keystone/scripts/itc.sh /home/user/teep-device/sample/../build/keystone/rootfs.ext2:/root/teep-broker
+e2cp -O root -G root -p /home/user/teep-device/sample/../build/keystone/scripts/rtc.sh /home/user/teep-device/sample/../build/keystone/rootfs.ext2:/root/teep-broker
+e2cp -O root -G root -p /home/user/teep-device/sample/../build/keystone/scripts/showtamurl.sh /home/user/teep-device/sample/../build/keystone/rootfs.ext2:/root/teep-broker
+e2cp -O root -G root -p /home/user/keystone/sdk/build64/runtime/eyrie-rt /home/user/teep-device/sample/../build/keystone/rootfs.ext2:/root/teep-broker
+e2cp -O root -G root -p /home/user/teep-device/sample/../build/keystone/ree/mbedtls/library/lib* /home/user/teep-device/sample/../build/keystone/rootfs.ext2:/usr/lib
+e2cp -O root -G root -p /home/user/teep-device/sample/../build/keystone/ree/libwebsockets/lib/lib* /home/user/teep-device/sample/../build/keystone/rootfs.ext2:/usr/lib
+make[1]: Leaving directory '/home/user/teep-device/sample'
+build-user@e849b23b8bb9:~/teep-device$ 
+
+```
+
+@image html docs/images/terminal-2-teep-device.png
+@image latex docs/images/terminal-2-teep-device.png width=\textwidth
+
 * Third Terminal for editing sources of TEEP-Device
     - For editing source codes of TEEP-Device by watching the above two terminals.
+
+
+**TEEP-Device Source code**
+
+Open third terminal to edit the source of TEEP-Device.
+```sh
+# Clone the teep-device repo and checkout master branch
+$ git clone https://192.168.100.100/rinkai/teep-device.git
+$ cd teep-device
+$ git checkout master
+
+$ cd teep-agent-ta
+$ vim teep-agent-ta.c
+ ```
+
+@image html docs/images/terminal-3-ta-store-c.png
+@image latex docs/images/terminal-3-ta-store-c.png width=\textwidth
+
 
 The three terminals may be on a local fast computer or logging in to a remote build machine with ssh.
 
@@ -32,6 +155,10 @@ The three key components of the fast build machine are CPU, storage and memory s
 
 The frequency of the CPU is above 3.8Ghz is ideal. The write speed of the storage has a significant impact on the build time. It is almost a must to use SSD than HDD and the SSD should be above 3000MB/s write speed which is only available with M.2 form factor with NVMe interface. The 32GB or higher memory size is recommended, since it will prevent disk swapping when running out the memory which significantly reduces the build speed. Please request reasonable development machines if you are working at a corporate or organization.
 
+All three terminal opened simultaniously for efficiency.
+
+@image html docs/images/3-terminals.png
+@image latex docs/images/3-terminals.png width=\textwidth
 
 ## Preparation for Docker
 
