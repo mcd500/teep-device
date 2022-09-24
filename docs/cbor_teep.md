@@ -12,8 +12,8 @@ The CDDL is used for defining CBOR syntax of the TEEP messages. The CBOR Diagnos
 
 The CBOR Binary Representation is the result of converting the CBOR Diagnostic Notation to the binary. The TAM server and TEEP-Device parse the Binary Representation and handles the TEEP protocol operation.
 
-@image html docs/images/teep-suit-representation.png
-@image latex docs/images/teep-suit-representation.png width=\textwidth
+@image html docs/images/teep-cbor-representation.png
+@image latex docs/images/teep-cbor-representation.png width=\textwidth
 
 ## TEEP message format
 
@@ -21,14 +21,21 @@ Example of the TEEP message of QueryRequest in both CBOR Diagnostic Notation and
 
 The TEEP-Device and TAM will exchange the Binary Representation only. When the TEEP-Device receives the QueryRequest message from the TAM, the TEEP-Device will parse the  Binary Representation to the Diagnostic Notation for understanding the contents of the message.
 
-TODO: Add cddl example
+@image html docs/images/teep-message-format-cddl.png
+@image latex docs/images/teep-message-format-cddl.png width=0.75\textwidth
 
-@image html docs/images/teep-message-format-example.png
-@image latex docs/images/teep-message-format-example.png width=\textwidth
+@image html docs/images/teep-message-format-diag-notation.png
+@image latex docs/images/teep-message-format-diag-notation.png width=0.7\textwidth
+
+@image html docs/images/teep-message-format-bin-rep.png
+@image latex docs/images/teep-message-format-bin-rep.png width=0.7\textwidth
 
 ## SUIT manifest format
 
-The Update message of TEEP protocol includes the SUIT Manifests for the information of TC and/or carrying the TC itself in the SUIT Manifest. This is the example of SUIT Manifest in the Update message.
+The Update message of TEEP protocol includes the SUIT Manifests for the information of TC and/or carrying the TC itself in the SUIT Manifest. These are the examples of SUIT Manifest in the Update message.
 
-@image html docs/images/suit-message-format-example.png
-@image latex docs/images/suit-message-format-example.png width=\textwidth
+@image html docs/images/suit-message-format-diag-notation.png
+@image latex docs/images/suit-message-format-diag-notation.png width=0.85\textwidth
+
+@image html docs/images/suit-message-format-bin-rep.png
+@image latex docs/images/suit-message-format-bin-rep.png width=\textwidth
