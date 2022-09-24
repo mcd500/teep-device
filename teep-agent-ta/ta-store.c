@@ -104,13 +104,13 @@ static bool install_ta(const char *filename, const void *image, size_t image_len
 
 	fd = fopen(filename, "w+");
 	if (NULL == fd) {
-		tee_log_error("install_ta(): fopen(): error");
+		tee_log_error("install_ta(): fopen(): ERROR\n");
 		return false;
 	}
 
 	bytes = fwrite(image, image_len, 1, fd);
 	if (bytes < image_len) {
-		tee_log_error("install_ta(): fwrite(): error");
+		tee_log_error("install_ta(): fwrite(): ERROR\n");
 		ret = false; goto bail_2;
 	}
 
