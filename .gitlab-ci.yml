@@ -108,6 +108,7 @@ teep_doxygen:
     script:
         - make docs
     artifacts:
+        name: "teep-device-docs"
         paths:
             - docs/teep-device.pdf
             - docs/teep-device_readme_html.tar.gz
