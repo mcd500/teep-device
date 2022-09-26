@@ -372,6 +372,32 @@ eyrie-rt         hello-ta         showtamurl.sh    teep-broker-app
 ```
 
 There are helper scripts to handle the teep-broker.
+Following are the few of them and its usage.
+
+* showtamurl.sh
+* itc.sh
+* rtc.sh
+
+
+*showtamurl.sh*
+
+This script prints out the tamproto values which has to be suffixed when we execute the built teep-broker-app.
+This script gets the url of the Tamproto either from the TAM_URL env variable or by internally executing get-ip.sh (get-ip.sh returns the IP of tamproto running in the same machine) 
+
+example:
+
+```sh
+$ ./showtamurl.sh 
+--tamurl 192.168.100.114/api/tam_cbor
+```
+
+You can simply copy the output of the showtamurl.sh and paste it to the end of the generated teep-broker-app binary.For ex:
+
+```sh
+$ ./teep-broker-app --tamurl http://192.168.100.114:8888/api/tam_cbor
+```
+
+*itc.sh*
 
 Initiate teep-agent with tamproto. This command is for debugging the confirmative and handling of formats of TEEP messages and SUIT manifests in teep-agent and tamproto.
 
@@ -382,6 +408,8 @@ Initiate teep-agent with tamproto. This command is for debugging the confirmativ
 ./teep-broker-app --tamurl ${TAM_URL}/api/tam_cbor
 # ./itc.sh
 ```
+
+*rtc.sh*
 
 Execute the downloaded TC from the tamproto. This command is for debugging the implementation of the TC.
 
@@ -398,6 +426,7 @@ main start
 Hello TEEP from TEE!
 main end
 ```
+
 
 To exit from qemu.
 
