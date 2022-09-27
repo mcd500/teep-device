@@ -1,4 +1,4 @@
-# Building TEEP-Device without having TEE installed
+# Build TEEP-Device without having TEE installed
 
 The building without TEE is prepared for debugging purposes during developing TEEP-Device itself. This method does not require any TEE hardware (TrustZone, SGX and etc) and TEE SDK (Keystone, OP_TEE and SGX SDK) installed in the local machine and it is meant to build and run on TEEP-Device on any x64 PC.
 
@@ -22,7 +22,7 @@ git checkout ca66a97bac153864617e7868e44f4b409e3e6ed4 -b for-teep-device
 python3 -m pip install --upgrade .
 ```
 
-**Running tamproto**
+**Run tamproto**
 
 ```sh
 # Clone the tamproto repo and checkout master branch
@@ -48,7 +48,7 @@ tam_api_1  | Express HTTP  server listening on port 8888
 tam_api_1  | Express HTTPS server listening on port 8443
 ```
 
-**Cloning TEEP-Device**
+**Clone TEEP-Device**
 
 ```sh
 # Clone the teep-device repo and checkout master branch
