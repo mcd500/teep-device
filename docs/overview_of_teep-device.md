@@ -28,6 +28,8 @@ TEEP Agent: The TEEP Agent is a processing module running inside a
       requests or forward requests to other processing modules in a TEE,
       which is up to a TEE provider's implementation.
 
+The terminology of Trusted Application (TA) in the old draft was revised to Trusted Component (TC) to express the files installed from TAM to devices that could have both binaries of trusted applications and data files of personalization data. The TA and TC are interchangeable in this documentation.
+
 More details can be found in the below URL.
 - TEEP Protocol
   * https://datatracker.ietf.org/doc/html/draft-ietf-teep-protocol
@@ -35,8 +37,6 @@ More details can be found in the below URL.
   * https://datatracker.ietf.org/doc/html/draft-ietf-teep-otrp-over-http
 - TEEP Architecture:
   * https://datatracker.ietf.org/doc/draft-ietf-teep-architecture/
-
-The terminology of Trusted Application (TA) in the old draft was changed to Trusted Component (TC) to express the files installed from TAM to devices that could have both binaries of trusted applications and data files of personalization data. The TA and TC are interchangeable in this documentation.
 
 Typical use cases for TEEP Protocol is a firmware update Over The Air (OTA) which TC containing a firmware binary, installing security sensitive applications used for payment, playing video with DRM, insurance software, enabling hardware feature with license keys, telemetry software, and softwares handles personal identification data, such as Social Security Number, and vaccination status.
 
