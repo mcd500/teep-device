@@ -317,7 +317,7 @@ $ git config --global --add safe.directory $(pwd)/teep-device
 
 **Start the Docker**
 
-Open the third terminal. Here we build the TEEP-Device and run it to talk with tamproto opened on the first terminal. If any error occurs, edit the sources on the second terminal to debug.
+Open the third terminal. Here we build the TEEP-Device and run it to communicate with tamproto opened on the first terminal. If any error occurs, edit the sources on the second terminal to debug.
 
 ```sh
 # Start the docker
@@ -400,7 +400,7 @@ $ ./teep-broker-app --tamurl http://192.168.100.114:8888/api/tam_cbor
 
 *itc.sh*
 
-Initiate teep-agent with tamproto. This command is for debugging the confirmative and handling of formats of TEEP Messages and SUIT Manifest in teep-agent and tamproto.
+Initiate teep-agent with tamproto. This script is for debugging the confirmative and handling of formats of TEEP Messages and SUIT Manifest in teep-agent and tamproto.
 
 ```sh
 # cat ita.sh
@@ -412,7 +412,7 @@ Initiate teep-agent with tamproto. This command is for debugging the confirmativ
 
 *rtc.sh*
 
-Execute the downloaded TC from the tamproto. This command is for debugging the implementation of the TC.
+Execute the downloaded TC from the tamproto. This script is for debugging the implementation of the TC.
 
 ```sh
 # ./rtc.sh

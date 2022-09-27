@@ -1,4 +1,4 @@
-# Build TEEP-Device without Docker
+# Build TEEP-Device without Docker and for Development boards
 
 Clone the TEEP-Device's source code and build it for Keystone, OP-TEE and SGX.
 
