@@ -400,7 +400,7 @@ $ ./teep-broker-app --tamurl http://192.168.100.114:8888/api/tam_cbor
 
 *itc.sh*
 
-Initiate teep-agent with tamproto. This command is for debugging the confirmative and handling of formats of TEEP messages and SUIT manifests in teep-agent and tamproto.
+Initiate teep-agent with tamproto. This command is for debugging the confirmative and handling of formats of TEEP Messages and SUIT Manifest in teep-agent and tamproto.
 
 ```sh
 # cat ita.sh

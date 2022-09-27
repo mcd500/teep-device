@@ -20,7 +20,7 @@ sudo apt-get -y install build-essential git autoconf automake cmake git wget cur
 
 **Install suit-tool**
 
-The TEEP messages use SUIT manifest format for acquiring TCs. The suit-tools is used in TEEP-Device for parsing and handling SUIT manifests.
+The TEEP Messages use SUIT Manifest format for acquiring TCs. The suit-tools is used in TEEP-Device for parsing and handling SUIT Manifests.
 
 ```sh
 # Cloning suit-tool

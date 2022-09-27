@@ -55,10 +55,10 @@ Typical use cases for TEEP Protocol is a firmware update Over The Air (OTA) whic
 
 - The required features of TEEP-Agent in the draft is implemented as a application in user application privilege level inside TEE in this TEEP-Device to simplify the implementation which ideally should be combined with implementation in higher privilege levels, such as, the runtime in S-Mode and Secure Monitor in M-mode on RISC-V. Therefore, some of the assumed requirements on the draft are not fulfilled with the TEEP-Device. In the product, the features of TEEP-Agent must be enabled through root-of-trust from the boot up of the CPUs, the TCs must be saved in a secure manner and have protection of installed TCs.
 
-- Supports Concise Binary Object Representation (CBOR) for current four TEEP messages.
+- Supports Concise Binary Object Representation (CBOR) for current four TEEP Messages.
   * https://datatracker.ietf.org/doc/html/rfc7049
 
-- Supports SUIT-manifest inside the Update message of TEEP Protocol.
+- Supports SUIT Manifest inside the Update message of TEEP Protocol.
   * https://datatracker.ietf.org/doc/draft-ietf-suit-manifest/
 
 ## Components of TEEP-Device and TA-Ref
