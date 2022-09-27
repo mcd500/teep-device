@@ -15,7 +15,8 @@ Have tested on Ubuntu 20.04.
 Install packages for compiling.
 
 ```sh
-sudo apt-get -y install build-essential git autoconf automake cmake git wget curl expect python3-pip libcap-dev
+sudo apt-get -y install build-essential git autoconf automake cmake git wget curl expect python3-pip libcap-dev debian-ports-archive-keyring locales
+openssh-client openssh-server file libcurl4-gnutls-dev libjansson-dev rsync ntpdate usbutils pciutils net-tools iproute2 vim e2fsprogs
 ```
 
 **Install suit-tool**
