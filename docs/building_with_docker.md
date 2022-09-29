@@ -115,15 +115,16 @@ $ docker network create tamproto_default
 
 ## Docker Images with pre-built TEEP-Device
 
-The following are the docker images that have pre-built binaries of TEEP-Device with TA-Ref. Since these images are already prepared and built already, you can start using it directly without building the TEEP-Device oneself. The Doxygen image is for generating documentation.
+The following are the docker images that have pre-built binaries of TEEP-Device with TA-Ref. 
+Since these images are already prepared and built already, you can start using it directly without building the TEEP-Device oneself.
 
-| Target | docker image |
-| ------ | ------ |
-| Keystone | aistcpsec/teep-dev:keystone |
-| OP-TEE | aistcpsec/teep-dev:optee |
-| Intel SGX | aistcpsec/teep-dev:sgx |
-| tamproto | aistcpsec/teep-dev:tamproto |
-| Doxygen | aistcpsec/teep-dev:doxygen |
+| Purpose | Docker image | Description |
+| ------ | ------ | ------ |
+| Keystone | aistcpsec/teep-dev:keystone | Has pre-built binaries of TEEP-Device with TA-Ref for RISC-V Keystone|
+| OP-TEE | aistcpsec/teep-dev:optee | Has pre-built binaries of TEEP-Device with TA-Ref for ARM OP-TEE|
+| Intel SGX | aistcpsec/teep-dev:sgx | Has pre-built binaries of TEEP-Device with TA-Ref for Intel SSX|
+| tamproto | aistcpsec/teep-dev:tamproto | Used for running tamproto |
+| Doxygen | aistcpsec/teep-dev:doxygen | Used for generating TEEP-Device documentation|
 
 
 ## Preparation to build TEEP-Device on Docker
@@ -134,7 +135,7 @@ It requires Docker images of TA-Ref for building the TEEP-Device since TEEP-Devi
 
 Docker images have all necessary development packages for building TEEP-Device for all three TEEs. The instructions of usage are described from the next chapters.
 
-| Target | Docker image |
+| Purpose | Docker image |
 | ------ | ------ |
 | Keystone | aistcpsec/taref-dev:keystone |
 | OP-TEE | aistcpsec/taref-dev:optee |
