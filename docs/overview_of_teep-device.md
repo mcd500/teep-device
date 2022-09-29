@@ -30,13 +30,27 @@ TEEP Agent: The TEEP Agent is a processing module running inside a
 
 The terminology of Trusted Application (TA) in the old draft was revised to Trusted Component (TC) to express the files installed from TAM to devices that could have both binaries of trusted applications and data files of personalization data. The TA and TC are interchangeable in this documentation.
 
-More details can be found in the below URL.
+The TEEP Protocol relies on the Software Updates for Internet of Things (SUIT) Manifest defined at IETF which expresses metadata of the TC. When the TAM sends one of the TEEP Messages called Update Message, it will include SUIT Manifest for installing TC to the Device.
+
+The TEEP Protocol and SUIT Manifest are both in binary formats of Concise Binary Object Representation (CBOR). The Objective of CBOR is designed to reduce the message size as much as possible in the way of light way parsing which is appropriate for Constraint Hardware such as IoT, Edge and Embedded devices with limited CPU processing power and memory size. The CBOR has a similar representation of JSON that is widely used on the Internet and makes constructing CBOR easier to use.
+
+The authentication feature of CBOR binaries in TEEP Messages and SUIT Manifests is proved by CBOR Object Signing and Encryption (COSE) required by TAM, Device, Developer and Owner of TC and etc. The COSE defined the method of Signing and Encryption of CBOR formats.
+
+More details can be found in the URLs at iETF.
 - TEEP Protocol
   * https://datatracker.ietf.org/doc/html/draft-ietf-teep-protocol
 - HTTP Transport for Trusted Execution Environment Provisioning
   * https://datatracker.ietf.org/doc/html/draft-ietf-teep-otrp-over-http
 - TEEP Architecture:
   * https://datatracker.ietf.org/doc/draft-ietf-teep-architecture/
+- SUIT Manifest:
+  * https://datatracker.ietf.org/doc/draft-ietf-suit-manifest/
+- CBOR
+  * https://datatracker.ietf.org/doc/rfc8949/
+- COSE
+  * https://datatracker.ietf.org/doc/rfc8152/
+
+## Use Cases of TEEP
 
 Typical use cases for TEEP Protocol is a firmware update Over The Air (OTA) which TC containing a firmware binary, installing security sensitive applications used for payment, playing video with DRM, insurance software, enabling hardware feature with license keys, telemetry software, and softwares handles personal identification data, such as Social Security Number, and vaccination status.
 
