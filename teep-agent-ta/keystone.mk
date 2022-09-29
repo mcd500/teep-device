@@ -16,6 +16,7 @@ LDFLAGS = $(TEE_LDFLAGS) \
 
 LIBS = $(TEE_LIBS) \
 	-lteep \
+	-lteelog \
 	-lqcbor \
 	-lteesuit \
 	-lt_cose \

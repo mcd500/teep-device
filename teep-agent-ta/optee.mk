@@ -17,7 +17,7 @@ export TA_LDFLAGS = \
 
 CPPFLAGS += -DTEE_TA
 CFLAGS += $(TA_CFLAGS)
-LDADD += $(TA_LDFLAGS) -lteep -lqcbor -lteesuit -lt_cose -lteecbor
+LDADD += $(TA_LDFLAGS) -lteep -lqcbor -lteesuit -lt_cose -lteecbor -lteelog
 
 BINARY = $(TEE_AGENT_UUID)
 

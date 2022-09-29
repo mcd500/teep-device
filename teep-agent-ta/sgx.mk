@@ -21,6 +21,7 @@ TA_LIBS = \
 	-lmbedtls \
 	-lgp \
 	-lEnclave_t \
+	-lteelog \
 	-lteep \
 	-lqcbor \
 	-lteesuit \
