@@ -45,7 +45,7 @@ struct component_path {
 bool store_component(const struct component_path *path, const void *image, size_t image_len);
 
 #ifdef __cplusplus
-extern "C" {
+}
 #endif
 
 #endif /* TA_STORE_H */
