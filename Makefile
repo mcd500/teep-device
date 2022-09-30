@@ -83,6 +83,8 @@ test:
 
 .PHONY: docs
 docs:
+	@echo "Updating the directories tree structure"
+	bash docs/update_tree_structure.sh
 	@echo "Generating doxygen files"
 	@doxygen docs/doxygen/Doxyfile
 	make -C docs/doxygen/latex
