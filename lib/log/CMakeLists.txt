@@ -1,2 +1,2 @@
 add_library(teelog teelog.c)
-target_include_directories(teelog PUBLIC ${CMAKE_SOURCE_DIR}/include)
+target_include_directories(teelog PUBLIC ${CMAKE_SOURCE_DIR}/include ${KEYSTONE_SDK_DIR}/include/app)

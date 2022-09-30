@@ -30,12 +30,31 @@
 
 #include <stdio.h>
 #include <stdarg.h>
+#include "config_ref_ta.h"
 #include "teelog.h"
 
 void tee_log(enum tee_log_level level, const char *msg, ...)
 {
-    va_list list;
-    va_start(list, msg);
-    vprintf(msg, list);
-    va_end(list);
+	char buf[256];
+	va_list list;
+
+	va_start(list, msg);
+	vsnprintf(buf, 256, msg, list);
+	va_end(list);
+
+#ifdef PLAT_KEYSTONE
+//	ocall_print_string_wrapper(buf);
+	ocall_print_string(buf);
+#endif
+#ifdef PLAT_OPTEE
+	MSG("%s", buf);
+#endif
+#ifdef PLAT_SGX
+	ocall_print_string_wrapper(buf);
+//	unsigned int retval;
+//	ocall_print_string(&retval, buf);
+#endif
+#ifdef PLAT_PC
+	printf("%s", buf);
+#endif
 }

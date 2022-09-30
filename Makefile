@@ -32,7 +32,13 @@ lib-FLAGS += \
 else
 lib-FLAGS += \
 	-DTEE_PLATFORM=$(TEE) \
-	-DCMAKE_C_FLAGS='-I$(TAREF_DIR)/build/include -I$(BUILD)/tee/QCBOR/inc'
+	-DCMAKE_C_FLAGS='-I$(TAREF_DIR)/build/include -I$(BUILD)/tee/QCBOR/inc \
+	  -I$(TAREF_DIR)/api/include'
+endif
+
+ifeq ($(TEE),keystone)
+lib-FLAGS += \
+	-DKEYSTONE_SDK_DIR=${KEYSTONE_SDK_DIR}
 endif
 
 .PHONY: lib

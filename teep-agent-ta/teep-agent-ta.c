@@ -1067,28 +1067,3 @@ uint32_t ecall_TA_InvokeCommandEntryPoint(uint32_t unused, uint32_t cmd_id, uint
 	return r;
 }
 #endif
-
-void tee_log(enum tee_log_level level, const char *msg, ...)
-{
-	char buf[256];
-	va_list list;
-
-	va_start(list, msg);
-	vsnprintf(buf, 256, msg, list);
-	va_end(list);
-
-#ifdef PLAT_KEYSTONE
-	ocall_print_string(buf);
-#endif
-#ifdef PLAT_OPTEE
-	MSG("%s", buf);
-#endif
-#ifdef PLAT_SGX
-	ocall_print_string_wrapper(buf);
-	unsigned int retval;
-	ocall_print_string(&retval, buf);
-#endif
-#ifdef PLAT_PC
-	printf("%s", buf);
-#endif
-}
