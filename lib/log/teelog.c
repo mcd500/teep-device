@@ -30,7 +30,7 @@
 
 #include <stdio.h>
 #include <stdarg.h>
-#include "config_ref_ta.h"
+#include "tee_internal_api.h"
 #include "teelog.h"
 
 void tee_log(enum tee_log_level level, const char *msg, ...)
