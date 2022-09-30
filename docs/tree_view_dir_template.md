@@ -19,6 +19,6 @@ Following are the important directories in the source code along with its descri
 
 **TEEP-Device Source Code**
 
-The below is the current TEEP-Device source code listing only the directories.
+The below is the current TEEP-Device source code listing only the directories to one level.
 
 DYNAMIC_SOURCE_UPDATE_TAG
