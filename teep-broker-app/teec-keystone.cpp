@@ -42,6 +42,7 @@
 #include <thread>
 #include <mutex>
 #include <condition_variable>
+#include <libwebsockets.h>
 
 #include "edger/Enclave_u.h"
 #ifdef APP_PERF_ENABLE
@@ -50,11 +51,8 @@
 
 #define SHA3_H
 #include "tee_client_api.h"
-
-#include <libteep.h>
-#include <libwebsockets.h>
-
-#include "ta-interface.h"
+#include "libteep.h"
+#include "teep-broker-agent.h"
 
 using namespace Keystone;
 

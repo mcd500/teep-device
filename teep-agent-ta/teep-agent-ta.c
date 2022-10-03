@@ -32,11 +32,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
-#include <tee_internal_api.h>
-#include <libteep.h>
-#include <teesuit.h>
 
-#include "ta-interface.h"
+#include "tee_internal_api.h"
+#include "libteep.h"
+#include "teesuit.h"
+
+#include "teep-broker-agent.h"
 #include "teep-agent-ta.h"
 #include "ta-store.h"
 #include "teelog.h"
