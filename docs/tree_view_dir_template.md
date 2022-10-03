@@ -10,7 +10,7 @@ Following are the important directories in the source code along with its descri
 | key | cryptograpic keys for TEEP protocol |
 | lib | contains libraries used on TEEP-Device |
 | submodules |Contains the submodules used for TEEP-Device |
-| submodules/libwebsockets | HTTP/HTTP library https://github.com/warmcat/libwebsockets |
+| submodules/libwebsockets | HTTP/HTTPS library https://github.com/warmcat/libwebsockets |
 | submodules/mbedtls | Cryptographic library  https://github.com/ARMmbed/mbed-crypto |
 | submodules/QCBOR | CBOR library  https://github.com/laurencelundblade/QCBOR.git |
 | submodules/t_cose | COSE library  https://github.com/laurencelundblade/t_cose.git |
