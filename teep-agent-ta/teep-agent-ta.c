@@ -96,14 +96,14 @@ static bool store_bstr(UsefulBufC *p, const void *buf, size_t len)
 static bool store_envelope(size_t index, const void *buf, size_t len)
 {
 	if (index < 2) {
-		tee_log_trace("verifying signature of suit manifest\n");
+		tee_trace("verifying signature of suit manifest\n");
 		if (!suit_authenticate_envelope(
 				(tcbor_range_t) { buf, (char *)buf + len },
 				tc_singer_pubkey)) {
-			tee_log_trace("verify FAILED\n");
+			tee_trace("verify FAILED\n");
 			return false;
 		}
-		tee_log_trace("verify OK\n");
+		tee_trace("verify OK\n");
 		return store_bstr(&suit_manifests[index].envelope, buf, len);
 	} else {
 		return false;
@@ -236,7 +236,7 @@ set_dev_option(struct teep_agent_session *session, enum agent_dev_option option,
 static void
 teep_error(struct teep_agent_session *session, const char *message)
 {
-	tee_log_trace("%s\n", message);
+	tee_trace("%s\n", message);
 	session->state = AGENT_POSTING_ERROR;
 }
 
@@ -322,7 +322,7 @@ handle_component_download(struct teep_agent_session *session, const void *buffer
 		teep_error(session, "invalid state");
 		return TEE_ERROR_BAD_STATE;
 	}
-	tee_log_trace("component download %"PRIu64"\n", len);
+	tee_trace("component download %"PRIu64"\n", len);
 	store_component(&session->fetch_component_path, buffer, len);
 	suit_runner_resume(&session->suit_runner, NULL);
 	session->state = AGENT_RUN_SUIT_RUNNER;
@@ -444,14 +444,14 @@ static int build_error(struct teep_agent_session *session, void *dst, size_t *ds
 static void hexdump(tcbor_range_t r)
 {
     if (!r.begin) {
-        tee_log_trace(" (NULL)\n");
+        tee_trace(" (NULL)\n");
         return;
     }
     for (const uint8_t *p = r.begin; p != r.end;) {
         for (int i = 0; i < 16 && p != r.end; i++, p++) {
-            tee_log_trace(" %2.2X", *p);
+            tee_trace(" %2.2X", *p);
         }
-        tee_log_trace("\n");
+        tee_trace("\n");
     }
 }
 
@@ -459,11 +459,11 @@ static void hexdump(tcbor_range_t r)
 static void severed(suit_severed_t s)
 {
     if (!s.has_value) {
-        tee_log_trace(" (NULL)\n");
+        tee_trace(" (NULL)\n");
         return;
     }
     if (s.severed) {
-        tee_log_trace("  id=%"PRIu64"\n", s.digest.algorithm_id);
+        tee_trace("  id=%"PRIu64"\n", s.digest.algorithm_id);
         hexdump(s.digest.bytes);
     } else {
         hexdump(s.body);
@@ -474,7 +474,7 @@ static void severed(suit_severed_t s)
 
 static bool check_vendor_id(suit_runner_t *runner, void *user, const suit_object_t *target, tcbor_range_t id)
 {
-    tee_log_trace("check vendor id\n");
+    tee_trace("check vendor id\n");
     return true;
 }
 
@@ -518,38 +518,38 @@ static bool parse_component_id(suit_component_t *component, struct component_pat
 static bool store(suit_runner_t *runner, void *user, const suit_object_t *target, tcbor_range_t body)
 {
 	if (target->is_component) {
-		tee_log_trace("teep-agent-ta.c: store(): store component\n");
+		tee_trace("teep-agent-ta.c: store(): store component\n");
 		struct component_path path;
 		if (!parse_component_id(target->component, &path)) return false;
-		tee_log_trace("  device   = %s\n", path.device);
-		tee_log_trace("  storage  = %s\n", path.storage);
-		//tee_log_trace("  uuid     = %s\n", path.uuid);
-		tee_log_trace("  filename = %s\n", path.filename);
-		tee_log_trace("  body.begin = %u\n", body.begin);
-		tee_log_trace("  body.end   = %u\n", body.end);
-		tee_log_trace("  size       = %u\n", body.end - body.begin);
+		tee_trace("  device   = %s\n", path.device);
+		tee_trace("  storage  = %s\n", path.storage);
+		//tee_trace("  uuid     = %s\n", path.uuid);
+		tee_trace("  filename = %s\n", path.filename);
+		tee_trace("  body.begin = %u\n", body.begin);
+		tee_trace("  body.end   = %u\n", body.end);
+		tee_trace("  size       = %u\n", body.end - body.begin);
 		store_component(&path, body.begin, body.end - body.begin);
 	} else {
-		tee_log_trace("store dependency\n");
+		tee_trace("store dependency\n");
 	}
     return true;
 }
 
 static void fetch_complete(suit_runner_t *runner, void *user)
 {
-    tee_log_trace("finish fetch\n");
+    tee_trace("finish fetch\n");
 }
 
 static bool fetch_and_store(suit_runner_t *runner, void *user, const suit_object_t *target, tcbor_range_t uri)
 {
 	struct teep_agent_session *session = (struct teep_agent_session *)user;
 	if (target->is_component) {
-		tee_log_trace("fetch_and_store component\n");
+		tee_trace("fetch_and_store component\n");
 		if (!parse_component_id(target->component, &session->fetch_component_path)) return false;
 		session->fetch_uri = uri;
 		suit_runner_suspend(runner, fetch_complete);
 	} else {
-		tee_log_trace("fetch_and_store dependency\n");
+		tee_trace("fetch_and_store dependency\n");
 		return false;
 	}
     return true;
@@ -600,38 +600,38 @@ query_next_broker_task(struct teep_agent_session *session)
 #if 0
 			struct suit_envelope *ep = &session->suit_context.envelope_buf[0];
 
-			tee_log_trace("envelope:\n");
+			tee_trace("envelope:\n");
 			hexdump(ep->binary);
-			tee_log_trace("envelope.delegation:\n");
+			tee_trace("envelope.delegation:\n");
 			hexdump(ep->delegation);
-			tee_log_trace("envelope.authentication_wrapper:\n");
+			tee_trace("envelope.authentication_wrapper:\n");
 			//hexdump(ep->authentication_wrapper);
 
-			tee_log_trace("envelope.manifest:\n");
+			tee_trace("envelope.manifest:\n");
 			hexdump(ep->manifest.binary);
-			tee_log_trace("envelope.manifest.version: %"PRIu64"\n", ep->manifest.version);
-			tee_log_trace("envelope.manifest.sequence_number: %"PRIu64"\n", ep->manifest.sequence_number);
-			tee_log_trace("envelope.manifest.common:\n");
+			tee_trace("envelope.manifest.version: %"PRIu64"\n", ep->manifest.version);
+			tee_trace("envelope.manifest.sequence_number: %"PRIu64"\n", ep->manifest.sequence_number);
+			tee_trace("envelope.manifest.common:\n");
 			hexdump(ep->manifest.common);
-			tee_log_trace("envelope.manifest.reference_uri:\n");
+			tee_trace("envelope.manifest.reference_uri:\n");
 			hexdump(ep->manifest.reference_uri);
 
-			tee_log_trace("envelope.manifest.dependency_resolution:\n");
+			tee_trace("envelope.manifest.dependency_resolution:\n");
 			severed(ep->manifest.dependency_resolution);
-			tee_log_trace("envelope.manifest.payload_fetch:\n");
+			tee_trace("envelope.manifest.payload_fetch:\n");
 			severed(ep->manifest.payload_fetch);
-			tee_log_trace("envelope.manifest.install:\n");
+			tee_trace("envelope.manifest.install:\n");
 			severed(ep->manifest.install);
-			tee_log_trace("envelope.manifest.text:\n");
+			tee_trace("envelope.manifest.text:\n");
 			severed(ep->manifest.text);
-			tee_log_trace("envelope.manifest.coswid:\n");
+			tee_trace("envelope.manifest.coswid:\n");
 			severed(ep->manifest.coswid);
 
-			tee_log_trace("envelope.manifest.validate:\n");
+			tee_trace("envelope.manifest.validate:\n");
 			hexdump(ep->manifest.validate);
-			tee_log_trace("envelope.manifest.load:\n");
+			tee_trace("envelope.manifest.load:\n");
 			hexdump(ep->manifest.load);
-			tee_log_trace("envelope.manifest.run:\n");
+			tee_trace("envelope.manifest.run:\n");
 			hexdump(ep->manifest.run);
 #endif
 			suit_runner_init(&session->suit_runner, &session->suit_context,

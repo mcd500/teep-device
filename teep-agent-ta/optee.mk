@@ -1,7 +1,7 @@
 TOPDIR = $(CURDIR)/..
 include $(TOPDIR)/conf.mk
 
-export TA_CFLAGS = $(TEE_CFLAGS) \
+export TA_CFLAGS = $(TEE_CFLAGS) $(DFLAGS) \
 	-nostdinc -DPLAT_OPTEE=1  \
 	-Wall \
 	-Wno-overlength-strings \

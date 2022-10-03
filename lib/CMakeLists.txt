@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.1)
 
 set(TEE_PLATFORM pc CACHE STRING "tee platform (optee, keystone, sgx or pc)")
+set(DEBUG "-DDEBUG")
 
 if(${TEE_PLATFORM} STREQUAL optee)
 add_definitions(-DPLAT_OPTEE)

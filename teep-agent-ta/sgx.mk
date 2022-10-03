@@ -42,7 +42,7 @@ export TA_LDFLAGS = \
 	-Wl,--defsym,__ImageBase=0 -Wl,--gc-sections   \
 	-Wl,--version-script=$(TOPDIR)/platform/sgx/Enclave.lds
 
-CFLAGS += $(TA_CFLAGS)
+CFLAGS += $(DFLAGS) $(TA_CFLAGS)
 
 LDFLAGS = $(TA_LDFLAGS)
 

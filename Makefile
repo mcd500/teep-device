@@ -4,12 +4,18 @@ export TOPDIR
 # Declared $(BUILD) here
 include $(TOPDIR)/conf.mk
 
+export DEBUG ?= 1
+ifeq ($(DEBUG), 1)
+	DFLAGS += '-DDEBUG'
+endif
+
 prefix      ?= /usr/local
 prefix_bin  ?= teep-broker # Historically it is bin
 prefix_lib  ?= $(prefix)/lib
 
 TAM_IP  ?= tamproto_tam_api_1
 TAM_URL ?= http://$(TAM_IP):8888
+
 
 .PHONY: all
 all: check-tee submodule lib agent broker hello-tc rootfs
@@ -26,13 +32,13 @@ ifeq ($(TEE),pc)
 lib-FLAGS += \
 	-DCMAKE_BUILD_TYPE=Debug \
 	-DTEE_PLATFORM=$(TEE) \
-	-DCMAKE_C_FLAGS='-I$(TOPDIR)/submodule/mbedtls/include -I$(BUILD)/tee/QCBOR/inc' \
-	-DCMAKE_CXX_FLAGS=-I$(TOPDIR)/submodule/mbedtls/include \
+	-DCMAKE_C_FLAGS='$(DFLAGS) -I$(TOPDIR)/submodule/mbedtls/include -I$(BUILD)/tee/QCBOR/inc' \
+	-DCMAKE_CXX_FLAGS='$(DFLAGS) -I$(TOPDIR)/submodule/mbedtls/include' \
 	-DCMAKE_LIBRARY_PATH="$(BUILD)/ree/mbedtls/library;$(BUILD)/tee/QCBOR/"
 else
 lib-FLAGS += \
 	-DTEE_PLATFORM=$(TEE) \
-	-DCMAKE_C_FLAGS='-I$(TAREF_DIR)/build/include -I$(BUILD)/tee/QCBOR/inc \
+	-DCMAKE_C_FLAGS='$(DFLAGS) -I$(TAREF_DIR)/build/include -I$(BUILD)/tee/QCBOR/inc \
 	  -I$(TAREF_DIR)/api/include'
 endif
 
@@ -45,21 +51,21 @@ endif
 lib:
 	mkdir -p build/$(TEE)/lib
 	cd build/$(TEE)/lib && cmake $(TOPDIR)/lib $(lib-FLAGS) $(cmake-tee-TOOLCHAIN)
-	$(MAKE) -C build/$(TEE)/lib
+	$(MAKE) -C build/$(TEE)/lib DFLAGS=$(DFLAGS)
 
 .PHONY: agent
 agent:
-	$(MAKE) -C teep-agent-ta -f $(TEE).mk out-dir=$(BUILD)/agent
+	$(MAKE) -C teep-agent-ta DFLAGS=$(DFLAGS) -f $(TEE).mk out-dir=$(BUILD)/agent
 
 .PHONY: broker
 broker:
-	$(MAKE) TAM_URL=$(TAM_URL) -C teep-broker-app
+	$(MAKE) -C teep-broker-app TAM_URL=$(TAM_URL) DFLAGS=$(DFLAGS)
 
 .PHONY: hello-tc
 hello-tc:
 	$(MAKE) -C hello-tc/build-$(PLAT) \
 		SOURCE=$(TOPDIR)/hello-tc \
-		TAM_URL=$(TAM_URL)
+		TAM_URL=$(TAM_URL) DFLAGS=$(DFLAGS)
 
 .PHONY: clean-hello-tc
 clean-hello-tc:

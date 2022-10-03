@@ -169,21 +169,21 @@ static bool parse_rep_policy(tcbor_range_t param)
 static bool condition_vendor_identifier(suit_runner_t *runner, const suit_object_t *target, enum suit_command command, tcbor_range_t param)
 {
     if (!parse_rep_policy(param)) return false;
-    tee_log_trace("execute suit-condition-vendor-identifier\n");
+    tee_trace("execute suit-condition-vendor-identifier\n");
     return true;
 }
 
 static bool condition_class_identifier(suit_runner_t *runner, const suit_object_t *target, enum suit_command command, tcbor_range_t param)
 {
     if (!parse_rep_policy(param)) return false;
-    tee_log_trace("execute suit-condition-class-identifier\n");
+    tee_trace("execute suit-condition-class-identifier\n");
     return true;
 }
 
 static bool condition_image_match(suit_runner_t *runner, const suit_object_t *target, enum suit_command command, tcbor_range_t param)
 {
     if (!parse_rep_policy(param)) return false;
-    tee_log_trace("execute suit-condition-image-match\n");
+    tee_trace("execute suit-condition-image-match\n");
     return true;
 }
 
@@ -232,7 +232,7 @@ bool suit_runner_get_parameter(suit_runner_t *runner, const suit_object_t *targe
 
 static bool directive_set_parameters(suit_runner_t *runner, const suit_object_t *target, enum suit_command command, tcbor_range_t param)
 {
-    tee_log_trace("execute suit-set-parameters\n");
+    tee_trace("execute suit-set-parameters\n");
     bool is_override = command == SUIT_DIRECTIVE_OVERRIDE_PARAMETERS;
     
     tcbor_context_t ctx = tcbor_toplevel(param);
@@ -256,7 +256,7 @@ err:
 static bool directive_process_dependency(suit_runner_t *runner, const suit_object_t *target, enum suit_command command, tcbor_range_t param)
 {
     if (!parse_rep_policy(param)) return false;
-    tee_log_trace("execute suit-directive-process-dependency\n");
+    tee_trace("execute suit-directive-process-dependency\n");
     // TODO
     return true;
 }
@@ -264,27 +264,27 @@ static bool directive_process_dependency(suit_runner_t *runner, const suit_objec
 static bool directive_fetch(suit_runner_t *runner, const suit_object_t *target, enum suit_command command, tcbor_range_t param)
 {
     if (!parse_rep_policy(param)) return false;
-    tee_log_trace("execute suit-directive-fetch\n");
+    tee_trace("execute suit-directive-fetch\n");
     
     tcbor_range_t uri_cbor;
     if (!suit_runner_get_parameter(runner, target, SUIT_PARAMETER_URI, &uri_cbor)) {
-        tee_log_trace("uri is not set\n");
+        tee_trace("uri is not set\n");
         return false;
     }
     tcbor_context_t ctx = tcbor_toplevel(uri_cbor);
     tcbor_range_t uri;
     if (!tcbor_read_tstr(&ctx, &uri)) {
-        tee_log_trace("uri not tstr\n");
+        tee_trace("uri not tstr\n");
         return false;
     }
 
     if (uri.begin == uri.end) {
-        tee_log_trace("uri is empty\n");
+        tee_trace("uri is empty\n");
     } else if (uri.begin[0] == '#') {
-        tee_log_trace("local uri\n");
+        tee_trace("local uri\n");
         tcbor_range_t binary;
         if (!suit_envelope_get_field_by_name(runner->program_counter.manifest->envelope_bstr, uri, &binary)) {
-            tee_log_trace("local uri not found\n");
+            tee_trace("local uri not found\n");
             return false;
         }
         return runner->callbacks->store(runner, runner->user, target, binary);
@@ -355,7 +355,7 @@ static void run_sequence_step(suit_runner_t *runner, bool *pop_pc)
         is_common = false;
     } else {
         *pop_pc = true;
-        tee_log_trace("end of command seq\n");
+        tee_trace("end of command seq\n");
         return;
     }
 
@@ -365,7 +365,7 @@ static void run_sequence_step(suit_runner_t *runner, bool *pop_pc)
     if (!tcbor_read_uint(ctx, &command)) goto err;
     if (!tcbor_read_subobject(ctx, &param)) goto err;
 
-    tee_log_trace("command: %lu\n", command);
+    tee_trace("command: %lu\n", command);
 
     if (command == SUIT_DIRECTIVE_SET_COMPONENT_INDEX) {
         runner->selected_components = param;
@@ -379,7 +379,7 @@ static void run_sequence_step(suit_runner_t *runner, bool *pop_pc)
 
     const struct command_handler *h = find_handler(command, is_common);
     if (!h) {
-        tee_log_trace("unknown command %lu\n", command);
+        tee_trace("unknown command %lu\n", command);
         goto err;
     }
 

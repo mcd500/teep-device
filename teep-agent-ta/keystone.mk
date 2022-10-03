@@ -1,7 +1,7 @@
 TOPDIR = $(CURDIR)/..
 include $(TOPDIR)/conf.mk
 
-CFLAGS = $(TEE_CFLAGS) \
+CFLAGS += $(TEE_CFLAGS) $(DFLAGS) \
 	-Wall -fno-builtin-printf -DEDGE_IGNORE_EGDE_RESULT \
 	-I. \
 	-I$(TOPDIR)/include \

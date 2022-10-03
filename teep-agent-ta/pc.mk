@@ -4,7 +4,7 @@ include $(TOPDIR)/conf.mk
 .PHONY: all
 all: $(out-dir)/agent.a
 
-CFLAGS = \
+CFLAGS = $(DFLAGS) \
 	-I$(TOPDIR)/include \
 	-I$(TOPDIR)/lib/include \
 	-I$(TOPDIR)/platform/pc/include \
