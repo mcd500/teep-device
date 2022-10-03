@@ -4,8 +4,8 @@ variables:
 
 stages:
     - build
-    - run
-    - example
+    - exec
+#    - example
     - trigger
 
 default:
@@ -13,30 +13,28 @@ default:
         - fast-dockers
     image: docker.io/aistcpsec/tee-distro-dev:x64-20.04
 
-suit_test:
-    stage: run
+build_keystone:
+    stage: build
+    image: docker.io/aistcpsec/taref-dev:keystone
     script:
-        - sudo apt-get install -y libcap-dev
-        - export TEE=pc
         - make
-        - make test
+        - make clean
 
-suit_example:
-    stage: example
+build_optee:
+    stage: build
+    image: docker.io/aistcpsec/taref-dev:optee
     script:
-        - sudo apt-get install -y libcap-dev
-        - export TEE=pc
         - make
-        - S=`pwd`/lib/suit
-        - cd build/pc/lib/suit
-        - ./example/dump $S/example/manifests/teep-I-D/ex1.suit
-        - ./example/dump $S/example/manifests/teep-I-D/ex2.suit
-        - ./example/dump $S/example/manifests/teep-I-D/ex3.suit
-        - ./example/run-install $S/example/manifests/teep-I-D/ex1.suit
-        - ./example/run-install $S/example/manifests/teep-I-D/ex2.suit
-        - ./example/run-install $S/example/manifests/teep-I-D/ex3.suit
+        - make clean
 
-teep_build:
+build_sgx:
+    stage: build
+    image: docker.io/aistcpsec/taref-dev:sgx
+    script:
+        - make
+        - make clean
+
+build_pc:
     stage: build
     script:
         - sudo apt-get install -y libcap-dev
@@ -45,7 +43,7 @@ teep_build:
         - make clean
 
 run_tam_pc:
-    stage: run
+    stage: exec
     services:
         - name: docker.io/aistcpsec/teep-dev:tamproto
           alias: tamproto
@@ -58,7 +56,7 @@ run_tam_pc:
         - make run-sample-session
 
 run_qemu_tam_keystone:
-    stage: run
+    stage: exec
     image: docker.io/aistcpsec/taref-dev:keystone
     services:
         - name: docker.io/aistcpsec/teep-dev:tamproto
@@ -71,7 +69,7 @@ run_qemu_tam_keystone:
         - make run-sample-session | tr -d "\r"
 
 run_qemu_tam_optee:
-    stage: run
+    stage: exec
     image: docker.io/aistcpsec/taref-dev:optee
     services:
         - name: docker.io/aistcpsec/teep-dev:tamproto
@@ -83,7 +81,7 @@ run_qemu_tam_optee:
         - make run-sample-session | tr -d "\r"
 
 run_tam_sgx:
-    stage: run
+    stage: exec
     image: docker.io/aistcpsec/taref-dev:sgx
     services:
         - name: docker.io/aistcpsec/teep-dev:tamproto
@@ -94,6 +92,29 @@ run_tam_sgx:
         - export MACHINE=SIM
         - make
         - make run-sample-session | tr -d "\r"
+
+suit_test:
+    stage: exec
+    script:
+        - sudo apt-get install -y libcap-dev
+        - export TEE=pc
+        - make
+        - make test
+
+suit_example:
+    stage: exec
+    script:
+        - sudo apt-get install -y libcap-dev
+        - export TEE=pc
+        - make
+        - S=`pwd`/lib/suit
+        - cd build/pc/lib/suit
+        - ./example/dump $S/example/manifests/teep-I-D/ex1.suit
+        - ./example/dump $S/example/manifests/teep-I-D/ex2.suit
+        - ./example/dump $S/example/manifests/teep-I-D/ex3.suit
+        - ./example/run-install $S/example/manifests/teep-I-D/ex1.suit
+        - ./example/run-install $S/example/manifests/teep-I-D/ex2.suit
+        - ./example/run-install $S/example/manifests/teep-I-D/ex3.suit
 
 
 ### DOXYGEN - START ###
