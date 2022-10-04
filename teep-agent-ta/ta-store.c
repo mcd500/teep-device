@@ -108,7 +108,7 @@ static bool install_ta(const char *filename, const void *image, size_t image_len
 		return false;
 	}
 
-	bytes = fwrite(image, image_len, 1, fd);
+	bytes = fwrite(image, 1, image_len, fd);
 	if (bytes < image_len) {
 		tee_error("install_ta(): fwrite(): ERROR\n");
 		ret = false; goto bail_2;
