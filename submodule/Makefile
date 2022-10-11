@@ -12,8 +12,14 @@ mbedtls-ree-common-FLAGS = \
 	-DUSE_STATIC_MBEDTLS_LIBRARY=1 \
 	-DUSE_SHARED_MBEDTLS_LIBRARY=0
 
+# Building MBEDTLS Library only when the MBEDTLS source code is updated
+MBEDTLS_BDIR := $(BUILD)/ree/mbedtls/
+MBEDTLS_SRC :=  $(shell find mbedtls -name "*.c") \
+		$(shell (find mbedtls -name "*.h"))
+MBEDTLS_OBJ = $(MBEDTLS_BDIR)/library
+
 .PHONY: mbedtls-ree
-mbedtls-ree:
+mbedtls-ree $(MBEDTLS_OBJ): $(MBEDTLS_SRC)
 	mkdir -p $(BUILD)/ree/mbedtls
 	cd $(BUILD)/ree/mbedtls && \
 		cmake $($@-common-FLAGS) $(cmake-ree-TOOLCHAIN) $(TOPDIR)/submodule/mbedtls && \
@@ -38,8 +44,16 @@ libwebsockets-ree-common-FLAGS = \
 	-DLWS_WITHOUT_EXTENSIONS=1 \
 	-DLWS_WITH_ZLIB=0
 
+
+# Building MBEDTLS Library only when the MBEDTLS source code is updated
+LWS_BDIR := $(BUILD)/ree/libwebsockets/
+LWS_SRC := $(shell find libwebsockets -name "*.c") \
+	   $(shell find libwebsockets -name "*.h") \
+	   $(shell find libwebsockets -name "*.cmake")
+LWS_OBJ = $(LWS_BDIR)/lib ./$(LWS_BDIR)/include
+
 .PHONY: libwebsockets-ree
-libwebsockets-ree:
+libwebsockets-ree  $(LWS_OBJ): $(MBEDTLS_OBJ) $(LWS_SRC)
 	mkdir -p $(BUILD)/ree/libwebsockets
 	cd $(BUILD)/ree/libwebsockets && \
 		cmake $($@-common-FLAGS) $(cmake-ree-TOOLCHAIN) $(TOPDIR)/submodule/libwebsockets && \
