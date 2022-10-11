@@ -172,7 +172,7 @@ run-session-sgx: upload-hello-tc-download
 		../broker/teep-broker-app --tamurl $(TAM_URL)/api/tam_cbor | \
 		tee $(BUILD)/sgx.log
 	cd $(BUILD)/../../hello-tc/build-sgx/ && \
-		./App_sgx | \
+		./App-sgx | \
 		tee -a $(BUILD)/sgx.log
 	echo BUILD=$(BUILD)
 	ls -l $(BUILD)
