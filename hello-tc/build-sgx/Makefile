@@ -14,7 +14,7 @@ enclave:
 
 .PHONY: clean
 clean: clean-manifest
-	rm -f *.o App_sgx *.so
+	rm -f *.o App-sgx *.so
 
 MANIFEST_OUT_DIR = $(CURDIR)
 MANIFEST_DIR = ../manifest

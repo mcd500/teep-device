@@ -47,22 +47,94 @@ lib-FLAGS += \
 	-DKEYSTONE_SDK_DIR=${KEYSTONE_SDK_DIR}
 endif
 
+# TARGET : lib      
+# Build the lib only when source code is updated
+LIB_SRC := \
+                $(shell find lib -name "Makefile") \
+                $(shell find lib -name "*.c") \
+                $(shell find lib -name "*.cpp") \
+                $(shell find lib -name "*.h") 
+#                 $(shell find lib -name "*.txt") \
+#                 $(shell find lib -name "*.suit")
+
+LIB_OBJ = $(BUILD)/lib/log \
+			 $(BUILD)/lib/cbor \
+			 $(BUILD)/lib/cose \
+			 $(BUILD)/lib/suit \
+			 $(BUILD)/lib/teep
+
 .PHONY: lib
-lib:
+lib $(LIB_OBJ): $(LIB_SRC)
 	mkdir -p build/$(TEE)/lib
 	cd build/$(TEE)/lib && cmake $(TOPDIR)/lib $(lib-FLAGS) $(cmake-tee-TOOLCHAIN)
 	$(MAKE) -C build/$(TEE)/lib DFLAGS=$(DFLAGS)
 
+# TARGET : broker
+# Build the teep-broker-app only when source code is updated
+BROKER_SRC := \
+                $(shell find teep-broker-app -name "Makefile") \
+                $(shell find teep-broker-app -name "*.in") \
+                $(shell find teep-broker-app -name "*.cpp") \
+                $(shell find teep-broker-app -name "*.c") \
+                $(shell find teep-broker-app -name "*.h")
+
+BROKER_OBJ = $(BUILD)/broker/http-lws.o \
+			 $(BUILD)/broker/teec-keystone.o  \
+			 $(BUILD)/broker/teep-broker.o  \
+			 $(BUILD)/broker/teep-broker-app
+
+# TARGET : agent
+# Build the teep-agent-ta only when source code is updated
+AGENT_SRC := \
+                $(shell find teep-agent-ta -name "*.mk") \
+                $(shell find teep-agent-ta -name "*.c") \
+                $(shell find teep-agent-ta -name "*.h")
+
+AGENT_OBJ = $(BUILD)/teep-agent-ta/ta-store.o \
+			 $(BUILD)/teep-agent-ta/tools.o  \
+			 $(BUILD)/teep-agent-ta/teep-agent-ta.o  \
+			 $(BUILD)/teep-agent-ta/teep-agent-ta
+
 .PHONY: agent
-agent:
+agent $(AGENT_OBJ): $(AGENT_SRC)
 	$(MAKE) -C teep-agent-ta DFLAGS=$(DFLAGS) -f $(TEE).mk out-dir=$(BUILD)/agent
 
+
+# TARGET : broker
+# Build the teep-broker-app only when source code is updated
+BROKER_SRC := \
+                $(shell find teep-broker-app -name "Makefile") \
+                $(shell find teep-broker-app -name "*.in") \
+                $(shell find teep-broker-app -name "*.cpp") \
+                $(shell find teep-broker-app -name "*.c") \
+                $(shell find teep-broker-app -name "*.h")
+
+BROKER_OBJ = $(BUILD)/broker/http-lws.o \
+			 $(BUILD)/broker/teec-keystone.o  \
+			 $(BUILD)/broker/teep-broker.o  \
+			 $(BUILD)/broker/teep-broker-app
+
 .PHONY: broker
-broker:
-	$(MAKE) -C teep-broker-app TAM_URL=$(TAM_URL) DFLAGS=$(DFLAGS)
+broker $(BROKER_OBJ): $(BROKER_SRC)
+		$(MAKE) -C teep-broker-app TAM_URL=$(TAM_URL) DFLAGS=$(DFLAGS)
+
+# TARGET : hello-tc
+# Build the hello-tc only when source code is updated
+HELLO_TC_SRC := \
+                $(shell find hello-tc -name "Makefile") \
+                $(shell find hello-tc -name "*.cpp") \
+                $(shell find hello-tc -name "*.c") \
+                $(shell find hello-tc -name "*.h") \
+                $(shell find hello-tc -name "*.mk") \
+                $(shell find hello-tc -name "*.in") \
+                $(shell find hello-tc -name "*.py") \
+                $(shell find hello-tc -name "*.lds") \
+                $(shell find hello-tc -name "*.pem") \
+
+HELLO_TC_OBJ = $(BUILD)/hello-tc/App-$(PLAT).o 
 
 .PHONY: hello-tc
-hello-tc:
+hello-tc $(HELLO_TC_OBJ): $(HELLO_TC_SRC)
 	$(MAKE) -C hello-tc/build-$(PLAT) \
 		SOURCE=$(TOPDIR)/hello-tc \
 		TAM_URL=$(TAM_URL) DFLAGS=$(DFLAGS)

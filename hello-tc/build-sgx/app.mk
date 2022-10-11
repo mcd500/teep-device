@@ -34,13 +34,13 @@ LDFLAGS = \
 	-lEnclave_u -lpthread
 
 .PHONY: all clean
-all: App_sgx
+all: App-sgx
 
-App_sgx.o: ../App-sgx.cpp
+App-sgx.o: ../App-sgx.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-App_sgx: App_sgx.o
+App-sgx: App-sgx.o
 	$(CXX) $^ -o $@ $(LDFLAGS)
 
 clean:
-	rm -f *.o App_sgx
+	rm -f *.o App-sgx
