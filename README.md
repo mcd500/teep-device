@@ -6,7 +6,7 @@ The TEEP Protocol provides the protocol on a wide range of devices for install, 
 
 The TEEP-Device is an implementation for defining the draft of Trusted Execution Environment Provisioning (TEEP) Protocol at the Internet Engineering Task Force (IETF). The chart above is a simplified diagram of components described in the TEEP Protocol and TEEP Architecture drafts. The TEEP Protocol on the TEEP-Device uses HTTP packets defined by HTTP Transport for Trusted Execution Environment Provisioning.
 
-Following are the explanation of each components on the above diagram.
+Following are the explanations of each component on the above diagram.
 
 Trusted Application (TA): An application that runs in a TEE.
 
@@ -27,15 +27,29 @@ TEEP Agent: The TEEP Agent is a processing module running inside a
       requests or forward requests to other processing modules in a TEE,
       which is up to a TEE provider's implementation.
 
-More details can be found in the below URL.
+The terminology of Trusted Application (TA) in the old draft was revised to Trusted Component (TC) to express the files installed from TAM to devices that could have both binaries of trusted applications and data files of personalization data. The TA and TC are interchangeable in this documentation.
+
+The TEEP Protocol relies on the Software Updates for Internet of Things (SUIT) Manifest defined at IETF which expresses metadata of the TC. When the TAM sends one of the TEEP Messages called Update Message, it will include SUIT Manifest for installing TC to the Device.
+
+The TEEP Protocol and SUIT Manifest are both in binary formats of Concise Binary Object Representation (CBOR). The Objective of CBOR is designed to reduce the message size as much as possible in the way of light way parsing which is appropriate for Constraint Hardware such as IoT, Edge and Embedded devices with limited CPU processing power and memory size. The CBOR has a similar representation of JSON that is widely used on the Internet and makes constructing CBOR easier to use.
+
+The authentication feature of CBOR binaries in TEEP Messages and SUIT Manifests is proved by CBOR Object Signing and Encryption (COSE) required by TAM, Device, Developer and Owner of TC and etc. The COSE defined the method of Signing and Encryption of CBOR formats.
+
+More details can be found in the URLs at iETF.
 - TEEP Protocol
   * https://datatracker.ietf.org/doc/html/draft-ietf-teep-protocol
 - HTTP Transport for Trusted Execution Environment Provisioning
   * https://datatracker.ietf.org/doc/html/draft-ietf-teep-otrp-over-http
-- TEEP Architecutre:
+- TEEP Architecture:
   * https://datatracker.ietf.org/doc/draft-ietf-teep-architecture/
+- SUIT Manifest:
+  * https://datatracker.ietf.org/doc/draft-ietf-suit-manifest/
+- CBOR
+  * https://datatracker.ietf.org/doc/rfc8949/
+- COSE
+  * https://datatracker.ietf.org/doc/rfc8152/
 
-The terminology of Trusted Application (TA) in the old draft was changed to Trusted Component (TC) to express the files installed from TAM to devices that could have both binaries of trusted applications and data files of personalization data. The TA and TC are interchangeable in this documentation.
+## Use Cases of TEEP
 
 Typical use cases for TEEP Protocol is a firmware update Over The Air (OTA) which TC containing a firmware binary, installing security sensitive applications used for payment, playing video with DRM, insurance software, enabling hardware feature with license keys, telemetry software, and softwares handles personal identification data, such as Social Security Number, and vaccination status.
 
@@ -52,17 +66,17 @@ Typical use cases for TEEP Protocol is a firmware update Over The Air (OTA) whic
 
 - Implemented on top of TA-Ref which provides a portable TEE programming environment among different TEEs on Intel CPU, ARM Cortex-A and RISC-V 64G to provide uniform source codes over OP-TEE on ARM-TrustZone for Cortex-A series and Keystone on RISC-V.
 
-- The required features of TEEP-Agent in the draft is implemented as a application in user application privilege level inside TEE in this TEEP-Device to simplify the implementation which ideally should be combined with implementation in higher privilege levels, such as, the runtime in S-Mode and Secure Monitor in M-mode on RISC-V. Therefore, some of the assumed requirements on the draft are not fulfilled with the TEEP-Device. In the product, the features of TEEP-Agent must be enabled through root-of-trust from the boot up of the CPUs, the TCs must be saved in secure manner and have protection of installed TCs.
+- The required features of TEEP-Agent in the draft is implemented as a application in user application privilege level inside TEE in this TEEP-Device to simplify the implementation which ideally should be combined with implementation in higher privilege levels, such as, the runtime in S-Mode and Secure Monitor in M-mode on RISC-V. Therefore, some of the assumed requirements on the draft are not fulfilled with the TEEP-Device. In the product, the features of TEEP-Agent must be enabled through root-of-trust from the boot up of the CPUs, the TCs must be saved in a secure manner and have protection of installed TCs.
 
-- Supports Concise Binary Object Representation (CBOR) for current four TEEP messages.
+- Supports Concise Binary Object Representation (CBOR) for current four TEEP Messages.
   * https://datatracker.ietf.org/doc/html/rfc7049
 
-- Supports SUIT-manifest inside the Update message of TEEP Protocol.
+- Supports SUIT Manifest inside the Update message of TEEP Protocol.
   * https://datatracker.ietf.org/doc/draft-ietf-suit-manifest/
 
 ## Components of TEEP-Device and TA-Ref
 
-The Trusted Application Reference (TA-Ref) is a different software stack from this TEEP-Devie. The TA-Ref provides portable API and SDK among Intel SGX, ARM TrustZone-A and RISC-V Keystone and enables portability for source codes of Trusted Applications among different CPUs.
+The Trusted Application Reference (TA-Ref) is a different software stack from this TEEP-Devie. The TA-Ref provides a portable API and SDK among Intel SGX, ARM TrustZone-A and RISC-V Keystone and enables portability for source codes of Trusted Applications among different CPUs.
 
 The API of TA-Ref is a subset of TEE Internal Core API Specification defined by Global Platform.
  - https://globalplatform.org/specs-library/tee-internal-core-api-specification/
@@ -87,32 +101,106 @@ It is on OP-TEE but highly utilizes the programming environment provided by TA-R
 ![](docs/images/teep-and-taref-on-sgx.png)
 
 The diagram is the ideal implementation of TEEP-Device on SGX. The current TEEP-Device is not utilizing SGX libraries and the SGX enabled CPU which provides SGX capability with SGX SDK. The TEEP-Device is built and executed as a regular user space application at the moment, and enabling the SGX capability is a future activity.
+# Directory structure of source files
 
-## Directory structure
+Following are the important directories in the source code along with its description
 
-```
+| Directory| Description|
+| ------ | ------ |
+| docs | Files for generating documentaions |
+| hello-tc | Sample Trusted Application for TEEP Protocol |
+| include | Header files to build hello-app/ta and teep-broker-app/teep-agent-ta | 
+| key | cryptograpic keys for TEEP protocol |
+| lib | contains libraries used on TEEP-Device |
+| submodules |Contains the submodules used for TEEP-Device |
+| submodules/libwebsockets | HTTP/HTTPS library https://github.com/warmcat/libwebsockets |
+| submodules/mbedtls | Cryptographic library  https://github.com/ARMmbed/mbed-crypto |
+| submodules/QCBOR | CBOR library  https://github.com/laurencelundblade/QCBOR.git |
+| submodules/t_cose | COSE library  https://github.com/laurencelundblade/t_cose.git |
+| teep-agent-ta | Main body of handling TEEP Protocol on TEE side |
+| teep-broker-app | Main body of handling TEEP Protocol on Linux side |
+
+**TEEP-Device Source Code**
+
+The below is the current TEEP-Device source code listing only the directories to one level.
+
+
+```sh
 .
-+-- README.md
-+-- docs                --- Files for generating documentations
-+-- hello-app           --- Sample Trusted Application on Linux side for TEEP Protocol
-+-- hello-ta            --- Sample Trusted Application on TEE side for TEEP Protocol
-+-- include             --- Header files to build hello-app/ta and teep-broker-app/teep-agent-ta
-+-- key                 --- Cryptographic keys for TEEP Protocol
-+-- libteep             --- Contains libraries used on TEEP-Device
-|   +-- libwebsockets   --- HTTP/HTTPS library  https://github.com/warmcat/libwebsockets
-|   +-- mbedtls         --- Cryptographic library  https://github.com/ARMmbed/mbed-crypto
-|   +-- QCBOR           --- CBOR library  https://github.com/laurencelundblade/QCBOR.git
-|   +-- t_cose          --- COSE library  https://github.com/laurencelundblade/t_cose.git
-+-- pctest              --- TEEP-Device runs only on PC with Linux for development purpose
-+-- platform            --- Build files for supported CPUs
-+-- scripts             --- Scripts used for build and running TEEP-Device
-+-- teep-agent-ta       --- Main body of handling TEEP Protocol on TEE side
-+-- teep-broker-app     --- Main body of handling TEEP Protocol on Linux side
-+-- tiny-tam            --- Small TAM implementation
+  |-teep-broker-app
+  |  |-scripts
+  |-hello-tc
+  |  |-build-keystone
+  |  |-build-sgx
+  |  |-manifest
+  |  |-build-optee
+  |  |-build-pc
+  |-lib
+  |  |-suit
+  |  |-cbor
+  |  |-include
+  |  |-teep
+  |  |-cose
+  |  |-log
+  |-platform
+  |  |-pc
+  |  |-keystone
+  |  |-sgx
+  |  |-op-tee
+  |-sample
+  |  |-session
+  |-key
+  |  |-CAs
+  |-docs
+  |  |-images
+  |  |-doxygen
+  |  |-teep-device_readme_html
+  |-include
+  |-submodule
+  |  |-mbedtls
+  |  |-t_cose
+  |  |-libwebsockets
+  |  |-QCBOR
+  |  |-googletest
+  |-teep-agent-ta
 ```
-# Building TEEP-Device with Docker
+# Consideration of build machine and development environment
 
-We have prepared Docker images to provide the environment of building and developing TEEP-Device to reduce the overhead of preparing them individually.
+## How to select the build machine
+
+It is essential to have a fast machine as much as possible for building the sources and using multiple terminals for efficient development.
+Selection of a fast computer is mandatory because the speed of the build machine affects the efficiency of the development.
+
+More Often developers using a laptop, are logging in to a fast remote computer and building the sources on the remote machine rather then on a local laptop.
+
+The three key components of the fast-build machine are CPU, storage, and memory size. T
+The laptop will be slower than the server or desktop machine because of the limited capability of the three key components.
+
+The frequency of the CPU is above 3.8Ghz is ideal. The write speed of the storage has a significant impact on the build time. It is almost a must to use SSD than HDD and the SSD should be above 3000MB/s write speed which is only available with M.2 form factor with NVMe interface. The 32GB or higher memory size is recommended, since it will prevent disk swapping when running out of memory, significantly reducing the build speed. Please request reasonable development machines if you are working at a corporate or organization.
+
+Some Examples of high-end machines: HPE ProLiant DL325 Gen10 with AMD EPYC 7302P 16-Core Processor, PowerEdge R7515 with AMD EPYC 7402P 24-Core Processor
+
+## How to setup an efficient development environment
+
+To efficiently develop TEEP-Device source code, it is good to have three terminals.
+
+- Terminal 1: To Run tamproto
+- Terminal 2: To build and run the TEEP-Device.
+- Terminal 3: To modify the TEEP-Device source code.
+
+All three terminals opened simultaneously for efficiency. Logging in to the fast build machines mentioned in the previous chapter with the command `ssh -X user@Ip_address_build_machine` will provide forwarding X-Windows on your local machine.
+
+![](docs/images/3-terminals.png)
+
+In the above image, you can see that terminal1 is running tamproto, terminal2 is used for building and running TEEP-Device to catch the build errors and runtime errors. The terminal3 is used for editing the source code for debugging the errors found on terminal 2 and terminal 1. At the terminal 3, use your favorite editor or IDE such as Visual Studio Code.
+
+Every time you update the source code in terminal 3, you can rebuild the source code on terminal2 and run it and see the debug messages of TEEP-Device at terminal 2 and logs message of tamproto at terminal 1 to find the eros whiteout distracted from other terminals.
+
+The 27 inch or larger external monitor would suit best to operate multiple terminals during developments in this usage. The selection of the resolution is also important, not too dense and not too sparse.  The 2560 x 1440 is often ideal on a 27 inch monitor, and 4K 3840 x 2160 on a 32 inch. Having more text on one display increases readability of the source code, as long as the size of the character is not too small.
+
+# Build TEEP-Device with Docker
+
+The benefit of Docker images is to provide the environment of building and developing TEEP-Device to reduce the overhead of preparing them individually.
 
 The TEEP-Device requires TA-Ref which provides a unified SDK among different TEEs for three CPU architectures, Keystone for RISC-V, OP-TEE for Arm64 and SGX for Intel.
 
@@ -120,15 +208,16 @@ Without the prepared Docker images, the developer will be required to build a ma
 
 The Docker images provide an easy to prepare development environment for TEEP-Device.
 
+
 ## Preparation for Docker
 
-For building TEEP-Device with Docker, it is required to install Docker on Ubuntu.
+To build the TEEP-Device with Docker, it is required to install Docker on Ubuntu.
 
 For the first time users of Docker, please have a look on https://docs.docker.com/engine/.
 
 The following installation steps is for Ubuntu 20.04
 
-### Installing Docker
+### Install Docker
 
 ```sh
 $ sudo apt update
@@ -175,6 +264,7 @@ $ docker run hello-world
 ```
 
 Login to the docker to be able to access docker images.
+Make sure you have an account on docker-hub. If not please create one on `dockerhub.com`.
 
 ```sh
 $ docker login -u ${YOUR_USERNAME} -p ${YOUR_PASSWD}
@@ -189,55 +279,36 @@ $ docker network create tamproto_default
 ```
 
 
-## Pre-built Docker Images without necessity of building
+## Docker Images with pre-built TEEP-Device
 
-The following are the docker images that have pre-built and tested binaries of TEEP-Device with TA-Ref. Since these images are already prepared and built already, you can start using it directly without building the TEEP-Device again.
+The following are the docker images that have pre-built binaries of TEEP-Device with TA-Ref. 
+Since these images are already prepared and built already, you can start using it directly without building the TEEP-Device oneself.
 
-Make sure you have an account on docker-hub. If not please create one on `dockerhub.com`
-
-| Target | docker image |
-| ------ | ------ |
-| Keystone | aistcpsec/teep-dev:keystone |
-| OP-TEE | aistcpsec/teep-dev:optee |
-| Intel SGX | aistcpsec/teep-dev:sgx |
-| Tamproto | aistcpsec/teep-dev:tamproto |
-| Doxygen | aistcpsec/teep-dev:doxygen |
-
-
-## Preparation for building TEEP-Device on Docker
-
-### Docker images details for building
-
-We use Docker images of TA-Ref for building the TEEP-Device since TEEP-Device is developed on top of TA-Ref SDK.
-
-Docker images with all necessary packages for building TEEP-Device for all three targets are already available. The details are mentioned below.
+| Purpose | Docker image | Description |
+| ------ | ------ | ------ |
+| Keystone | aistcpsec/teep-dev:keystone | Has pre-built binaries of TEEP-Device with TA-Ref for RISC-V Keystone|
+| OP-TEE | aistcpsec/teep-dev:optee | Has pre-built binaries of TEEP-Device with TA-Ref for ARM OP-TEE|
+| Intel SGX | aistcpsec/teep-dev:sgx | Has pre-built binaries of TEEP-Device with TA-Ref for Intel SSX|
+| tamproto | aistcpsec/teep-dev:tamproto | Used for running tamproto |
+| Doxygen | aistcpsec/teep-dev:doxygen | Used for generating TEEP-Device documentation|
 
 
-| Target | Docker image |
+## Preparation to build TEEP-Device on Docker
+
+### List of Docker images to build TEEP-Device
+
+It requires Docker images of TA-Ref for building the TEEP-Device since TEEP-Device is developed on top of TA-Ref SDK. The TEEP-Device is one of the applications of TA-Ref.
+
+Docker images have all necessary development packages for building TEEP-Device for all three TEEs. The instructions of usage are described from the next chapters.
+
+| Purpose | Docker image |
 | ------ | ------ |
 | Keystone | aistcpsec/taref-dev:keystone |
 | OP-TEE | aistcpsec/taref-dev:optee |
 | Intel SGX | aistcpsec/taref-dev:sgx |
-| Doxygen | aistcpsec/taref-dev:doxygen |
 
 
-## Building TEEP-Device with Docker
-
-The build environment is in three terminals for convenient development.
-
-* First Terminal for running tamproto
-    - Shows log messages of tamproto while developing TEEP-Device
-
-* Second Terminal for running Docker of TEE
-    - For building and manipulating TEEP-Device
-
-* Third Terminal for editing sources of TEEP-Device
-    - For editing source codes of TEEP-Device by watching the above two terminals.
-
-The terminals may be a local fast computer or login with ssh to a remote build machine with each terminal. In any case, the speed of the build machine affects the efficiency of the development.
-
-
-## Run Tamproto (TAM Server) - Required by all Keystone/OP-TEE/SGX
+## Run tamproto (TAM Server) - Required by all Keystone/OP-TEE/SGX
 
 To run TEEP-Device, first we need to run tamproto inside the same host. Let's clone the tamproto and start it.
 
@@ -268,9 +339,9 @@ tam_api_1  | Express HTTPS server listening on port 8443
 ```
 
 
-### Building TEEP-Device for Keystone with Docker
+### Build TEEP-Device for Keystone with Docker
 
-**Cloning TEEP-Device**
+**Clone TEEP-Device**
 
 Open the second terminal for editing the sources of TEEP-Device. The directory of cloning sources is mounted when running Docker in the next step.
 
@@ -283,21 +354,23 @@ $ git checkout master
 # Sync and update the submodules
 $ git submodule sync --recursive
 $ git submodule update --init --recursive
+```
 
-# Match the user privilege with it is used in container
-# Container uses build-user account with 1000:1000
+Match the user privilege with the one used in the container to prevent permission errors when editing sources. Container uses a build-user account with 1000:1000.
+
+```sh
 $ sudo chown -R 1000:1000 teep-device/
-$ sudo chmod -R o+w teep-device/
+$ sudo chmod -R a+w teep-device/
 $ git config --global --add safe.directory $(pwd)/teep-device
 ```
 
 **Start the Docker**
 
-Open the third terminal. Here we build the TEEP-Device and run it to talk with tamproto opened on the first terminal. If any error occurs, edit the sources on the second terminal to debug.
+Open the third terminal. Here we build the TEEP-Device and run it to communicate with tamproto opened on the first terminal. If any error occurs, edit the sources on the second terminal to debug.
 
 ```sh
 # Start the docker
-$ docker run --network tamproto_default -it --rm -v $(pwd):/home/user/teep-device aistcpsec/taref-dev:keystone
+$ docker run --network tamproto_default -w /home/user/teep-device -it --rm -v $(pwd):/home/user/teep-device aistcpsec/taref-dev:keystone
 ```
 
 After you start the Docker command, you will be logged-in inside the Docker container.
@@ -325,27 +398,85 @@ The password for root is 'sifive'
 
 ```sh
 make run-qemu
+
+.....
+
+Starting dropbear sshd: OK
+
+Welcome to Buildroot
+buildroot login: root
+Password: 
+#
 ```
 
-After login, start from installing driver for Keystone.
+After login, start from installing the driver for Keystone.
 
 ```sh
-# cd teep-device/
+# cd teep-broker/
 # ls
 env.sh           hello-app        ita.sh           teep-agent-ta
 eyrie-rt         hello-ta         showtamurl.sh    teep-broker-app
 # source env.sh
+[  294.143274] keystone_driver: loading out-of-tree module taints kernel.
+[  294.151830] keystone_enclave: keystone enclave v1.0.0
 ```
 
-There is a script to initiate teep-agent with tamproto.
+There are helper scripts to handle the teep-broker.
+Following are the few of them and its usage.
+
+* showtamurl.sh
+* itc.sh
+* rtc.sh
+
+
+*showtamurl.sh*
+
+This script prints out the tamproto values which has to be suffixed when we execute the built teep-broker-app.
+This script gets the url of the Tamproto either from the TAM_URL env variable or by internally executing get-ip.sh (get-ip.sh returns the IP of tamproto running in the same machine) 
+
+example:
+
+```sh
+$ ./showtamurl.sh 
+--tamurl 192.168.100.114/api/tam_cbor
+```
+
+You can simply copy the output of the showtamurl.sh and paste it to the end of the generated teep-broker-app binary.For ex:
+
+```sh
+$ ./teep-broker-app --tamurl http://192.168.100.114:8888/api/tam_cbor
+```
+
+*itc.sh*
+
+Initiate teep-agent with tamproto. This script is for debugging the confirmative and handling of formats of TEEP Messages and SUIT Manifest in teep-agent and tamproto.
 
 ```sh
 # cat ita.sh
 #!/bin/bash -x
 
 ./teep-broker-app --tamurl ${TAM_URL}/api/tam_cbor
-# ./ita.sh
+# ./itc.sh
 ```
+
+*rtc.sh*
+
+Execute the downloaded TC from the tamproto. This script is for debugging the implementation of the TC.
+
+```sh
+# ./rtc.sh
++ echo Running downloaded TC from the TAM
+Running downloaded TC from the TAM
++ ./hello-app 8d82573a-926d-4754-9353-32dc29997f74.ta eyrie-rt
+[debug] UTM : 0xffffffff80000000-0xffffffff80100000 (1024 KB) (boot.c:127)
+[debug] DRAM: 0x179800000-0x179c00000 (4096 KB) (boot.c:128)
+[debug] FREE: 0x1799bd000-0x179c00000 (2316 KB), va 0xffffffff001bd000 (boot.c:133)
+[debug] eyrie boot finished. drop to the user land ... (boot.c:172)
+main start
+Hello TEEP from TEE!
+main end
+```
+
 
 To exit from qemu.
 
@@ -353,7 +484,7 @@ To exit from qemu.
 # poweroff
 ```
 
-The log massage of tamproto will be show on the terminal of running tamproto.
+The log message of tamproto will be shown on the terminal of running tamproto.
 ```
 tam_api_1  | POST /api/tam_cbor 200 2.816 ms - 399
 tam_api_1  | Access from: ::ffff:172.18.0.3
@@ -390,7 +521,7 @@ tam_api_1  | WARNING: Agent may sent invalid contents. TAM responses null.
 tam_api_1  | POST /api/tam_cbor 204 1.357 ms - -
 ```
 
-These are trimmed output of all procedure above on the terminal of running container.
+These are trimmed outputs of all procedures above on the terminal of the running container.
 
 ```
 boot ROM size: 53869
@@ -555,7 +686,7 @@ make[1]: Leaving directory '/home/user/teep-device/sample
 
 **Run automatically**
 
-This command will run all the manual procedure above, mainly prepared for CI.
+This command will run all the previous manual procedures. It is mainly prepared for running TEEP-Device in CI.
 
 ```sh
 $ make run-sample-session
@@ -661,9 +792,9 @@ $ make clean
 ```
 
 
-### Building TEEP-Device for OP-TEE with Docker
+### Build TEEP-Device for OP-TEE with Docker
 
-**Cloning TEEP-Device**
+**Clone TEEP-Device**
 
 ```sh
 # Clone the teep-device repo and checkout master branch
@@ -680,7 +811,7 @@ $ git submodule update --init --recursive
 
 ```sh
 # Start the Docker
-$ docker run --network tamproto_default -it --rm -v $(pwd):/home/user/teep-device aistcpsec/taref-dev:optee
+$ docker run --network tamproto_default -w /home/user/teep-device -it --rm -v $(pwd):/home/user/teep-device aistcpsec/taref-dev:optee
 ```
 
 After you start the Docker command, you will be logged-in inside the Docker container.
@@ -704,7 +835,7 @@ After the successful build, run the sample TEEP session with tamproto.
 $ make run-sample-session
 ```
 
-Trimmed output of the test
+Trimmed output of the TEEP-Device
 
 ```console
 M/TA: command: 20
@@ -761,9 +892,9 @@ $ make clean
 ```
 
 
-### Building TEEP-Device for SGX with Docker
+### Build TEEP-Device for SGX with Docker
 
-**Cloning TEEP-Device**
+**Clone TEEP-Device**
 
 ```sh
 # Clone the teep-device repo and checkout master branch
@@ -780,7 +911,7 @@ $ git submodule update --init --recursive
 
 ```sh
 # Start the Docker
-$ docker run --network tamproto_default -it --rm -v $(pwd):/home/user/teep-device aistcpsec/taref-dev:sgx
+$ docker run --network tamproto_default -w /home/user/teep-device -it --rm -v $(pwd):/home/user/teep-device aistcpsec/taref-dev:sgx
 ```
 
 After you start the Docker command, you will be logged-in inside the Docker container.
@@ -864,11 +995,11 @@ Cleaning built binaries. Deleting the built binaries are required when starting 
 $ make clean
 ```
 
-## Generating Documentation
+## Generate Documentation
 
-This PDF (teep-device.pdf) was generated using Doxygen.
+These TEEP-Device documentations in pdf and html format are generated by using Doxygen.
 
-### Starting container
+### Start the container
 
 ```sh
 docker run -it --rm -v $(pwd):/home/user/teep-device aistcpsec/teep-dev:doxygen
@@ -886,13 +1017,31 @@ Location of created documentation.
 docs/teep-device.pdf
 docs/teep-device_readme_html.tar.gz
 ```
-# Building TEEP-Device for PC without Docker
+# Build TEEP-Device without having TEE installed
 
-The building PC is prepared for debugging purposes during developing TEEP-Device itself. This method does not require any TEEs installed in the local machine and it is meant to build and run on TEEP-Device on any x64 PC.
+The building without TEE is prepared for debugging purposes during developing TEEP-Device itself. This method does not require any TEE hardware (TrustZone, SGX and etc) and TEE SDK (Keystone, OP_TEE and SGX SDK) installed in the local machine and it is meant to build and run on TEEP-Device on any x64 PC.
 
 To run TEEP-Device, first we need to run tamproto inside the same host. Let's clone the tamproto and start it.
 
-**tamproto**
+**Prerequisite**
+
+Installing required packages.
+
+```sh
+sudo apt-get install -y build-essential git autoconf automake cmake
+sudo apt-get install -y libcap-dev python3-pip
+```
+
+Installing suit-tools with specific commit which is compatible with current TEEP-Device.
+
+```sh
+git clone https://git.gitlab.arm.com/research/ietf-suit/suit-tool.git
+cd suit-tool
+git checkout ca66a97bac153864617e7868e44f4b409e3e6ed4 -b for-teep-device
+python3 -m pip install --upgrade .
+```
+
+**Run tamproto**
 
 ```sh
 # Clone the tamproto repo and checkout master branch
@@ -904,7 +1053,7 @@ $ docker-compose up &
 $ cd ..
 ```
 
-Trimmed output of starting tamproto.
+Trimmed output of starting tamproto. The tamproto is running at 192.168.11.4.
 
 ```console
 tam_api_1  |   TEE_pub: 'teep.jwk' }
@@ -918,7 +1067,7 @@ tam_api_1  | Express HTTP  server listening on port 8888
 tam_api_1  | Express HTTPS server listening on port 8443
 ```
 
-**TEEP-Device**
+**Clone TEEP-Device**
 
 ```sh
 # Clone the teep-device repo and checkout master branch
@@ -947,30 +1096,63 @@ $ make
 After the successful build, run the sample TEEP session with tamproto.
 
 ```sh
-# After the successful build
-# Run the TEEP-Device
+$ export TAM_IP=localhost
+$ export TAM_URL="http://$TAM_IP:8888"
 $ make run-sample-session
 ```
 
 Trimmed output of the run.
-The TC can be found in /home/user/teep-device/platform/pc/build/8d82573a-926d-4754-9353-32dc29997f74.ta
-
 
 ```console
-build-user@c4435c23705c:~/teep-device$ ls -l /home/user/teep-device/platform/pc/build/
-total 40
--rw-r--r-- 1 build-user build-user   21 Feb 15 10:29 8d82573a-926d-4754-9353-32dc29997f74.ta
--rw-r--r-- 1 build-user build-user  734 Feb 15 10:29 hello-ta.json
--rw-r--r-- 1 build-user build-user  255 Feb 15 10:29 hello-ta.suit
-drwxr-xr-x 4 build-user build-user 4096 Feb 15 10:28 libteep
--rw-r--r-- 1 build-user build-user 5198 Feb 15 10:29 pctest.log
-drwxr-xr-x 2 build-user build-user 4096 Feb 15 10:28 scripts
--rw-r--r-- 1 build-user build-user  357 Feb 15 10:29 signed-hello-ta-payload.suit
--rw-r--r-- 1 build-user build-user  331 Feb 15 10:29 signed-hello-ta.suit
-drwxr-xr-x 2 build-user build-user 4096 Feb 15 10:28 teep-broker-app
+$ make run-sample-session
+make -C sample run-session
+make[1]: Entering directory '/home/gitlab-runner/projects/teep-device/sample'
+make -C /home/gitlab-runner/projects/teep-device/sample/../hello-tc/build-pc SOURCE=/home/gitlab-runner/projects/teep-device/sample/../hello-tc upload-embed-manifest
+make[2]: Entering directory '/home/gitlab-runner/projects/teep-device/hello-tc/build-pc'
+curl http://localhost:8888/panel/upload \
+	-F "file=@/home/gitlab-runner/projects/teep-device/hello-tc/build-pc/../../build/pc/hello-tc/signed-embed-tc.suit;filename=integrated-payload-manifest.cbor"
+tam_api_1  | [
+tam_api_1  |   Dirent { name: 'dummy', [Symbol(type)]: 1 },
+tam_api_1  |   Dirent { name: 'dummy2.ta', [Symbol(type)]: 1 },
+tam_api_1  |   Dirent {
+tam_api_1  |     name: 'integrated-payload-manifest.cbor',
+tam_api_1  |     [Symbol(type)]: 1
+tam_api_1  |   },
+tam_api_1  |   Dirent {
+tam_api_1  |     name: 'integrated-payload-manifest_hex.txt',
+tam_api_1  |     [Symbol(type)]: 1
+tam_api_1  |   },
+tam_api_1  |   Dirent { name: 'suit_manifest_exp1.cbor', [Symbol(type)]: 1 },
+tam_api_1  |   Dirent { name: 'suit_manifest_expX.cbor', [Symbol(type)]: 1 },
+tam_api_1  |   Dirent { name: 'tamproto.md', [Symbol(type)]: 1 }
+tam_api_1  | ]
 
-build-user@c4435c23705c:~/teep-device$ cat /home/user/teep-device/platform/pc/
-build/8d82573a-926d-4754-9353-32dc29997f74.ta
-Hello TEEP from TEE!
+......
+
+tam_api_1  |   'content-type': 'application/teep+cbor'
+tam_api_1  | }
+tam_api_1  | <Buffer 82 05 a1 14 48 77 77 77 77 77 77 77 77>
+tam_api_1  | {
+tam_api_1  |   TYPE: 5,
+tam_api_1  |   token: <Buffer 77 77 77 77 77 77 77 77>,
+tam_api_1  |   TOKEN: <Buffer 77 77 77 77 77 77 77 77>
+tam_api_1  | }
+tam_api_1  | TAM ProcessTeepMessage instance
+tam_api_1  | TEEP-Protocol:parse
+tam_api_1  | {
+tam_api_1  |   TYPE: 5,
+tam_api_1  |   token: <Buffer 77 77 77 77 77 77 77 77>,
+tam_api_1  |   TOKEN: <Buffer 77 77 77 77 77 77 77 77>
+tam_api_1  | }
+tam_api_1  | object
+tam_api_1  | *parseSuccessMessage
+tam_api_1  | <Buffer 77 77 77 77 77 77 77 77>
+tam_api_1  | undefined
+tam_api_1  | TAM ProcessTeepMessage response
+tam_api_1  | undefined
+tam_api_1  | WARNING: Agent may sent invalid contents. TAM responses null.
+tam_api_1  | POST /api/tam_cbor 204 1.294 ms - -
+fgrep 'store component' /home/gitlab-runner/projects/teep-device/sample/../build/pc/pctest.log
+store componen
 ```
 
