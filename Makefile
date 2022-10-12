@@ -173,6 +173,7 @@ docs:
 
 gen_readme:
 	cat docs/overview_of_teep-device.md docs/tree_view_dir.md \
+		docs/build-environment.md \
 		docs/building_with_docker.md \
 		docs/building_notee.md > README.md
 	sed -i 's/@image html /![](/g' README.md

@@ -860,6 +860,7 @@ INPUT		       = ./docs/overview_of_teep-device.md \
                          ./docs/teep-device_operations.md \
                          ./docs/cbor_teep.md \
                          ./docs/tree_view_dir.md \
+                         ./docs/build-environment.md \
                          ./docs/building_with_docker.md \
                          ./docs/building_without_docker.md \
                          ./docs/building_notee.md
