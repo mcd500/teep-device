@@ -166,18 +166,20 @@ run-session-keystone: upload-hello-tc-download
 	! fgrep 'ERR:' $(BUILD)/keystone.log
 	fgrep 'Hello TEEP from TEE!' $(BUILD)/keystone.log
 
+TC_BINARY = enclave.signed.so
 .PHONY: run-session-sgx
 run-session-sgx: upload-hello-tc-download
 	cd $(BUILD)/agent && \
 		../broker/teep-broker-app --tamurl $(TAM_URL)/api/tam_cbor | \
 		tee $(BUILD)/sgx.log
+	ls -l $(BUILD)/agent 
+	# Delete the existing enclave.signed.so inside build-sgx
+	# Copy the UUID.ta into enclave.signed.so file and then execute ./App-sgx
 	cd $(BUILD)/../../hello-tc/build-sgx/ && \
+	    rm $(TC_BINARY) && \
+	    cp $(BUILD)/agent/$(HELLO_TA_UUID).ta $(TC_BINARY) && \
 		./App-sgx | \
 		tee -a $(BUILD)/sgx.log
-	echo BUILD=$(BUILD)
-	ls -l $(BUILD)
-	echo PWD=`pwd`
-	ls -l `pwd`
 	ls -l $(BUILD)/../../hello-tc/build-sgx
 	if ! [ -f $(BUILD)/../../hello-tc/build-sgx/enclave.signed.so ]; then \
 		echo ERR: No TC found | tee -a $(BUILD)/sgx.log; \
