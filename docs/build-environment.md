@@ -2,15 +2,18 @@
 
 ## How to select the build machine
 
-It is essential to have a fast machine as much as possible for building the sources and using multiple terminals for efficient development.
+The development cycle of any software project has a loop of (*) build the source and running the software to find the bug, (*) write or revise the source to fix the bug.
+
+Having as short as possible of the time for conducting the above loop will increase development productivity dramatically. Shorter loop time will be able to achieve more iteration in an hour. High number of iterations per time is the key to productivity.
+
+In projects such as the TEEP-Device development, it is essential to have a fast machine as much as possible for building the sources and using multiple terminals for efficient development.
 Selection of a fast computer is mandatory because the speed of the build machine affects the efficiency of the development.
 
-More Often developers using a laptop, are logging in to a fast remote computer and building the sources on the remote machine rather then on a local laptop.
+Oftenly developers using a laptop, are logging in to a fast remote computer and building the sources on the remote machine rather than on a local laptop.
 
-The three key components of the fast-build machine are CPU, storage, and memory size. T
-The laptop will be slower than the server or desktop machine because of the limited capability of the three key components.
+The three key components of the fast-build machine are speed of CPU, speed of storage, and memory size. The laptop will be slower than the server or desktop machines because of the limited capability of the three key components.
 
-The frequency of the CPU is above 3.8Ghz is ideal. The write speed of the storage has a significant impact on the build time. It is almost a must to use SSD than HDD and the SSD should be above 3000MB/s write speed which is only available with M.2 form factor with NVMe interface. The 32GB or higher memory size is recommended, since it will prevent disk swapping when running out of memory, significantly reducing the build speed. Please request reasonable development machines if you are working at a corporate or organization.
+The frequency of the CPU having above 3.8Ghz is ideal. The write speed of the storage has a significant impact on the build time. It is almost a must to use SSD than HDD and the SSD should have above 3000MB/s write speed which is only available with M.2 form factor with NVMe interface. The 32GB or higher memory size is recommended, since it will reduce disk swapping occurring when running out of memory, which significantly increases the build time. Please request reasonable development machines if you are working at a corporate or an organization.
 
 Some Examples of high-end machines: HPE ProLiant DL325 Gen10 with AMD EPYC 7302P 16-Core Processor, PowerEdge R7515 with AMD EPYC 7402P 24-Core Processor
 
