@@ -127,20 +127,32 @@ bail_2:
 #include <asm-generic/fcntl.h>
 static bool install_ta(const char *filename, const void *image, size_t image_len)
 {
+	// Declare the return variable
 	bool ret = false;
+	// File descriptor and return value
 	int fd, retval;
 	long unsigned int n;
 
-	fd = ocall_open_file(&fd, filename, O_RDWR | O_CREAT, 0600);
-	if (fd < 0) goto bail_1;
+	// Open the file with the flags and permission
+	retval = ocall_open_file(&fd, filename, O_RDWR | O_CREAT, 0600);
+	if (retval < 0) {
+		tee_error("Return value of ocall_open_file is not proper : retval  = %u\n", retval);
+		goto bail_1;
+	} 
 
 	n = ocall_write_file(&retval, fd, image, image_len);
-	if (n != image_len) goto bail_2;
+	if (retval != image_len) {
+		tee_error("Return value of ocall_write_file is not proper : retval  = %u\n", retval);
+		goto bail_2;
+	} 
 
+	// Set the return value to success
 	ret = true;
 bail_2:
+	// Close the opened file 
 	ocall_close_file(&retval, fd);
 bail_1:
+	// Return the status
 	return ret;
 
 }

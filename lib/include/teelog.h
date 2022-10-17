@@ -45,7 +45,7 @@ enum tee_log_level
 
 void tee_log(enum tee_log_level level, const char *msg, ...);
 
-#define tee_error(...) tee_log(TEE_LOG_ERROR, "TERR:" __VA_ARGS__)
+#define tee_error(...) tee_log(TEE_LOG_ERROR, "TERR: %s: %d: %s(): %s ", __FILE__, __LINE__, __func__, __VA_ARGS__)
 #define tee_warn(...)  tee_log(TEE_LOG_WARN, "TWRN:" __VA_ARGS__)
 #define tee_info(...)  tee_log(TEE_LOG_INFO, "TINF:" __VA_ARGS__)
 #ifdef DEBUG
