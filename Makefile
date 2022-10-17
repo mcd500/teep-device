@@ -16,14 +16,26 @@ prefix_lib  ?= $(prefix)/lib
 TAM_IP  ?= tamproto_tam_api_1
 TAM_URL ?= http://$(TAM_IP):8888
 
-
+# TARGET : all
 .PHONY: all
 all: check-tee submodule lib agent broker hello-tc rootfs
 
+# TARGET : clean
+# Clean all the built binaries and entire build folder
 .PHONY: clean
 clean: clean-hello-tc clean-docs
 	rm -rf build
 
+# TARGET : clean_nolibs
+# Clean all the built binaries except submodules (mbedtls & libwebsockets)
+# Entire build folder is not deleted
+.PHONY: clean_nolibs
+clean_nolibs: clean-hello-tc clean-docs
+	# Delete all the folders except "ree" which has the submodule built binaries
+	cd $(BUILD) && ls | grep -xv "ree" | xargs rm -rf
+
+
+# TARGET : submodule
 .PHONY: submodule
 submodule:
 	$(MAKE) -C submodule
@@ -146,6 +158,8 @@ clean-hello-tc:
 	$(MAKE) -C hello-tc/build-sgx SOURCE=$(TOPDIR)/hello-tc clean
 	$(MAKE) -C hello-tc/build-pc SOURCE=$(TOPDIR)/hello-tc clean
 
+
+# TARGET : rootfs
 .PHONY: rootfs
 rootfs:
 	$(MAKE) -C sample rootfs TAM_URL=$(TAM_URL)
@@ -159,6 +173,9 @@ install:
 test:
 	cd $(BUILD)/lib && ctest -V
 
+
+# TARGET : docs
+# For generation doxygen documentation
 .PHONY: docs
 docs:
 	@echo "Updating the directories tree structure"
@@ -187,6 +204,9 @@ clean-docs:
 	rm -f -r docs/teep-device_readme_html.tar.gz
 	rm -f -r docs/teep-device.pdf
 
+
+# TARGET : run-sample-session
+# For running sample session on respective targets
 .PHONY: run-sample-session
 run-sample-session: check-tee
 	$(MAKE) -C sample run-session TAM_URL=$(TAM_URL)
