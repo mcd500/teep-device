@@ -127,31 +127,22 @@ bail_2:
 #include <asm-generic/fcntl.h>
 static bool install_ta(const char *filename, const void *image, size_t image_len)
 {
-	// Declare the return variable
 	bool ret = false;
-	// SGX status variable
-	sgx_status_t val;
-	// File descriptor
-	int fdesc;
+	int fd, retval;
+	long unsigned int n;
 
-	// Open the file with the flags and permission 
-	val = ocall_open_file(&fdesc, filename, O_RDWR | O_CREAT, 0600);
-	if (val < 0) goto bail_1;
+	fd = ocall_open_file(&fd, filename, O_RDWR | O_CREAT, 0600);
+	if (fd < 0) goto bail_1;
 
-	// Write the contents into the file 
-	ocall_write_file(&val, fdesc, image, image_len);
-	if (val != image_len) goto bail_2;
+	n = ocall_write_file(&retval, fd, image, image_len);
+	if (n != image_len) goto bail_2;
 
-	// Set the return value to success
 	ret = true;
-
 bail_2:
-	// Close the opened file 
-	ocall_close_file(&val, fdesc);
-
+	ocall_close_file(&retval, fd);
 bail_1:
-	// Return the status
 	return ret;
+
 }
 
 #endif
