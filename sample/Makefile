@@ -169,7 +169,7 @@ run-session-keystone: upload-hello-tc-download
 TC_BINARY = enclave.signed.so
 .PHONY: run-session-sgx
 run-session-sgx: upload-hello-tc-download
-	cd $(BUILD)/../../hello-tc/build-sgx/ && rm -f enclave.so *.ta; \
+	cd $(BUILD)/../../hello-tc/build-sgx/ && rm -f $(TC_BINARY) enclave.so *.ta; \
 		touch $(TC_BINARY)
 	cd $(BUILD)/agent && \
 		../broker/teep-broker-app --tamurl $(TAM_URL)/api/tam_cbor | \
