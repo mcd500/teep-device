@@ -138,6 +138,39 @@ tam_api_1  | Express HTTP  server listening on port 8888
 tam_api_1  | Express HTTPS server listening on port 8443
 ```
 
+### Explanation of HELLO-TEEP-TA
+
+The HELLO-TEEP-TA is a sample TA application which prints "Hello TEEP from TEE!". This sample TA is executed after the successful
+build of target client applications (App-keystone / App-optee / App-sgx).
+
+All Kestone/OP-TEE/SGX share the same design which requires
+  - Binaries of TA
+  - Client Application to execute the TA.
+
+Following are the pairs needed for execution.
+For TEEP: teep-broker-app (client-app), teep-agent-ta (teep-agent-ta.so for only sgx)
+
+
+| Purpose | Client App Binary| TA App Binary|
+| ------ | ------ | ------ |
+| TEEP | teep-broker-app | teep-agent-ta (teep-agent-ta.so for only sgx) |
+| Keystone | App-keystone  | Enclave |
+| OP-TEE | App-optee  | 8d82573a-926d-4754-9353-32dc29997f74.ta |
+| Keystone | App-sgx  | enclave.signed.so |
+
+
+Executing the ./teep-broker-app with tamproto URL will allow the teep-agent-ta 
+to talk with tamproto server and download the TA App Binary.
+Once the TA Binary is downloaded, the Client App (App-keystone / App-optee / App-sgx) will run the
+downloaded TA App.
+
+The filename of downloaded TA App Binary is: 8d82573a-926d-4754-9353-32dc29997f74.ta
+for all the targets.
+
+After the download of 8d82573a-926d-4754-9353-32dc29997f74.ta,
+	- For SGX,  the filename is changed into enclave.signed.so for SGX, as ./App-sgx will execute only the
+enclave.signed.so inside the same folder of where App-sgx resides. 
+	- For OP-TEE, no change
 
 ### Build TEEP-Device for Keystone with Docker
 
