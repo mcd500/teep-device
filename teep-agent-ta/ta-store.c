@@ -135,6 +135,7 @@ static bool install_ta(const char *filename, const void *image, size_t image_len
 
 	// Open the file with the flags and permission
 	retval = ocall_open_file(&fd, filename, O_RDWR | O_CREAT, 0600);
+	tee_info("Return value of ocall_open_file is : retval  = %u\n", retval);
 	if (retval < 0) {
 		tee_error("Return value of ocall_open_file is not proper : retval  = %u\n", retval);
 		goto bail_1;
