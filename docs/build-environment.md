@@ -15,7 +15,7 @@ The three key components of the fast-build machine are speed of CPU, speed of st
 
 The frequency of the CPU having above 3.8Ghz is ideal. The write speed of the storage has a significant impact on the build time. It is almost a must to use SSD than HDD and the SSD should have above 3000MB/s write speed which is only available with M.2 form factor with NVMe interface. The 32GB or higher memory size is recommended, since it will reduce disk swapping occurring when running out of memory, which significantly increases the build time. Please request reasonable development machines if you are working at a corporate or an organization.
 
-Some Examples of high-end machines: HPE ProLiant DL325 Gen10 with AMD EPYC 7302P 16-Core Processor, PowerEdge R7515 with AMD EPYC 7402P 24-Core Processor
+Some Examples of high-end machines: FUJITSU Server PRIMERGY RX2450 M1 with 2nd Gen AMD EPYC processor, FUJITSU Server PRIMERGY GX2460 M1 with 2nd Gen AMD EPYC processors etc.
 
 ## How to setup an efficient development environment
 
