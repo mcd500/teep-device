@@ -48,20 +48,24 @@ void tee_log(enum tee_log_level level, const char *msg, ...);
 #define tee_error(...) \
 (  \
  {  \
- 	char str[80];  \ 
-	snprintf(str, 80, "TERR: %s: %d: %s(): ", __FILE__, __LINE__, __func__);  \
-	tee_log(TEE_LOG_ERROR, str);  \
-	tee_log(TEE_LOG_ERROR, __VA_ARGS__);   \
+       char str[80];  \ 
+       snprintf(str,80, "TERR: %s: %d: %s(): ", __FILE__, __LINE__, __func__);  \
+        /* Adding null termination manually to prevent buffer overflow when snprintf() did not have the null termination */  \
+       str[80 - 1] = '0';  \
+       tee_log(TEE_LOG_ERROR, str);  \
+       tee_log(TEE_LOG_ERROR, __VA_ARGS__);  \
  } \
 )
 #define tee_warn(...)  tee_log(TEE_LOG_WARN, "TWRN:" __VA_ARGS__)
 #define tee_info(...) \
 (  \
  {  \
- 	char str[80];  \ 
-	snprintf(str, 80, "TINF: %s: %d: %s(): ", __FILE__, __LINE__, __func__);  \
-	tee_log(TEE_LOG_INFO, str);  \
-  	tee_log(TEE_LOG_INFO, __VA_ARGS__);  \
+    char str[80];  \ 
+    snprintf(str, 80, "TINF: %s: %d: %s(): ", __FILE__, __LINE__, __func__);  \
+    /* Adding null termination manually to prevent buffer overflow when snprintf() did not have the null termination */  \
+    str[80 - 1] = '0';  \
+    tee_log(TEE_LOG_INFO, str);  \
+    tee_log(TEE_LOG_INFO, __VA_ARGS__);  \
  } \
 )
 #ifdef DEBUG
