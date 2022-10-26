@@ -63,12 +63,12 @@ send "./hello-app 8d82573a-926d-4754-9353-32dc29997f74.ta eyrie-rt\r"
 expect "Hello TEEP from TEE!"
 expect "#### "
 
-send "cmp 8d82573a-926d-4754-9353-32dc29997f74.ta 8d82573a-926d-4754-9353-32dc29997f74.ta.secstor.plain\r"
-expect {
-	-re "differ" { set err 1 }
-	timeout { exit 1 }
-	"#### "
-}
+# send "cmp 8d82573a-926d-4754-9353-32dc29997f74.ta 8d82573a-926d-4754-9353-32dc29997f74.ta.secstor.plain\r"
+# expect {
+# 	-re "differ" { set err 1 }
+# 	timeout { exit 1 }
+# 	"#### "
+# }
 
 #send -- "./teep-broker-app --tamurl $::env(TAM_URL)/api/tam_cbor_delete  --talist 8d82573a-926d-4754-9353-32dc29997f74\r"
 #expect {
