@@ -54,21 +54,3 @@ char *strncpy(char *dst, const char *src, size_t n)
   return dst;
 }
 #endif
-
-#if defined(PLAT_KEYSTONE)
-char *strstr(const char *x, const char *y)
-{
-  if (*y == 0) return (char *)x;
-  for (; *x; x++) {
-    const char *p = x;
-    const char *q = y;
-    for (; *p && *q; p++, q++) {
-      if (*p != *q) break;
-    }
-    if (*q == 0) return (char *)x;
-    if (*p == 0) return NULL;
-  }
-  return NULL;
-}
-#endif
-
