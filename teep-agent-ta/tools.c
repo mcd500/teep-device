@@ -56,7 +56,7 @@ char *strncpy(char *dst, const char *src, size_t n)
 #endif
 
 #if defined(PLAT_KEYSTONE)
-char *strstr(const char *x, const char *y)
+char *local_strstr(const char *x, const char *y)
 {
   if (*y == 0) return (char *)x;
   for (; *x; x++) {
@@ -69,6 +69,41 @@ char *strstr(const char *x, const char *y)
     if (*p == 0) return NULL;
   }
   return NULL;
+}
+#endif
+
+#if defined(PLAT_KEYSTONE)
+/**
+ * strstr() -  Returns a pointer to the first occurrence of needle in haystack,
+ * or a null pointer if needle is not part of haystack.
+ *
+ * @param haystack String to be scanned.
+ * @param needle String containing the sequence of characters to match.
+ *
+ * @return A pointer to the first occurrence in haystack
+ * of the entire sequence of characters specified in needle, or a null pointer if the sequence is not present in haystack.
+ */
+char *strstr(const char *haystack, const char *needle)
+{
+   static char buf[64];
+   static char find_buf[64];
+   char *ret;
+
+   /* make sure the haystack, needle will be null terminated */
+   strncpy(buf, haystack, sizeof(buf)/sizeof(buf[0]));
+   strncpy(find_buf, needle, sizeof(find_buf)/sizeof(find_buf[0]));
+
+   // Find if the match exists
+   ret = local_strstr(buf, find_buf);
+   // If no match exists, return NULL
+   if(ret == NULL) return NULL;
+ 
+   // If match exists, do the pointer arithmetic to
+   // find the pointer and return it. 
+   int index = const_cast<const char *>(ret) - buf;
+   ret = const_cast<char *>(haystack) + index;
+
+   return ret;
 }
 #endif
 
