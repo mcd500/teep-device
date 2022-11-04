@@ -100,8 +100,8 @@ char *strstr(const char *haystack, const char *needle)
  
    // If match exists, do the pointer arithmetic to
    // find the pointer and return it. 
-   int index = const_cast<const char *>(ret) - buf;
-   ret = const_cast<char *>(haystack) + index;
+   int index = ret - buf;
+   ret = (char *)haystack + index;
 
    return ret;
 }
