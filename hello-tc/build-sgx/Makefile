@@ -19,7 +19,7 @@ clean: clean-manifest
 MANIFEST_OUT_DIR = $(CURDIR)
 MANIFEST_DIR = ../manifest
 SUIT_PRIV_KEY = $(TOPDIR)/key/tc-signer-P256-priv.pem
-TC_URI = $(TAM_URL)/TAs/8d82573a-926d-4754-9353-32dc29997f74.ta
-TC_BINARY = enclave.signed.so
+TC_URI = $(TAM_URL)/TAs/$(HELLO_TA_UUID_NAME)
+TC_BINARY = $(HELLO_TA_UUID_NAME)
 
 include ../manifest/manifest.mk
