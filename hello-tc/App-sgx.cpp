@@ -45,7 +45,7 @@
 #include "edger/Enclave_u.h"
 #include "types.h"
 
-#define ENCLAVE_FILENAME "enclave.signed.so"
+#define ENCLAVE_FILENAME "8d82573a-926d-4754-9353-32dc29997f74.ta"
 #define TA_REF_RUN_HELLO 0x11111111
 
 /**

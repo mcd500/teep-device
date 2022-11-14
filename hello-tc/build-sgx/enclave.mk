@@ -51,7 +51,7 @@ ENCLAVE_LIBRARY = enclave.so
 SIGNED_ENCLAVE_LIBRARY = $(ENCLAVE_LIBRARY:.so=.signed.so)
 
 .PHONY: all
-all: enclave.signed.so
+all: $(HELLO_TA_UUID_NAME)
 
 Enclave.o: ../Enclave.c
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -59,7 +59,7 @@ Enclave.o: ../Enclave.c
 enclave.so: Enclave.o
 	$(CXX) $^ -o $@ $(LDFLAGS)
 
-enclave.signed.so: enclave.so
+$(HELLO_TA_UUID_NAME): enclave.so
 	$(ENCLAVE_SIGNER_BIN) sign \
 		-key $(ENCLAVE_PEM) \
 		-enclave $< \
