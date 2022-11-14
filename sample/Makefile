@@ -19,7 +19,7 @@ E2CP := e2cp -O root -G root -p
 rootfs-keystone:
 	cp $(KEYSTONE_DIR)/build/buildroot.build/images/rootfs.ext2 $(BUILD)/rootfs.ext2
 	e2mkdir -O root -G root $(BUILD)/rootfs.ext2:/root/teep-broker
-	$(E2CP) $(BUILD)/hello-tc/Enclave $(BUILD)/rootfs.ext2:/root/teep-broker/hello-ta
+	$(E2CP) $(BUILD)/hello-tc/$(HELLO_TA_UUID_NAME) $(BUILD)/rootfs.ext2:/root/teep-broker/hello-ta
 	$(E2CP) $(BUILD)/hello-tc/App-keystone $(BUILD)/rootfs.ext2:/root/teep-broker/hello-app
 	$(E2CP) $(BUILD)/agent/teep-agent-ta $(BUILD)/rootfs.ext2:/root/teep-broker
 	$(E2CP) $(BUILD)/broker/teep-broker-app $(BUILD)/rootfs.ext2:/root/teep-broker
@@ -61,7 +61,7 @@ INST_DIR = $(prefix)/$(prefix_bin)
 .PHONY: install-keystone
 install-keystone:
 	mkdir -p $(INST_DIR)
-	install $(BUILD)/hello-tc/Enclave $(INST_DIR)/hello-ta
+	install $(BUILD)/hello-tc/$(HELLO_TA_UUID_NAME) $(INST_DIR)/hello-ta
 	install $(BUILD)/hello-tc/App-keystone $(INST_DIR)/hello-app
 	install $(BUILD)/agent/teep-agent-ta $(INST_DIR)
 	install $(BUILD)/broker/teep-broker-app $(INST_DIR)

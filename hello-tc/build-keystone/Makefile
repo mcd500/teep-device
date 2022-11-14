@@ -5,7 +5,7 @@ SOURCE = $(CURDIR)/..
 out-dir = $(BUILD)/hello-tc
 
 .PHONY: all
-all: $(out-dir)/App-keystone $(out-dir)/Enclave manifest
+all: $(out-dir)/App-keystone $(out-dir)/$(HELLO_TA_UUID_NAME) manifest
 
 $(out-dir)/App-keystone.o: $(SOURCE)/App-keystone.cpp
 	mkdir -p $(out-dir)
@@ -19,13 +19,13 @@ $(out-dir)/Enclave.o: $(SOURCE)/Enclave.c
 	mkdir -p $(out-dir)
 	$(CROSS_COMPILE)gcc -c -o $@ $< $(TEE_CFLAGS)
 
-$(out-dir)/Enclave: $(out-dir)/Enclave.o
+$(out-dir)/$(HELLO_TA_UUID_NAME): $(out-dir)/Enclave.o
 	mkdir -p $(out-dir)
 	$(CROSS_COMPILE)ld -o $@ $^ $(TEE_LDFLAGS) --start-group $(TEE_LIBS) --end-group
 
 .PHONY: clean
 clean: clean-manifest
-	rm -f $(out-dir)/App-keystone.o $(out-dir)/App-keystone $(out-dir)/Enclave.o $(out-dir)/Enclave
+	rm -f $(out-dir)/App-keystone.o $(out-dir)/App-keystone $(out-dir)/Enclave.o $(out-dir)/$(HELLO_TA_UUID_NAME)
 
 MANIFEST_OUT_DIR = $(out-dir)
 MANIFEST_DIR = ../manifest
