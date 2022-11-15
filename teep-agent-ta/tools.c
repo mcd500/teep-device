@@ -56,7 +56,7 @@ char *strncpy(char *dst, const char *src, size_t n)
 #endif
 
 #if defined(PLAT_KEYSTONE)
-char *strstr(const char *x, const char *y)
+char *local_strstr(const char *x, const char *y)
 {
   if (*y == 0) return (char *)x;
   for (; *x; x++) {
@@ -83,10 +83,10 @@ char *strstr(const char *x, const char *y)
  * @return A pointer to the first occurrence in haystack
  * of the entire sequence of characters specified in needle, or a null pointer if the sequence is not present in haystack.
  */
-char *local_strstr(const char *haystack, const char *needle)
+char *strstr(const char *haystack, const char *needle)
 {
-   static char buf[64];
-   static char find_buf[64];
+   static char buf[512];
+   static char find_buf[512];
    char *ret;
 
    /* make sure the haystack, needle will be null terminated */
@@ -94,7 +94,7 @@ char *local_strstr(const char *haystack, const char *needle)
    strncpy(find_buf, needle, sizeof(find_buf)/sizeof(find_buf[0]));
 
    // Find if the match exists
-   ret = strstr(buf, find_buf);
+   ret = local_strstr(buf, find_buf);
    // If no match exists, return NULL
    if(ret == NULL) return NULL;
  
