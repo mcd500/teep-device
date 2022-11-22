@@ -1,7 +1,7 @@
 TOPDIR = $(CURDIR)/..
 include $(TOPDIR)/conf.mk
 
-SCRIPTS := env.sh get-ip.sh itc.sh rtc.sh showtamurl.sh
+SCRIPTS := env.sh get-ip.sh itc.sh rtc.sh showtamurl.sh cp_ta_to_tamproto.sh
 
 out-dir = $(BUILD)/broker
 
