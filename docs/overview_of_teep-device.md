@@ -112,7 +112,7 @@ All three TEEs (Kestone/OP-TEE/SGX) share the same design which requires
   - Binaries of TA
   - Client Application to execute the TA.
 
-The features of TEEP-Agent described in the TEEP Architecture draft are realized as a TA (TEEP-Agent-TA, filename: teep-agent-ta) in this TEEP-Device implementation. The Client App which starts for the TEEP-Agent-TA is the (TEEP-Broker-App, filename: teep-broker-app).
+The features of TEEP-Agent described in the TEEP Architecture draft are realized as a TA (TEEP-Agent-TA, filename: teep-agent-ta) in this TEEP-Device implementation. The Client App which starts executing the TEEP-Agent-TA is the TEEP-Broker-App (filename: teep-broker-app).
 
 The features of TEEP-Agent do not have to be implemented as a TA in TEEP Architecture draft, ideally it is recommended the features of TEEP-Agent to be implemented inside TEE-os or underlying privileged mode (SMC in OP-TEE and SM in Keystone) to improve preventing from malicious softwares to stop the feature of the TEEP-Agent. The reason for realizing the TEEP-Agent as a TA in the TEEP-Device design is to simplify the implementation only.
 
@@ -123,7 +123,7 @@ The features of TEEP-Agent do not have to be implemented as a TA in TEEP Archite
 The HELLO-TEEP-TA is a sample TA application which prints "Hello TEEP from TEE!". This sample TA is executed after the successful build of target client applications (App-keystone / App-optee / App-sgx).
 The HELLO-TEEP-TA itself is not part of the TEEP Architecture design. It is for purely demonstration and debugging purposes of the TEE-Broker-App, TEEP-Agent-TA and the TAM.
 
-In the real scenario the HELLO-TEEP-TA will have features of Payment Application, DRM for video playback, OTA capability, serial code of enhancing feature of the hardware or stopping the entire activity of the device when the drones or power plants falls into the unintended parties.
+In the real scenario, the HELLO-TEEP-TA will have features of Payment Application, DRM for video playback, OTA capability, serial code of enhancing features of the hardware or stopping the entire activity of the device when the drones or power plants fall into the unintended parties.
 
 Following are the pairs needed for execution on all three TEEs.
 
