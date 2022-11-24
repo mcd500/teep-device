@@ -401,113 +401,499 @@ $ make run-sample-session
 Trimmed output of the test
 
 ```console
-M/TA: command: 20
-M/TA: execute suit-set-parameters
-M/TA: command: 1
-M/TA: execute suit-condition-vendor-identifier
-M/TA: command: 2
-M/TA: execute suit-condition-class-identifier
-M/TA: command: 19
-M/TA: execute suit-set-parameters
-M/TA: command: 21
-M/TA: execute suit-directive-fetch
-M/TA: fetch_and_store component
-M/TA: component download 55976
-M/TA: store component
-M/TA:   device   = TEEP-Device
-M/TA:   storage  = SecureFS
-M/TA:   filename = 8d82573a-926d-4754-9353-32dc29997f74.ta
+make -C sample run-session TAM_URL=http://172.17.0.32:8888
+make[1]: Entering directory '/builds/rinkai/teep-device/sample'
+make -C /builds/rinkai/teep-device/sample/../hello-tc/build-optee
+ SOURCE=/builds/rinkai/teep-device/sample/../hello-tc upload-download-manifest
+make[2]: Entering directory '/builds/rinkai/teep-device/hello-tc/build-optee'
+curl http://172.17.0.32:8888/panel/upload \
+	-F "file=@/builds/rinkai/teep-device/hello-tc/build-optee/../../build/optee/hello-tc/signed-download-tc.suit;f
+	ilename=integrated-payload-manifest.cbor"
+...
+...
+...
+cd /home/user/optee/out/bin && \
+	QEMU=/home/user/optee/qemu/aarch64-softmmu/qemu-system-aarch64 \
+	QEMU_SMP=2 \
+	TAM_URL=http://172.17.0.32:8888 \
+	ROOTFS=/builds/rinkai/teep-device/sample/../build/optee/rootfs.cpio.gz \
+	expect /builds/rinkai/teep-device/sample/session/test-optee.expect
+Starting QEMU...
+..
+..
+FI stub: Booting Linux Kernel...
+EFI stub: EFI_RNG_PROTOCOL unavailable, no randomness supplied
+EFI stub: Using DTB from configuration table
+EFI stub: Exiting boot services and installing virtual address map...
+Starting syslogd: OK
+Starting klogd: OK
+Initializing random number generator... [    3.248115] random: dd: uninitialized urandom read (512 bytes read)
+done.
+Set permissions on /dev/tee*: OK
+Set permissions on /dev/ion: OK
+Create/set permissions on /data/tee: OK
+Starting tee-supplicant: OK
+Starting network: OK
+Starting network (udhcpc): OK
+Welcome to Buildroot, type root or test to login
+buildroot login: root
+#  done, guest is booted.
+export LD_LIBRARY_PATH=/lib:/lib/arm-linux-gnueabihf:/lib/optee_armtz:/usr/lib
+# cd teep-broker
+# ls -l
+total 4228
+-rwxr-xr-x    1 root     root           567 Nov 24 07:27 cp_ta_to_tamproto.sh
+-rwxr-xr-x    1 root     root           146 Nov 24 07:27 env.sh
+-rwxr-xr-x    1 root     root           290 Nov 24 07:27 get-ip.sh
+-rwxr-xr-x    1 root     root         14112 Nov 24 07:27 hello-app
+-rwxr-xr-x    1 root     root            65 Nov 24 07:27 itc.sh
+-rwxr-xr-x    1 root     root           116 Nov 24 07:27 rtc.sh
+-rwxr-xr-x    1 root     root           134 Nov 24 07:27 showtamurl.sh
+-rwxr-xr-x    1 root     root       4285528 Nov 24 07:27 teep-broker-app
+# ./hello-app
+hello-app: TEEC_Opensession failed with code 0xffff0008 origin 0x3
+# ./teep-broker-app --tamurl http://172.17.0.32:8888/api/tam_cbor
+teep-broker.c compiled at Nov 24 2022 07:27:53
+uri = http://172.17.0.32:8888/api/tam_cbor, cose=0, talist=
+[2022/11/24 07:28:26:9408] N: POST: http://172.17.0.32:8888/api/tam_cbor
+[2022/11/24 07:28:26:9425] N: (hexdump: zero length)
+[2022/11/24 07:28:26:9506] N: http://172.17.0.32:8888/api/tam_cbor
+[2022/11/24 07:28:26:0224] N: 
+[2022/11/24 07:28:26:0234] N: 0000: 83 01 A5 01 81 01 03 81 00 04 43 01 02 05 14 48    ..........C....H
+[2022/11/24 07:28:26:0243] N: 0010: 77 77 77 77 77 77 77 77 15 81 00 02                wwwwwwww....    
+[2022/11/24 07:28:26:0250] N: 
+[2022/11/24 07:28:26:0374] N: POST: http://172.17.0.32:8888/api/tam_cbor
+[2022/11/24 07:28:26:0379] N: 
+[2022/11/24 07:28:26:0382] N: 0000: 82 02 A4 14 48 77 77 77 77 77 77 77 77 08 80 0E    ....Hwwwwwwww...
+[2022/11/24 07:28:26:0389] N: 0010: 80 0F 80                                           ...             
+[2022/11/24 07:28:26:0395] N: 
+[2022/11/24 07:28:26:0417] N: http://172.17.0.32:8888/api/tam_cbor
+[2022/11/24 07:28:27:0742] N: 
+[2022/11/24 07:28:27:0746] N: 0000: 82 03 A2 0A 81 59 01 5F D8 6B A2 02 58 73 82 58    .....Y._.k..Xs.X
+[2022/11/24 07:28:27:0751] N: 0010: 24 82 2F 58 20 D7 FC F7 75 1E CB 77 96 39 A4 0F    $./X ...u..w.9..
+[2022/11/24 07:28:27:0758] N: 0020: 58 66 56 EF D3 08 7D 31 ED C3 C4 5B EE DD 9E 95    XfV...}1...[....
+[2022/11/24 07:28:27:0767] N: 0030: 38 CE 0D 3E 8A 58 4A D2 84 43 A1 01 26 A0 F6 58    8..>.XJ..C..&..X
+[2022/11/24 07:28:27:0774] N: 0040: 40 6F D3 76 AE AE CF F3 BC E7 7E 60 E1 22 0A 20    @o.v......~`.. 
+[2022/11/24 07:28:27:0780] N: 0050: 1C 3C 10 3F 85 BE 71 A7 10 E5 6D C1 C5 0A A6 C6    .<.?..q...m.....
+[2022/11/24 07:28:27:0786] N: 0060: 47 D4 D4 EE DD 20 2D 08 EA 4F 74 6F 48 FF 3D D3    G.... -..OtoH.=.
+[2022/11/24 07:28:27:0793] N: 0070: 32 B4 60 18 95 15 6A 5D 25 12 EF E8 8B 35 CE CD    2.`...j]%....5..
+[2022/11/24 07:28:27:0799] N: 0080: 1C 03 58 E3 A5 01 01 02 01 03 58 86 A2 02 81 84    ..X.......X.....
+[2022/11/24 07:28:27:0808] N: 0090: 4B 54 45 45 50 2D 44 65 76 69 63 65 48 53 65 63    KTEEP-DeviceHSec
+[2022/11/24 07:28:27:0815] N: 00A0: 75 72 65 46 53 50 8D 82 57 3A 92 6D 47 54 93 53    ureFSP..W:.mGT.S
+[2022/11/24 07:28:27:0821] N: 00B0: 32 DC 29 99 7F 74 42 74 61 04 58 56 86 14 A4 01    2.)..tBta.XV....
+[2022/11/24 07:28:27:0827] N: 00C0: 50 FA 6B 4A 53 D5 AD 5F DF BE 9D E6 63 E4 D4 1F    P.kJS.._....c...
+[2022/11/24 07:28:27:0833] N: 00D0: FE 02 50 14 92 AF 14 25 69 5E 48 BF 42 9B 2D 51    ..P....%i^H.B.-Q
+[2022/11/24 07:28:27:0840] N: 00E0: F2 AB 45 03 58 24 82 2F 58 20 00 11 22 33 44 55    ..E.X$./X ..3DU
+[2022/11/24 07:28:27:0847] N: 00F0: 66 77 88 99 AA BB CC DD EE FF 01 23 45 67 89 AB    fw.........#Eg..
+[2022/11/24 07:28:27:0853] N: 0100: CD EF FE DC BA 98 76 54 32 10 0E 19 87 D0 01 0F    ......vT2.......
+[2022/11/24 07:28:27:0859] N: 0110: 02 0F 09 58 4D 86 13 A1 15 78 43 68 74 74 70 3A    ...XM....xChttp:
+[2022/11/24 07:28:27:0865] N: 0120: 2F 2F 31 37 32 2E 31 37 2E 30 2E 33 32 3A 38 38    //172.17.0.32:88
+[2022/11/24 07:28:27:0871] N: 0130: 38 38 2F 54 41 73 2F 38 64 38 32 35 37 33 61 2D    88/TAs/8d82573a-
+[2022/11/24 07:28:27:0877] N: 0140: 39 32 36 64 2D 34 37 35 34 2D 39 33 35 33 2D 33    926d-4754-9353-3
+[2022/11/24 07:28:27:0884] N: 0150: 32 64 63 32 39 39 39 37 66 37 34 2E 74 61 15 02    2dc29997f74.ta..
+[2022/11/24 07:28:27:0890] N: 0160: 03 0F 0A 43 82 03 0F 14 48 AB A1 A2 A3 A4 A5 A6    ...C....H.......
+[2022/11/24 07:28:27:0896] N: 0170: A7                                                 .               
+[2022/11/24 07:28:27:0901] N: 
+[2022/11/24 07:28:27:6609] N: GET: http://172.17.0.32:8888/TAs/8d82573a-926d-4754-9353-32dc29997f74.ta
+[2022/11/24 07:28:27:6632] N: http://172.17.0.32:8888/TAs/8d82573a-926d-4754-9353-32dc29997f74.ta
+[2022/11/24 07:28:27:7968] N: POST: http://172.17.0.32:8888/api/tam_cbor
+[2022/11/24 07:28:27:7973] N: 
+[2022/11/24 07:28:27:7977] N: 0000: 82 05 A1 14 48 77 77 77 77 77 77 77 77             ....Hwwwwwwww   
+[2022/11/24 07:28:27:7982] N: 
+[2022/11/24 07:28:27:7993] N: http://172.17.0.32:8888/api/tam_cbor
+[2022/11/24 07:28:27:8228] N: (hexdump: zero length)
+# ls -l
+total 4228
+-rwxr-xr-x    1 root     root           567 Nov 24 07:27 cp_ta_to_tamproto.sh
+-rwxr-xr-x    1 root     root           146 Nov 24 07:27 env.sh
+-rwxr-xr-x    1 root     root           290 Nov 24 07:27 get-ip.sh
+-rwxr-xr-x    1 root     root         14112 Nov 24 07:27 hello-app
+-rwxr-xr-x    1 root     root            65 Nov 24 07:27 itc.sh
+-rwxr-xr-x    1 root     root           116 Nov 24 07:27 rtc.sh
+-rwxr-xr-x    1 root     root           134 Nov 24 07:27 showtamurl.sh
+-rwxr-xr-x    1 root     root       4285528 Nov 24 07:27 teep-broker-app
+# ./hello-app
+#  done
+..
+
+M/TA: TTRC:verifying signature of suit manifest
+M/TA: TTRC:verify OK
+M/TA: TTRC:command: 20
+M/TA: TTRC:execute suit-set-parameters
+M/TA: TTRC:command: 1
+M/TA: TTRC:execute suit-condition-vendor-identifier
+M/TA: TTRC:command: 2
+M/TA: TTRC:execute suit-condition-class-identifier
+M/TA: TTRC:command: 19
+M/TA: TTRC:execute suit-set-parameters
+M/TA: TTRC:command: 21
+M/TA: TTRC:execute suit-directive-fetch
+M/TA: TTRC:fetch_and_store component
+M/TA: TTRC:component download 55976
+M/TA: TTRC:ta-store.c: store_component() store component
+M/TA: TTRC:  device   = TEEP-Device
+M/TA: TTRC:  storage  = SecureFS
+M/TA: TTRC:  filename = 8d82573a-926d-4754-9353-32dc29997f74.ta
+M/TA: TTRC:  image_len = 55976
 D/TC:? 0 tee_ta_init_pseudo_ta_session:283 Lookup pseudo TA 6e256cba-fc4d-4941-ad09-2ca1860342dd
 D/TC:? 0 tee_ta_init_pseudo_ta_session:296 Open secstor_ta_mgmt
 D/TC:? 0 tee_ta_init_pseudo_ta_session:310 secstor_ta_mgmt : 6e256cba-fc4d-4941-ad09-2ca1860342dd
 D/TC:? 0 install_ta:99 Installing 8d82573a-926d-4754-9353-32dc29997f74
-D/TC:? 0 tee_ta_close_session:499 csess 0xc09491c0 id 1
+D/TC:? 0 tee_ta_close_session:499 csess 0xc37ecfb0 id 1
 D/TC:? 0 tee_ta_close_session:518 Destroy session
-M/TA: finish fetch
-M/TA: command: 3
-M/TA: execute suit-condition-image-match
-M/TA: end of command seq
-D/TC:? 0 tee_ta_close_session:499 csess 0xc094ab40 id 1
+M/TA: TTRC:finish fetch
+M/TA: TTRC:command: 3
+M/TA: TTRC:execute suit-condition-image-match
+M/TA: TTRC:end of command seq
+D/TC:? 0 tee_ta_close_session:499 csess 0xc37eeb40 id 1
 D/TC:? 0 tee_ta_close_session:518 Destroy session
-D/TC:? 0 destroy_context:298 Destroy TA ctx (0xc094aae0)
+D/TC:? 0 destroy_context:298 Destroy TA ctx (0xc37eeae0)
 D/TC:? 0 tee_ta_init_pseudo_ta_session:283 Lookup pseudo TA 8d82573a-926d-4754-9353-32dc29997f74
 D/TC:? 0 load_ldelf:704 ldelf load address 0x40006000
 D/LD:  ldelf:134 Loading TA 8d82573a-926d-4754-9353-32dc29997f74
 D/TC:? 0 tee_ta_init_session_with_context:573 Re-open TA 3a2f8978-5dc0-11e8-9c2d-fa7ae01bbebc
 D/TC:? 0 system_open_ta_binary:257 Lookup user TA ELF 8d82573a-926d-4754-9353-32dc29997f74 (Secure Storage TA)
 D/TC:? 0 system_open_ta_binary:260 res=0x0
-D/LD:  ldelf:169 ELF (8d82573a-926d-4754-9353-32dc29997f74) at 0x40066000
-D/TC:? 0 tee_ta_close_session:499 csess 0xc0948820 id 1
+D/LD:  ldelf:169 ELF (8d82573a-926d-4754-9353-32dc29997f74) at 0x4004b000
+D/TC:? 0 tee_ta_close_session:499 csess 0xc37ec610 id 1
 D/TC:? 0 tee_ta_close_session:518 Destroy session
-
 Hello TEEP from TEE!
-
-D/TC:? 0 tee_ta_close_session:499 csess 0xc0949020 id 1
+D/TC:? 0 tee_ta_close_session:499 csess 0xc37ece10 id 1
 D/TC:? 0 tee_ta_close_session:518 Destroy session
-D/TC:? 0 destroy_context:298 Destroy TA ctx (0xc0948fc0)
-make[1]: Leaving directory '/home/user/teep-device/platform/op-tee'
+D/TC:? 0 destroy_context:298 Destroy TA ctx (0xc37ecdb0)
+! fgrep 'ERR:' /home/user/optee/out/bin/serial1.log
+fgrep 'Hello TEEP from TEE!' /home/user/optee/out/bin/serial1.log
+Hello TEEP from TEE!
+make[1]: Leaving directory '/home/user/teep-device/sample'
 ```
 
 
 ### Run hello-app and teep-broker-app on Raspberry PI 3
 
-To check TEEP-Device on Raspberry PI 3, we need to run the TAM server on PC and network with Raspberry PI 3 board.
+The RPI3 board needs the following to boot.
+1) Kernal Image - kernel8.img
+2) DTB file for RPI3 - bcm2710-rpi-3-b-plus.dtb
+3) Rootfs file system - arm64-20.04-rootfs-teep-device.tar.xz
 
-#### Copy the hello-app and teep-broker-app binaries to Raspberry PI 3
-<br/>
+You can copy the Kernal Image and DTB file from the **aistcpsec/tee-dev:optee-3.10.0_rpi3** image.
+It will located inside /home/user/optee/out-br/target/boot folder.
 
-**Copy binaries over SSH to Raspberry PI 3**
+The rootfs file system can be downloaded from the docker image **aistcpsec/teep-dev:rootfs_teep-device_rpi3_netboot_nfs**
+It will be available in the / folder. Tar file name is arm64-20.04-rootfs-teep-device.tar.xz.
 
-- Connect to Raspberry PI 3 over serial console(typically at /dev/ttryUSB0) then acquire IP address. One of the commands to obtain an ip address.
+Please copy the above files from docker to your local using docker cp command.
 
-```sh
-ip address
-```
-- Copy the binaries from build PC over SSH (user:root) to Raspberry PI 3
+**Partition SD Card**
 
-```
-TODO - Further update required
-```
+Partition the SD card into two partitions 
+Partition 1 - Boot Partition - Place the Kernal Image file and DTB File 
+Partition 2 - Rootfs file system - Copy the extracted arm64-20.04-rootfs-teep-device.tar.xz contents.
+
 
 **Write to SD card**
 <br />
 Please follow below steps to write the TEEP-Device binaries to SD-card
 - Insert SD card to your PC for Unleashed
 - Copy the binaries to SD card
-- Move the sd to Raspberry PI 3 board and boot it
-
-```
-TODO - Further update required
-```
+- Move the SD card to Raspberry PI 3 board and boot it
 
 #### Run hello-app and teep-broker-app on Raspberry PI 3
-<br/>
+
 There are two methods to connect to Raspberry PI 3.
 - Serial Port using minicom (/dev/ttyUSB0)
-- Over SSH: `ssh root@192.168.0.7`
+- Over SSH: `ssh root@<rpi3_ip_address>` 
 
-```
-TODO - Further update required
-```
+In the below steps, let us consider the IP address of RPI3 connected
+system is 192.168.100.118 and the IP address of RPI3 is 192.168.100.114
 
-**Run hello-app**
+Also, Tamproto Server is required to test the TEEP-Device.
+We can start the tamproto in the PC or we can start inside RPI3 itself.
+In our case, we will start the tamproto server inside the RPI3.
 
-```sh
-TODO - Further update required
-```
+**Access the RPI3 Terminal - Using Minicom**
 
-**Run teep-broker-app**
-
-Use the TAM server IP address (i.e 192.168.11.4)
-
-```
-./teep-broker-app --tamurl http://192.168.11.4:8888/api/tam_cbor
-```
-
-Execution logs
+When RPI3 is booting, we can access the RPI3 using the minicom.
+This is access from the PC to which the RPI3 is connected.
+Also /dev/ttyUSB0 is not fixed, it may be /dev/ttyUSB1 or 2 etc.
 
 ```sh
-TODO - Further update required
+$ minicom -D /dev/ttyUSB0
+
+root@arm64-ubuntu:~# NOTICE:  Booting Trusted Firmware
+NOTICE:  BL1: v2.2(debug):v2.2
+NOTICE:  BL1: Built : 03:31:10, Nov 15 2022
+INFO:    BL1: RAM 0x100ee000 - 0x100f7000
+INFO:    BL1: cortex_a53: CPU workaround for 843419 was applied
+INFO:    BL1: cortex_a53: CPU workaround for 855873 was applied
+NOTICE:  rpi3: Detected: Raspberry Pi 3 Model B+ (1GB, Sony, UK) [0x00a020d3]
+INFO:    BL1: Loading BL2
+INFO:    Loading image id=1 at address 0x100b4000
+INFO:    Image id=1 loaded: 0x100b4000 - 0x100bc410
+NOTICE:  BL1: Booting BL2
+INFO:    Entry point address = 0x100b4000
+INFO:    SPSR = 0x3c5
+NOTICE:  BL2: v2.2(debug):v2.2
+NOTICE:  BL2: Built : 03:31:10, Nov 15 2022
+INFO:    BL2: Doing platform setup
+INFO:    BL2: Loading image id 3
+INFO:    Loading image id=3 at address 0x100e0000
+INFO:    Image id=3 loaded: 0x100e0000 - 0x100ea078
+INFO:    BL2: Loading image id 4
+INFO:    Loading image id=4 at address 0x10100000
+INFO:    Image id=4 loaded: 0x10100000 - 0x1010001c
+INFO:    OPTEE ep=0x10100000
+INFO:    OPTEE header info:
+INFO:          magic=0x4554504f
+INFO:          version=0x2
+INFO:          arch=0x1
+
+arm64-ubuntu login: root
+Password: 
+Welcome to Ubuntu 20.04.5 LTS (GNU/Linux 4.14.56-v8 aarch64)
+
+```
+
+
+**Access the RPI3 Terminal - Using SSH**
+After RPI3 is booted, we can access the RPI3 terminal using SSH
+
+```sh
+$ ssh root@192.168.100.114
+root@192.168.100.114's password: 
+Welcome to Ubuntu 20.04.5 LTS (GNU/Linux 4.14.56-v8 aarch64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+Last login: Wed Aug 31 15:28:32 2022
+root@arm64-ubuntu:~# 
+```
+
+
+**Starting the Tamproto Server**
+
+First, lets install npm and node server in RPI3.
+This is done by executing the ./install_node.sh file.
+```sh
+$ # cd /home/user/./install_node.sh 
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 15916  100 15916    0     0  42329      0 --:--:-- --:--:-- --:--:-- 42217
+=> Downloading nvm as script to '/root/.nvm'
+
+=> Appending nvm source string to /root/.bashrc
+=> Appending bash_completion source string to /root/.bashrc
+=> Close and reopen your terminal to start using nvm or run the following to use it now:
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+Installing latest LTS version.
+Downloading and installing node v18.12.1...
+Downloading https://nodejs.org/dist/v18.12.1/node-v18.12.1-linux-arm64.tar.xz...
+########################################### 100.0%
+Computing checksum with sha256sum
+Checksums matched!
+Now using node v18.12.1 (npm v8.19.2)
+Creating default alias: default -> lts/* (-> v18.12.1)
+Now using node v18.12.1 (npm v8.19.2)
+root@arm64-ubuntu:/home/user# 
+
+```
+
+
+Then install the node modules and start the tamproto server.
+```sh
+root@arm64-ubuntu:/home/user# cd tamproto/
+root@arm64-ubuntu:/home/user/tamproto# ls
+Dockerfile  README.md  app.js       docker-compose.yml  keymanager.js      package.json        query_response.cbor  suit.cbor        teep-p.js
+LICENSE     TAs        config.json  key                 package-lock.json  query_request.cbor  routes               ta_install.cbor  views
+root@arm64-ubuntu:/home/user/tamproto# npm install
+added 154 packages, and audited 155 packages in 23s
+
+13 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+npm notice 
+npm notice New major version of npm available! 8.19.2 -> 9.1.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v9.1.2
+npm notice Run npm install -g npm@9.1.2 to update!
+npm notice 
+root@arm64-ubuntu:/home/user/tamproto# 
+root@arm64-ubuntu:/home/user/tamproto# node app.js
+{
+  'supported-cipher-suites': 1,
+  challenge: 2,
+  versions: 3,
+  'ocsp-data': 4,
+  'selected-cipher-suite': 5,
+  'selected-version': 6,
+  evidence: 7,
+  'tc-list': 8,
+  'ext-list': 9,
+  'manifest-list': 10,
+  msg: 11,
+  'err-msg': 12,
+  'evidence-format': 13,
+  'requested-tc-list': 14,
+  'unneeded-tc-list': 15,
+  'component-id': 16,
+  'tc-manifest-sequence-number': 17,
+  'have-binary': 18,
+  'suit-reports': 19,
+  token: 20,
+  'supported-freshness-mechanisms': 21
+}
+Loading KeyConfig
+{
+  TAM_priv: 'teep_ecP256.jwk',
+  TAM_pub: 'teep_ecP256.jwk',
+  TEE_priv: 'teep_ecP256.jwk',
+  TEE_pub: 'teep_agent_prime256v1_pub.pem'
+}
+Load key TAM_priv
+Load key TAM_pub
+Load key TEE_priv
+Load key TEE_pub
+Key binary loaded
+(node:1098) Warning: Accessing non-existent property 'request' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+192.168.100.114
+Express HTTP  server listening on port 8888
+Express HTTPS server listening on port 8443
+
+```
+
+
+**Copy the TA's into Tamproto server**
+
+Open another terminal using ssh
+
+```sh
+$ cd /home/user/teep-broker
+$ ./cp_ta_to_tamproto.sh
+```
+
+**Run the teep-broker-app**
+
+(Inside teep-broker folder)
+```sh
+$ ./showtamurl.sh
+   --tamurl http://192.168.100.114:8888/api/tam_cbor
+$ ./teep-broker-app --tamurl http://192.168.100.114:8888/api/tam_cbor
+teep-broker.c compiled at Nov 24 2022 08:14:22
+uri = http://192.168.100.114:8888/api/tam_cbor, cose=0, talist=
+[2022/11/24 08:54:57:7358] N: POST: http://192.168.100.114:8888/api/tam_cbor
+[2022/11/24 08:54:57:7358] N: (hexdump: zero length)
+[2022/11/24 08:54:57:7369] N: http://192.168.100.114:8888/api/tam_cbor
+[2022/11/24 08:54:57:8365] N: 
+[2022/11/24 08:54:57:8366] N: 0000: 83 01 A5 01 81 01 03 81 00 04 43 01 02 05 14 48    ..........C....H
+[2022/11/24 08:54:57:8366] N: 0010: 77 77 77 77 77 77 77 77 15 81 00 02                wwwwwwww....    
+[2022/11/24 08:54:57:8366] N: 
+[2022/11/24 08:54:57:8375] N: POST: http://192.168.100.114:8888/api/tam_cbor
+[2022/11/24 08:54:57:8375] N: 
+[2022/11/24 08:54:57:8376] N: 0000: 82 02 A4 14 48 77 77 77 77 77 77 77 77 08 80 0E    ....Hwwwwwwww...
+[2022/11/24 08:54:57:8376] N: 0010: 80 0F 80                                           ...             
+[2022/11/24 08:54:57:8376] N: 
+[2022/11/24 08:54:57:8380] N: http://192.168.100.114:8888/api/tam_cbor
+[2022/11/24 08:54:57:9134] N: 
+[2022/11/24 08:54:57:9135] N: 0000: 82 03 A2 0A 81 59 01 5D D8 6B A2 02 58 73 82 58    .....Y.].k..Xs.X
+[2022/11/24 08:54:57:9136] N: 0010: 24 82 2F 58 20 E5 2A E9 E8 AC 01 49 41 2E 3C EB    $./X .*....IA.<.
+[2022/11/24 08:54:57:9136] N: 0020: E8 8D 6C B7 27 A9 DE D6 42 24 1A FD 39 D5 ED 0E    ..l.'...B$..9...
+[2022/11/24 08:54:57:9136] N: 0030: 51 E8 9A 95 BF 58 4A D2 84 43 A1 01 26 A0 F6 58    Q....XJ..C..&..X
+[2022/11/24 08:54:57:9136] N: 0040: 40 97 C2 E8 79 81 C5 23 6B 63 C5 AF 51 41 6C 43    @...y..#kc..QAlC
+[2022/11/24 08:54:57:9137] N: 0050: F6 9D E8 91 D7 EB AB 73 7A 30 52 A7 74 02 73 01    .......sz0R.t.s.
+[2022/11/24 08:54:57:9137] N: 0060: 0F B6 70 E2 0B 70 D8 3B CF C3 31 8A 26 39 D0 4D    ..p..p.;..1.&9.M
+[2022/11/24 08:54:57:9137] N: 0070: 1F CF 4B 77 83 F3 24 7F 43 2E 9D 77 00 37 6B CC    ..Kw..$.C..w.7k.
+[2022/11/24 08:54:57:9137] N: 0080: E0 03 58 E1 A5 01 01 02 01 03 58 86 A2 02 81 84    ..X.......X.....
+[2022/11/24 08:54:57:9138] N: 0090: 4B 54 45 45 50 2D 44 65 76 69 63 65 48 53 65 63    KTEEP-DeviceHSec
+[2022/11/24 08:54:57:9138] N: 00A0: 75 72 65 46 53 50 8D 82 57 3A 92 6D 47 54 93 53    ureFSP..W:.mGT.S
+[2022/11/24 08:54:57:9138] N: 00B0: 32 DC 29 99 7F 74 42 74 61 04 58 56 86 14 A4 01    2.)..tBta.XV....
+[2022/11/24 08:54:57:9138] N: 00C0: 50 FA 6B 4A 53 D5 AD 5F DF BE 9D E6 63 E4 D4 1F    P.kJS.._....c...
+[2022/11/24 08:54:57:9139] N: 00D0: FE 02 50 14 92 AF 14 25 69 5E 48 BF 42 9B 2D 51    ..P....%i^H.B.-Q
+[2022/11/24 08:54:57:9139] N: 00E0: F2 AB 45 03 58 24 82 2F 58 20 00 11 22 33 44 55    ..E.X$./X .."3DU
+[2022/11/24 08:54:57:9139] N: 00F0: 66 77 88 99 AA BB CC DD EE FF 01 23 45 67 89 AB    fw.........#Eg..
+[2022/11/24 08:54:57:9140] N: 0100: CD EF FE DC BA 98 76 54 32 10 0E 19 87 D0 01 0F    ......vT2.......
+[2022/11/24 08:54:57:9140] N: 0110: 02 0F 09 58 4B 86 13 A1 15 78 41 68 74 74 70 3A    ...XK....xAhttp:
+[2022/11/24 08:54:57:9141] N: 0120: 2F 2F 31 32 37 2E 30 2E 30 2E 31 3A 38 38 38 38    //127.0.0.1:8888
+[2022/11/24 08:54:57:9141] N: 0130: 2F 54 41 73 2F 38 64 38 32 35 37 33 61 2D 39 32    /TAs/8d82573a-92
+[2022/11/24 08:54:57:9141] N: 0140: 36 64 2D 34 37 35 34 2D 39 33 35 33 2D 33 32 64    6d-4754-9353-32d
+[2022/11/24 08:54:57:9142] N: 0150: 63 32 39 39 39 37 66 37 34 2E 74 61 15 02 03 0F    c29997f74.ta....
+[2022/11/24 08:54:57:9142] N: 0160: 0A 43 82 03 0F 14 48 AB A1 A2 A3 A4 A5 A6 A7       .C....H........ 
+[2022/11/24 08:54:57:9142] N: 
+[2022/11/24 08:54:58:1626] N: GET: http://127.0.0.1:8888/TAs/8d82573a-926d-4754-9353-32dc29997f74.ta
+[2022/11/24 08:54:58:1630] N: http://127.0.0.1:8888/TAs/8d82573a-926d-4754-9353-32dc29997f74.ta
+[2022/11/24 08:54:58:3440] N: POST: http://192.168.100.114:8888/api/tam_cbor
+[2022/11/24 08:54:58:3441] N: 
+[2022/11/24 08:54:58:3441] N: 0000: 82 05 A1 14 48 77 77 77 77 77 77 77 77             ....Hwwwwwwww   
+[2022/11/24 08:54:58:3441] N: 
+[2022/11/24 08:54:58:3444] N: http://192.168.100.114:8888/api/tam_cbor
+[2022/11/24 08:54:58:3646] N: (hexdump: zero length)
+root@arm64-ubuntu:/home/user/teep-broker# 
+```
+
+
+**Execute the ./hello-app**
+
+```sh
+$ ./hello-app
+
+# Check for the "Hello from TEE!" output on Minicom window
+D/LD:  ldelf:134 Loading TA 68373894-5bb3-403c-9eec-3114a1f5d3fc
+D/TC:? 0 tee_ta_init_session_with_context:573 Re-open TA 3a2f8978-5dc0-11e8-9c2d-fa7ae01bbebc
+D/TC:? 0 system_open_ta_binary:257 Lookup user TA ELF 68373894-5bb3-403c-9eec-3114a1f5d3fc (Secure Storage TA)
+D/TC:? 0 system_open_ta_binary:260 res=0xffff0008
+D/TC:? 0 system_open_ta_binary:257 Lookup user TA ELF 68373894-5bb3-403c-9eec-3114a1f5d3fc (REE)
+D/TC:? 0 system_open_ta_binary:260 res=0x0
+D/LD:  ldelf:169 ELF (68373894-5bb3-403c-9eec-3114a1f5d3fc) at 0x4008c000
+D/TC:? 0 tee_ta_close_session:499 csess 0x101776c0 id 1
+D/TC:? 0 tee_ta_close_session:518 Destroy session
+M/TA: TTRC:verifying signature of suit manifest
+M/TA: TTRC:verify OK
+M/TA: TTRC:command: 20
+M/TA: TTRC:execute suit-set-parameters
+M/TA: TTRC:command: 1
+M/TA: TTRC:execute suit-condition-vendor-identifier
+M/TA: TTRC:command: 2
+M/TA: TTRC:execute suit-condition-class-identifier
+M/TA: TTRC:command: 19
+M/TA: TTRC:execute suit-set-parameters
+M/TA: TTRC:command: 21
+M/TA: TTRC:execute suit-directive-fetch
+M/TA: TTRC:fetch_and_store component
+M/TA: TTRC:component download 55976
+M/TA: TTRC:ta-store.c: store_component() store component
+M/TA: TTRC:  device   = TEEP-Device
+M/TA: TTRC:  storage  = SecureFS
+M/TA: TTRC:  filename = 8d82573a-926d-4754-9353-32dc29997f74.ta
+M/TA: TTRC:  image_len = 55976
+D/TC:? 0 tee_ta_init_pseudo_ta_session:283 Lookup pseudo TA 6e256cba-fc4d-4941-ad09-2ca1860342dd
+D/TC:? 0 tee_ta_init_pseudo_ta_session:296 Open secstor_ta_mgmt
+D/TC:? 0 tee_ta_init_pseudo_ta_session:310 secstor_ta_mgmt : 6e256cba-fc4d-4941-ad09-2ca1860342dd
+D/TC:? 0 install_ta:99 Installing 8d82573a-926d-4754-9353-32dc29997f74
+D/TC:? 0 tee_ta_close_session:499 csess 0x101769c0 id 1
+D/TC:? 0 tee_ta_close_session:518 Destroy session
+M/TA: TTRC:finish fetch
+M/TA: TTRC:command: 3
+M/TA: TTRC:execute suit-condition-image-match
+M/TA: TTRC:end of command seq
+D/TC:? 0 tee_ta_close_session:499 csess 0x10177ec0 id 1
+D/TC:? 0 tee_ta_close_session:518 Destroy session
+D/TC:? 0 destroy_context:298 Destroy TA ctx (0x10177e60)
+D/TC:? 0 tee_ta_init_pseudo_ta_session:283 Lookup pseudo TA 8d82573a-926d-4754-9353-32dc29997f74
+D/TC:? 0 load_ldelf:704 ldelf load address 0x40006000
+D/LD:  ldelf:134 Loading TA 8d82573a-926d-4754-9353-32dc29997f74
+D/TC:? 0 tee_ta_init_session_with_context:573 Re-open TA 3a2f8978-5dc0-11e8-9c2d-fa7ae01bbebc
+D/TC:? 0 system_open_ta_binary:257 Lookup user TA ELF 8d82573a-926d-4754-9353-32dc29997f74 (Secure Storage TA)
+D/TC:? 0 system_open_ta_binary:260 res=0x0
+D/LD:  ldelf:169 ELF (8d82573a-926d-4754-9353-32dc29997f74) at 0x40070000
+D/TC:? 0 tee_ta_close_session:499 csess 0x10176070 id 1
+D/TC:? 0 tee_ta_close_session:518 Destroy session
+Hello TEEP from TEE!
+D/TC:? 0 tee_ta_close_session:499 csess 0x10176870 id 1
+D/TC:? 0 tee_ta_close_session:518 Destroy session
+D/TC:? 0 destroy_context:298 Destroy TA ctx (0x10176810) 
 ```
 
 ## SGX
