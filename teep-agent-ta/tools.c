@@ -72,7 +72,7 @@ static char *local_strstr(const char *x, const char *y)
   return NULL;
 }
 
-#define USE_SAFESTRSTR
+// #define USE_SAFESTRSTR
 #ifdef  USE_SAFESTRSTR
 #define STRBUFSIZE 256
 /**
