@@ -32,14 +32,15 @@
 
 #if defined(PLAT_KEYSTONE) || defined(PLAT_SGX)
 /**
- * strcpy() - Copies the string from source to destination.
+ * strncpy() - Copies the string from source to destination upto n.
  *
  * This function iniializes the destination "dst" variable to copy the string
- * using the while_loop.
+ * using the while_loop and guaranteeing NULL termination.
  * 
  * @param dst	A pointer to the destination array where the content is to be 
  *		copied.
  * @param src	The string to be copied.
+ * @param n     maximum string length of dst could hold.
  *
  * @return	It returns a pointer to the destination string dest.
  */
