@@ -27,6 +27,8 @@ rootfs-keystone:
 	$(E2CP) $(BUILD)/scripts/itc.sh $(BUILD)/rootfs.ext2:/root/teep-broker
 	$(E2CP) $(BUILD)/scripts/rtc.sh $(BUILD)/rootfs.ext2:/root/teep-broker
 	$(E2CP) $(BUILD)/scripts/showtamurl.sh $(BUILD)/rootfs.ext2:/root/teep-broker
+	$(E2CP) $(BUILD)/scripts/get-ip.sh $(BUILD)/rootfs.ext2:/root/teep-broker
+	$(E2CP) $(BUILD)/scripts/cp_ta_to_tamproto.sh $(BUILD)/rootfs.ext2:/root/teep-broker
 	$(E2CP) $(KEYSTONE_SDK_DIR)/runtime/eyrie-rt $(BUILD)/rootfs.ext2:/root/teep-broker
 	$(E2CP) $(BUILD)/ree/mbedtls/library/lib* $(BUILD)/rootfs.ext2:/usr/lib
 	$(E2CP) $(BUILD)/ree/libwebsockets/lib/lib* $(BUILD)/rootfs.ext2:/usr/lib
@@ -44,6 +46,8 @@ rootfs-optee:
 	install $(BUILD)/scripts/itc.sh $(BUILD)/rootfs-ext/root/teep-broker
 	install $(BUILD)/scripts/rtc.sh $(BUILD)/rootfs-ext/root/teep-broker
 	install $(BUILD)/scripts/showtamurl.sh $(BUILD)/rootfs-ext/root/teep-broker
+	install $(BUILD)/scripts/get-ip.sh $(BUILD)/rootfs-ext/root/teep-broker
+	install $(BUILD)/scripts/cp_ta_to_tamproto.sh $(BUILD)/rootfs-ext/root/teep-broker
 	install $(BUILD)/ree/mbedtls/library/lib* $(BUILD)/rootfs-ext/usr/lib
 	install $(BUILD)/ree/libwebsockets/lib/lib* $(BUILD)/rootfs-ext/usr/lib
 
@@ -69,6 +73,8 @@ install-keystone:
 	install $(BUILD)/scripts/itc.sh $(INST_DIR)
 	install $(BUILD)/scripts/rtc.sh $(INST_DIR)
 	install $(BUILD)/scripts/showtamurl.sh $(INST_DIR)
+	install $(BUILD)/scripts/get-ip.sh $(INST_DIR)
+	install $(BUILD)/scripts/cp_ta_to_tamproto.sh $(INST_DIR)
 	install $(KEYSTONE_SDK_DIR)/runtime/eyrie-rt $(INST_DIR)
 	install $(BUILD)/ree/mbedtls/library/lib* $(prefix_lib)
 	install $(BUILD)/ree/libwebsockets/lib/lib* $(prefix_lib)
@@ -86,6 +92,8 @@ install-optee:
 	install $(BUILD)/scripts/itc.sh $(INST_DIR)
 	install $(BUILD)/scripts/rtc.sh $(INST_DIR)
 	install $(BUILD)/scripts/showtamurl.sh $(INST_DIR)
+	install $(BUILD)/scripts/get-ip.sh $(INST_DIR)
+	install $(BUILD)/scripts/cp_ta_to_tamproto.sh $(INST_DIR)
 	install $(BUILD)/ree/mbedtls/library/lib* $(prefix_lib)
 	install $(BUILD)/ree/libwebsockets/lib/lib* $(prefix_lib)
 	ldconfig $(prefix_lib)
