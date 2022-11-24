@@ -53,10 +53,10 @@ char *strncpy(char *dst, const char *src, size_t n)
   *(dst + n) = '\0';
   return dst;
 }
-#endif
+#endif /* defined(PLAT_KEYSTONE) || defined(PLAT_SGX) */
 
 #if defined(PLAT_KEYSTONE)
-char *local_strstr(const char *x, const char *y)
+static char *local_strstr(const char *x, const char *y)
 {
   if (*y == 0) return (char *)x;
   for (; *x; x++) {
@@ -70,9 +70,10 @@ char *local_strstr(const char *x, const char *y)
   }
   return NULL;
 }
-#endif
 
-#if defined(PLAT_KEYSTONE)
+//#define USE_SAFESTRSTR
+#ifdef  USE_SAFESTRSTR
+#define STRBUFSIZE 256
 /**
  * strstr() -  Returns a pointer to the first occurrence of needle in haystack,
  * or a null pointer if needle is not part of haystack.
@@ -85,8 +86,8 @@ char *local_strstr(const char *x, const char *y)
  */
 char *strstr(const char *haystack, const char *needle)
 {
-   static char buf[512];
-   static char find_buf[512];
+   static char buf[STRBUFSIZE];
+   static char find_buf[STRBUFSIZE];
    char *ret;
 
    /* make sure the haystack, needle will be null terminated */
@@ -105,5 +106,11 @@ char *strstr(const char *haystack, const char *needle)
 
    return ret;
 }
-#endif
+#else /* USE_SAFESTRSTR */
+char *strstr(const char *haystack, const char *needle)
+{
+   return local_strstr(haystack, needle);;
+}
+#endif /* USE_SAFESTRSTR */
+#endif /* PLAT_KEYSTONE */
 
