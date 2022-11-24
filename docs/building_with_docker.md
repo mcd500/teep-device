@@ -776,51 +776,266 @@ $ make run-sample-session
 Trimmed output of the TEEP-Device
 
 ```console
-M/TA: command: 20
-M/TA: execute suit-set-parameters
-M/TA: command: 1
-M/TA: execute suit-condition-vendor-identifier
-M/TA: command: 2
-M/TA: execute suit-condition-class-identifier
-M/TA: command: 19
-M/TA: execute suit-set-parameters
-M/TA: command: 21
-M/TA: execute suit-directive-fetch
-M/TA: fetch_and_store component
-M/TA: component download 55976
-M/TA: store component
-M/TA:   device   = TEEP-Device
-M/TA:   storage  = SecureFS
-M/TA:   filename = 8d82573a-926d-4754-9353-32dc29997f74.ta
+...
+...
+...
+FI stub: Booting Linux Kernel...
+EFI stub: EFI_RNG_PROTOCOL unavailable, no randomness supplied
+EFI stub: Using DTB from configuration table
+EFI stub: Exiting boot services and installing virtual address map...
+Starting syslogd: OK
+Starting klogd: OK
+Initializing random number generator... [    3.248115] random: dd: uninitialized urandom read (512 bytes read)
+done.
+Set permissions on /dev/tee*: OK
+Set permissions on /dev/ion: OK
+Create/set permissions on /data/tee: OK
+Starting tee-supplicant: OK
+Starting network: OK
+Starting network (udhcpc): OK
+
+Welcome to Buildroot, type root or test to login
+buildroot login: root
+#  done, guest is booted.
+
+export LD_LIBRARY_PATH=/lib:/lib/arm-linux-gnueabihf:/lib/optee_armtz:/usr/lib
+# cd teep-broker
+# ls -l
+total 4224
+-rwxr-xr-x    1 root     root           567 Nov 24 06:51 cp_ta_to_tamproto.sh
+-rwxr-xr-x    1 root     root           153 Nov 24 06:51 env.sh
+-rwxr-xr-x    1 root     root           290 Nov 24 06:51 get-ip.sh
+-rwxr-xr-x    1 root     root         14112 Nov 24 06:51 hello-app
+-rwxr-xr-x    1 root     root            65 Nov 24 06:51 itc.sh
+-rwxr-xr-x    1 root     root           116 Nov 24 06:51 rtc.sh
+-rwxr-xr-x    1 root     root           134 Nov 24 06:51 showtamurl.sh
+-rwxr-xr-x    1 root     root       4280472 Nov 24 06:51 teep-broker-app
+# ./hello-app
+hello-app: TEEC_Opensession failed with code 0xffff0008 origin 0x3
+# ./teep-broker-app --tamurl http://tamproto_tam_api_1:8888/api/tam_cbor
+teep-broker.c compiled at Nov 24 2022 06:51:18
+uri = http://tamproto_tam_api_1:8888/api/tam_cbor, cose=0, talist=
+[2022/11/24 06:52:30:1216] N: POST: http://tamproto_tam_api_1:8888/api/tam_cbor
+[2022/11/24 06:52:30:1226] N: (hexdump: zero length)
+[2022/11/24 06:52:30:1270] N: http://tamproto_tam_api_1:8888/api/tam_cbor
+[2022/11/24 06:52:30:1915] N: 
+[2022/11/24 06:52:30:1923] N: 0000: 83 01 A5 01 81 01 03 81 00 04 43 01 02 05 14 48    ..........C....H
+[2022/11/24 06:52:30:1929] N: 0010: 77 77 77 77 77 77 77 77 15 81 00 02                wwwwwwww....    
+[2022/11/24 06:52:30:1932] N: 
+[2022/11/24 06:52:30:2009] N: POST: http://tamproto_tam_api_1:8888/api/tam_cbor
+[2022/11/24 06:52:30:2013] N: 
+[2022/11/24 06:52:30:2016] N: 0000: 82 02 A4 14 48 77 77 77 77 77 77 77 77 08 80 0E    ....Hwwwwwwww...
+[2022/11/24 06:52:30:2020] N: 0010: 80 0F 80                                           ...             
+[2022/11/24 06:52:30:2023] N: 
+[2022/11/24 06:52:30:2033] N: http://tamproto_tam_api_1:8888/api/tam_cbor
+[2022/11/24 06:52:30:2215] N: 
+[2022/11/24 06:52:30:2217] N: 0000: 82 03 A2 0A 81 59 01 66 D8 6B A2 02 58 73 82 58    .....Y.f.k..Xs.X
+[2022/11/24 06:52:30:2222] N: 0010: 24 82 2F 58 20 63 70 90 82 1C BB B2 67 95 42 78    $./X cp.....g.Bx
+[2022/11/24 06:52:30:2226] N: 0020: 7B 49 F4 5E 14 AF 0C BF AD 9E F4 A4 F0 B3 42 B9    {I.^..........B.
+[2022/11/24 06:52:30:2229] N: 0030: 23 35 56 05 AF 58 4A D2 84 43 A1 01 26 A0 F6 58    #5V..XJ..C..&..X
+[2022/11/24 06:52:30:2233] N: 0040: 40 91 2A 3A BF 8A 24 6E 5A A1 A7 69 D6 8F 12 DB    @.*:..$nZ..i....
+[2022/11/24 06:52:30:2236] N: 0050: 8F D1 FF F3 11 9F 02 58 C0 A4 B2 8F FF D0 6C A9    .......X......l.
+[2022/11/24 06:52:30:2242] N: 0060: 96 75 B1 43 37 B1 8C B9 73 58 15 05 5E F4 39 3A    .u.C7...sX..^.9:
+[2022/11/24 06:52:30:2246] N: 0070: 88 D7 DC B2 06 5D 58 F4 8C 70 78 D1 70 C3 1B 7B    .....]X..px.p..{
+[2022/11/24 06:52:30:2250] N: 0080: 4F 03 58 EA A5 01 01 02 01 03 58 86 A2 02 81 84    O.X.......X.....
+[2022/11/24 06:52:30:2253] N: 0090: 4B 54 45 45 50 2D 44 65 76 69 63 65 48 53 65 63    KTEEP-DeviceHSec
+[2022/11/24 06:52:30:2257] N: 00A0: 75 72 65 46 53 50 8D 82 57 3A 92 6D 47 54 93 53    ureFSP..W:.mGT.S
+[2022/11/24 06:52:30:2261] N: 00B0: 32 DC 29 99 7F 74 42 74 61 04 58 56 86 14 A4 01    2.)..tBta.XV....
+[2022/11/24 06:52:30:2264] N: 00C0: 50 FA 6B 4A 53 D5 AD 5F DF BE 9D E6 63 E4 D4 1F    P.kJS.._....c...
+[2022/11/24 06:52:30:2268] N: 00D0: FE 02 50 14 92 AF 14 25 69 5E 48 BF 42 9B 2D 51    ..P....%i^H.B.-Q
+[2022/11/24 06:52:30:2271] N: 00E0: F2 AB 45 03 58 24 82 2F 58 20 00 11 22 33 44 55    ..E.X$./X ..3DU
+[2022/11/24 06:52:30:2274] N: 00F0: 66 77 88 99 AA BB CC DD EE FF 01 23 45 67 89 AB    fw.........#Eg..
+[2022/11/24 06:52:30:2278] N: 0100: CD EF FE DC BA 98 76 54 32 10 0E 19 87 D0 01 0F    ......vT2.......
+[2022/11/24 06:52:30:2285] N: 0110: 02 0F 09 58 54 86 13 A1 15 78 4A 68 74 74 70 3A    ...XT....xJhttp:
+[2022/11/24 06:52:30:2289] N: 0120: 2F 2F 74 61 6D 70 72 6F 74 6F 5F 74 61 6D 5F 61    //tamproto_tam_a
+[2022/11/24 06:52:30:2292] N: 0130: 70 69 5F 31 3A 38 38 38 38 2F 54 41 73 2F 38 64    pi_1:8888/TAs/8d
+[2022/11/24 06:52:30:2297] N: 0140: 38 32 35 37 33 61 2D 39 32 36 64 2D 34 37 35 34    82573a-926d-4754
+[2022/11/24 06:52:30:2301] N: 0150: 2D 39 33 35 33 2D 33 32 64 63 32 39 39 39 37 66    -9353-32dc29997f
+[2022/11/24 06:52:30:2305] N: 0160: 37 34 2E 74 61 15 02 03 0F 0A 43 82 03 0F 14 48    74.ta.....C....H
+[2022/11/24 06:52:30:2309] N: 0170: AB A1 A2 A3 A4 A5 A6 A7                            ........        
+[2022/11/24 06:52:30:2312] N: 
+[2022/11/24 06:52:30:5524] N: GET: http://tamproto_tam_api_1:8888/TAs/8d82573a-926d-4754-9353-32dc29997f74.ta
+[2022/11/24 06:52:30:5539] N: http://tamproto_tam_api_1:8888/TAs/8d82573a-926d-4754-9353-32dc29997f74.ta
+[2022/11/24 06:52:30:6340] N: POST: http://tamproto_tam_api_1:8888/api/tam_cbor
+[2022/11/24 06:52:30:6344] N: 
+[2022/11/24 06:52:30:6348] N: 0000: 82 05 A1 14 48 77 77 77 77 77 77 77 77             ....Hwwwwwwww   
+[2022/11/24 06:52:30:6352] N: 
+[2022/11/24 06:52:30:6359] N: http://tamproto_tam_api_1:8888/api/tam_cbor
+[2022/11/24 06:52:30:6513] N: (hexdump: zero length)
+# ls -l
+total 4224
+-rwxr-xr-x    1 root     root           567 Nov 24 06:51 cp_ta_to_tamproto.sh
+-rwxr-xr-x    1 root     root           153 Nov 24 06:51 env.sh
+-rwxr-xr-x    1 root     root           290 Nov 24 06:51 get-ip.sh
+-rwxr-xr-x    1 root     root         14112 Nov 24 06:51 hello-app
+-rwxr-xr-x    1 root     root            65 Nov 24 06:51 itc.sh
+-rwxr-xr-x    1 root     root           116 Nov 24 06:51 rtc.sh
+-rwxr-xr-x    1 root     root           134 Nov 24 06:51 showtamurl.sh
+-rwxr-xr-x    1 root     root       4280472 Nov 24 06:51 teep-broker-app
+# ./hello-app
+#  done
+
+cat /home/user/optee/out/bin/serial1.log
+D/TC:0   add_phys_mem:586 TEE_SHMEM_START type NSEC_SHM 0x42000000 size 0x00200000
+D/TC:0   add_phys_mem:586 TA_RAM_START type TA_RAM 0x0e300000 size 0x00d00000
+D/TC:0   add_phys_mem:586 VCORE_UNPG_RW_PA type TEE_RAM_RW 0x0e160000 size 0x001a0000
+D/TC:0   add_phys_mem:586 VCORE_UNPG_RX_PA type TEE_RAM_RX 0x0e100000 size 0x00060000
+D/TC:0   add_phys_mem:586 ROUNDDOWN(0x09040000, CORE_MMU_PGDIR_SIZE) type IO_SEC 0x09000000 size 0x00200000
+D/TC:0   verify_special_mem_areas:524 No NSEC DDR memory area defined
+D/TC:0   add_va_space:625 type RES_VASPACE size 0x00a00000
+D/TC:0   add_va_space:625 type SHM_VASPACE size 0x02000000
+D/TC:0   init_mem_map:1129 Mapping core at 0xd4942000 offs 0xc6842000
+D/TC:0   dump_mmap_table:737 type IDENTITY_MAP_RX va 0x0e100000..0x0e101fff pa 0x0e100000..0x0e101fff size 0x00002000 (smallpg)
+D/TC:0   dump_mmap_table:737 type TEE_RAM_RX   va 0xd4942000..0xd49a1fff pa 0x0e100000..0x0e15ffff size 0x00060000 (smallpg)
+D/TC:0   dump_mmap_table:737 type TEE_RAM_RW   va 0xd49a2000..0xd4b41fff pa 0x0e160000..0x0e2fffff size 0x001a0000 (smallpg)
+D/TC:0   dump_mmap_table:737 type TA_RAM       va 0xd4d00000..0xd59fffff pa 0x0e300000..0x0effffff size 0x00d00000 (smallpg)
+D/TC:0   dump_mmap_table:737 type RES_VASPACE  va 0xd5a00000..0xd63fffff pa 0x00000000..0x009fffff size 0x00a00000 (pgdir)
+D/TC:0   dump_mmap_table:737 type SHM_VASPACE  va 0xd6400000..0xd83fffff pa 0x00000000..0x01ffffff size 0x02000000 (pgdir)
+D/TC:0   dump_mmap_table:737 type IO_SEC       va 0xd8400000..0xd85fffff pa 0x09000000..0x091fffff size 0x00200000 (pgdir)
+D/TC:0   dump_mmap_table:737 type NSEC_SHM     va 0xd8600000..0xd87fffff pa 0x42000000..0x421fffff size 0x00200000 (pgdir)
+D/TC:0   core_mmu_entry_to_finer_grained:762 xlat tables used 1 / 7
+D/TC:0   core_mmu_entry_to_finer_grained:762 xlat tables used 2 / 7
+D/TC:0   core_mmu_entry_to_finer_grained:762 xlat tables used 3 / 7
+D/TC:0   core_mmu_entry_to_finer_grained:762 xlat tables used 4 / 7
+D/TC:0   core_mmu_entry_to_finer_grained:762 xlat tables used 5 / 7
+D/TC:0   core_mmu_entry_to_finer_grained:762 xlat tables used 6 / 7
+I/TC: 
+D/TC:0 0 init_canaries:188 #Stack canaries for stack_tmp[0] with top at 0xd49d6ab8
+D/TC:0 0 init_canaries:188 watch *0xd49d6abc
+D/TC:0 0 init_canaries:188 #Stack canaries for stack_tmp[1] with top at 0xd49d72f8
+D/TC:0 0 init_canaries:188 watch *0xd49d72fc
+D/TC:0 0 init_canaries:188 #Stack canaries for stack_tmp[2] with top at 0xd49d7b38
+D/TC:0 0 init_canaries:188 watch *0xd49d7b3c
+D/TC:0 0 init_canaries:188 #Stack canaries for stack_tmp[3] with top at 0xd49d8378
+D/TC:0 0 init_canaries:188 watch *0xd49d837c
+D/TC:0 0 init_canaries:189 #Stack canaries for stack_abt[0] with top at 0xd49cfd38
+D/TC:0 0 init_canaries:189 watch *0xd49cfd3c
+D/TC:0 0 init_canaries:189 #Stack canaries for stack_abt[1] with top at 0xd49d0978
+D/TC:0 0 init_canaries:189 watch *0xd49d097c
+D/TC:0 0 init_canaries:189 #Stack canaries for stack_abt[2] with top at 0xd49d15b8
+D/TC:0 0 init_canaries:189 watch *0xd49d15bc
+D/TC:0 0 init_canaries:189 #Stack canaries for stack_abt[3] with top at 0xd49d21f8
+D/TC:0 0 init_canaries:189 watch *0xd49d21fc
+D/TC:0 0 init_canaries:191 #Stack canaries for stack_thread[0] with top at 0xd49d4238
+D/TC:0 0 init_canaries:191 watch *0xd49d423c
+D/TC:0 0 init_canaries:191 #Stack canaries for stack_thread[1] with top at 0xd49d6278
+D/TC:0 0 init_canaries:191 watch *0xd49d627c
+D/TC:0 0 select_vector:1118 SMCCC_ARCH_WORKAROUND_1 (0x80008000) available
+D/TC:0 0 select_vector:1119 SMC Workaround for CVE-2017-5715 used
+I/TC: Non-secure external DT found
+D/TC:0 0 carve_out_phys_mem:286 No need to carve out 0xe100000 size 0x200000
+D/TC:0 0 carve_out_phys_mem:286 No need to carve out 0xe300000 size 0xd00000
+I/TC: Switching console to device: /pl011@9040000
+I/TC: OP-TEE version: 3.10.0-dev (gcc version 8.3.0
+ (GNU Toolchain for the A-profile Architecture 8.3-2019.03 (arm-rel-8.36))) #1 Mon 21 Nov 2022 11:59:41 AM UTC aarch64
+I/TC: Primary CPU initializing
+D/TC:0 0 paged_init_primary:1188 Executing at offset 0xc6842000 with virtual load address 0xd4942000
+D/TC:0 0 call_initcalls:21 level 1 register_time_source()
+D/TC:0 0 call_initcalls:21 level 1 teecore_init_pub_ram()
+D/TC:0 0 call_initcalls:21 level 3 check_ta_store()
+D/TC:0 0 check_ta_store:636 TA store: "Secure Storage TA"
+D/TC:0 0 check_ta_store:636 TA store: "REE"
+D/TC:0 0 call_initcalls:21 level 3 init_user_ta()
+D/TC:0 0 call_initcalls:21 level 3 verify_pseudo_tas_conformance()
+D/TC:0 0 call_initcalls:21 level 3 mobj_mapped_shm_init()
+D/TC:0 0 mobj_mapped_shm_init:434 Shared memory address range: d6400000, d8400000
+D/TC:0 0 call_initcalls:21 level 3 tee_cryp_init()
+D/TC:0 0 call_initcalls:21 level 4 tee_fs_init_key_manager()
+D/TC:0 0 call_initcalls:21 level 6 mobj_init()
+D/TC:0 0 call_initcalls:21 level 6 default_mobj_init()
+D/TC:0 0 call_finalcalls:40 level 1 release_external_dt()
+I/TC: Primary CPU switching to normal world boot
+I/TC: Secondary CPU 1 initializing
+D/TC:1   select_vector:1118 SMCCC_ARCH_WORKAROUND_1 (0x80008000) available
+D/TC:1   select_vector:1119 SMC Workaround for CVE-2017-5715 used
+I/TC: Secondary CPU 1 switching to normal world boot
+D/TC:1   tee_entry_exchange_capabilities:102 Dynamic shared memory is enabled
+D/TC:1 0 core_mmu_entry_to_finer_grained:762 xlat tables used 7 / 7
+D/TC:? 0 tee_ta_init_pseudo_ta_session:283 Lookup pseudo TA 7011a688-ddde-4053-a5a9-7b3c4ddf13b8
+D/TC:? 0 tee_ta_init_pseudo_ta_session:296 Open device.pta
+D/TC:? 0 tee_ta_init_pseudo_ta_session:310 device.pta : 7011a688-ddde-4053-a5a9-7b3c4ddf13b8
+D/TC:? 0 tee_ta_close_session:499 csess 0xd49bea00 id 1
+D/TC:? 0 tee_ta_close_session:518 Destroy session
+D/TC:? 0 tee_ta_init_pseudo_ta_session:283 Lookup pseudo TA 8d82573a-926d-4754-9353-32dc29997f74
+D/TC:? 0 load_ldelf:704 ldelf load address 0x40006000
+D/LD:  ldelf:134 Loading TA 8d82573a-926d-4754-9353-32dc29997f74
+D/TC:? 0 tee_ta_init_pseudo_ta_session:283 Lookup pseudo TA 3a2f8978-5dc0-11e8-9c2d-fa7ae01bbebc
+D/TC:? 0 tee_ta_init_pseudo_ta_session:296 Open system.pta
+D/TC:? 0 tee_ta_init_pseudo_ta_session:310 system.pta : 3a2f8978-5dc0-11e8-9c2d-fa7ae01bbebc
+D/TC:? 0 system_open_ta_binary:257 Lookup user TA ELF 8d82573a-926d-4754-9353-32dc29997f74 (Secure Storage TA)
+D/TC:? 0 system_open_ta_binary:260 res=0xffff0008
+D/TC:? 0 system_open_ta_binary:257 Lookup user TA ELF 8d82573a-926d-4754-9353-32dc29997f74 (REE)
+D/TC:? 0 system_open_ta_binary:260 res=0xffff0008
+D/TC:? 0 tee_ta_invoke_command:773 Error: ffff0008 of 4
+E/LD:  init_elf:438 sys_open_ta_bin(8d82573a-926d-4754-9353-32dc29997f74)
+E/TC:? 0 init_with_ldelf:232 ldelf failed with res: 0xffff0008
+D/TC:? 0 tee_ta_close_session:499 csess 0xd49be860 id 1
+D/TC:? 0 tee_ta_close_session:518 Destroy session
+D/TC:? 0 destroy_context:298 Destroy TA ctx (0xd49be800)
+D/TC:? 0 tee_ta_close_session:499 csess 0xd49be060 id 1
+D/TC:? 0 tee_ta_close_session:518 Destroy session
+E/TC:? 0 tee_ta_open_session:728 Failed. Return error 0xffff0008
+D/TC:? 0 tee_ta_init_pseudo_ta_session:283 Lookup pseudo TA 68373894-5bb3-403c-9eec-3114a1f5d3fc
+D/TC:? 0 load_ldelf:704 ldelf load address 0x40006000
+D/LD:  ldelf:134 Loading TA 68373894-5bb3-403c-9eec-3114a1f5d3fc
+D/TC:? 0 tee_ta_init_session_with_context:573 Re-open TA 3a2f8978-5dc0-11e8-9c2d-fa7ae01bbebc
+D/TC:? 0 system_open_ta_binary:257 Lookup user TA ELF 68373894-5bb3-403c-9eec-3114a1f5d3fc (Secure Storage TA)
+D/TC:? 0 system_open_ta_binary:260 res=0xffff0008
+D/TC:? 0 system_open_ta_binary:257 Lookup user TA ELF 68373894-5bb3-403c-9eec-3114a1f5d3fc (REE)
+D/TC:? 0 system_open_ta_binary:260 res=0x0
+D/LD:  ldelf:169 ELF (68373894-5bb3-403c-9eec-3114a1f5d3fc) at 0x4007c000
+D/TC:? 0 tee_ta_close_session:499 csess 0xd49bd340 id 1
+D/TC:? 0 tee_ta_close_session:518 Destroy session
+M/TA: TTRC:verifying signature of suit manifest
+M/TA: TTRC:verify OK
+M/TA: TTRC:command: 20
+M/TA: TTRC:execute suit-set-parameters
+M/TA: TTRC:command: 1
+M/TA: TTRC:execute suit-condition-vendor-identifier
+M/TA: TTRC:command: 2
+M/TA: TTRC:execute suit-condition-class-identifier
+M/TA: TTRC:command: 19
+M/TA: TTRC:execute suit-set-parameters
+M/TA: TTRC:command: 21
+M/TA: TTRC:execute suit-directive-fetch
+M/TA: TTRC:fetch_and_store component
+M/TA: TTRC:component download 55976
+M/TA: TTRC:ta-store.c: store_component() store component
+M/TA: TTRC:  device   = TEEP-Device
+M/TA: TTRC:  storage  = SecureFS
+M/TA: TTRC:  filename = 8d82573a-926d-4754-9353-32dc29997f74.ta
+M/TA: TTRC:  image_len = 55976
 D/TC:? 0 tee_ta_init_pseudo_ta_session:283 Lookup pseudo TA 6e256cba-fc4d-4941-ad09-2ca1860342dd
 D/TC:? 0 tee_ta_init_pseudo_ta_session:296 Open secstor_ta_mgmt
 D/TC:? 0 tee_ta_init_pseudo_ta_session:310 secstor_ta_mgmt : 6e256cba-fc4d-4941-ad09-2ca1860342dd
 D/TC:? 0 install_ta:99 Installing 8d82573a-926d-4754-9353-32dc29997f74
-D/TC:? 0 tee_ta_close_session:499 csess 0xc09491c0 id 1
+D/TC:? 0 tee_ta_close_session:499 csess 0xd49bbfa0 id 1
 D/TC:? 0 tee_ta_close_session:518 Destroy session
-M/TA: finish fetch
-M/TA: command: 3
-M/TA: execute suit-condition-image-match
-M/TA: end of command seq
-D/TC:? 0 tee_ta_close_session:499 csess 0xc094ab40 id 1
+M/TA: TTRC:finish fetch
+M/TA: TTRC:command: 3
+M/TA: TTRC:execute suit-condition-image-match
+M/TA: TTRC:end of command seq
+D/TC:? 0 tee_ta_close_session:499 csess 0xd49bdb40 id 1
 D/TC:? 0 tee_ta_close_session:518 Destroy session
-D/TC:? 0 destroy_context:298 Destroy TA ctx (0xc094aae0)
+D/TC:? 0 destroy_context:298 Destroy TA ctx (0xd49bdae0)
 D/TC:? 0 tee_ta_init_pseudo_ta_session:283 Lookup pseudo TA 8d82573a-926d-4754-9353-32dc29997f74
 D/TC:? 0 load_ldelf:704 ldelf load address 0x40006000
 D/LD:  ldelf:134 Loading TA 8d82573a-926d-4754-9353-32dc29997f74
 D/TC:? 0 tee_ta_init_session_with_context:573 Re-open TA 3a2f8978-5dc0-11e8-9c2d-fa7ae01bbebc
 D/TC:? 0 system_open_ta_binary:257 Lookup user TA ELF 8d82573a-926d-4754-9353-32dc29997f74 (Secure Storage TA)
 D/TC:? 0 system_open_ta_binary:260 res=0x0
-D/LD:  ldelf:169 ELF (8d82573a-926d-4754-9353-32dc29997f74) at 0x40066000
-D/TC:? 0 tee_ta_close_session:499 csess 0xc0948820 id 1
+D/LD:  ldelf:169 ELF (8d82573a-926d-4754-9353-32dc29997f74) at 0x4003a000
+D/TC:? 0 tee_ta_close_session:499 csess 0xd49bb600 id 1
 D/TC:? 0 tee_ta_close_session:518 Destroy session
-
 Hello TEEP from TEE!
-
-D/TC:? 0 tee_ta_close_session:499 csess 0xc0949020 id 1
+D/TC:? 0 tee_ta_close_session:499 csess 0xd49bbe00 id 1
 D/TC:? 0 tee_ta_close_session:518 Destroy session
-D/TC:? 0 destroy_context:298 Destroy TA ctx (0xc0948fc0)
-make[1]: Leaving directory '/home/user/teep-device/platform/op-tee'
+D/TC:? 0 destroy_context:298 Destroy TA ctx (0xd49bbda0)
+! fgrep 'ERR:' /home/user/optee/out/bin/serial1.log
+fgrep 'Hello TEEP from TEE!' /home/user/optee/out/bin/serial1.log
+Hello TEEP from TEE!
+make[1]: Leaving directory '/home/user/teep-device/sample'
+build-user@1364029c42f3:~/teep-device$ 
 ```
 
 Cleaning built binaries. Deleting the built binaries are required when starting to build TEEP-Device on other CPU architectures otherwise will generate errors.
