@@ -876,55 +876,9 @@ total 4224
 #  done
 
 cat /home/user/optee/out/bin/serial1.log
-D/TC:0   add_phys_mem:586 TEE_SHMEM_START type NSEC_SHM 0x42000000 size 0x00200000
-D/TC:0   add_phys_mem:586 TA_RAM_START type TA_RAM 0x0e300000 size 0x00d00000
-D/TC:0   add_phys_mem:586 VCORE_UNPG_RW_PA type TEE_RAM_RW 0x0e160000 size 0x001a0000
-D/TC:0   add_phys_mem:586 VCORE_UNPG_RX_PA type TEE_RAM_RX 0x0e100000 size 0x00060000
-D/TC:0   add_phys_mem:586 ROUNDDOWN(0x09040000, CORE_MMU_PGDIR_SIZE) type IO_SEC 0x09000000 size 0x00200000
-D/TC:0   verify_special_mem_areas:524 No NSEC DDR memory area defined
-D/TC:0   add_va_space:625 type RES_VASPACE size 0x00a00000
-D/TC:0   add_va_space:625 type SHM_VASPACE size 0x02000000
-D/TC:0   init_mem_map:1129 Mapping core at 0xd4942000 offs 0xc6842000
-D/TC:0   dump_mmap_table:737 type IDENTITY_MAP_RX va 0x0e100000..0x0e101fff pa 0x0e100000..0x0e101fff size 0x00002000 (smallpg)
-D/TC:0   dump_mmap_table:737 type TEE_RAM_RX   va 0xd4942000..0xd49a1fff pa 0x0e100000..0x0e15ffff size 0x00060000 (smallpg)
-D/TC:0   dump_mmap_table:737 type TEE_RAM_RW   va 0xd49a2000..0xd4b41fff pa 0x0e160000..0x0e2fffff size 0x001a0000 (smallpg)
-D/TC:0   dump_mmap_table:737 type TA_RAM       va 0xd4d00000..0xd59fffff pa 0x0e300000..0x0effffff size 0x00d00000 (smallpg)
-D/TC:0   dump_mmap_table:737 type RES_VASPACE  va 0xd5a00000..0xd63fffff pa 0x00000000..0x009fffff size 0x00a00000 (pgdir)
-D/TC:0   dump_mmap_table:737 type SHM_VASPACE  va 0xd6400000..0xd83fffff pa 0x00000000..0x01ffffff size 0x02000000 (pgdir)
-D/TC:0   dump_mmap_table:737 type IO_SEC       va 0xd8400000..0xd85fffff pa 0x09000000..0x091fffff size 0x00200000 (pgdir)
-D/TC:0   dump_mmap_table:737 type NSEC_SHM     va 0xd8600000..0xd87fffff pa 0x42000000..0x421fffff size 0x00200000 (pgdir)
-D/TC:0   core_mmu_entry_to_finer_grained:762 xlat tables used 1 / 7
-D/TC:0   core_mmu_entry_to_finer_grained:762 xlat tables used 2 / 7
-D/TC:0   core_mmu_entry_to_finer_grained:762 xlat tables used 3 / 7
-D/TC:0   core_mmu_entry_to_finer_grained:762 xlat tables used 4 / 7
-D/TC:0   core_mmu_entry_to_finer_grained:762 xlat tables used 5 / 7
-D/TC:0   core_mmu_entry_to_finer_grained:762 xlat tables used 6 / 7
-I/TC: 
-D/TC:0 0 init_canaries:188 #Stack canaries for stack_tmp[0] with top at 0xd49d6ab8
-D/TC:0 0 init_canaries:188 watch *0xd49d6abc
-D/TC:0 0 init_canaries:188 #Stack canaries for stack_tmp[1] with top at 0xd49d72f8
-D/TC:0 0 init_canaries:188 watch *0xd49d72fc
-D/TC:0 0 init_canaries:188 #Stack canaries for stack_tmp[2] with top at 0xd49d7b38
-D/TC:0 0 init_canaries:188 watch *0xd49d7b3c
-D/TC:0 0 init_canaries:188 #Stack canaries for stack_tmp[3] with top at 0xd49d8378
-D/TC:0 0 init_canaries:188 watch *0xd49d837c
-D/TC:0 0 init_canaries:189 #Stack canaries for stack_abt[0] with top at 0xd49cfd38
-D/TC:0 0 init_canaries:189 watch *0xd49cfd3c
-D/TC:0 0 init_canaries:189 #Stack canaries for stack_abt[1] with top at 0xd49d0978
-D/TC:0 0 init_canaries:189 watch *0xd49d097c
-D/TC:0 0 init_canaries:189 #Stack canaries for stack_abt[2] with top at 0xd49d15b8
-D/TC:0 0 init_canaries:189 watch *0xd49d15bc
-D/TC:0 0 init_canaries:189 #Stack canaries for stack_abt[3] with top at 0xd49d21f8
-D/TC:0 0 init_canaries:189 watch *0xd49d21fc
-D/TC:0 0 init_canaries:191 #Stack canaries for stack_thread[0] with top at 0xd49d4238
-D/TC:0 0 init_canaries:191 watch *0xd49d423c
-D/TC:0 0 init_canaries:191 #Stack canaries for stack_thread[1] with top at 0xd49d6278
-D/TC:0 0 init_canaries:191 watch *0xd49d627c
-D/TC:0 0 select_vector:1118 SMCCC_ARCH_WORKAROUND_1 (0x80008000) available
-D/TC:0 0 select_vector:1119 SMC Workaround for CVE-2017-5715 used
-I/TC: Non-secure external DT found
-D/TC:0 0 carve_out_phys_mem:286 No need to carve out 0xe100000 size 0x200000
-D/TC:0 0 carve_out_phys_mem:286 No need to carve out 0xe300000 size 0xd00000
+
+...
+...
 I/TC: Switching console to device: /pl011@9040000
 I/TC: OP-TEE version: 3.10.0-dev (gcc version 8.3.0
  (GNU Toolchain for the A-profile Architecture 8.3-2019.03 (arm-rel-8.36))) #1 Mon 21 Nov 2022 11:59:41 AM UTC aarch64
@@ -1096,50 +1050,171 @@ $ make run-sample-session
 Trimmed output of the run.
 
 ```console
--rw-r--r-- 1 build-user build-user 326986 Sep  8 07:01 embed-tc.suit
--rw-r--r-- 1 build-user build-user    209 Sep  8 07:01 embed-tc.suit.tmp
--rw-r--r-- 1 build-user build-user    690 Sep  8 07:01 embed.json
--rw-rw-rw- 1 root       root         1901 Sep  8 07:00 enclave.mk
--rw-r--r-- 1 build-user build-user 326768 Sep  8 07:01 enclave.signed.so
--rwxr-xr-x 1 build-user build-user 326768 Sep  8 07:01 enclave.so
--rw-r--r-- 1 build-user build-user    351 Sep  8 07:01 signed-download-tc.suit
--rw-r--r-- 1 build-user build-user 327062 Sep  8 07:01 signed-embed-tc.suit
-cd /builds/rinkai/teep-device/sample/../build/sgx/agent && \
-    ../broker/teep-broker-app --tamurl http://172.17.0.26:8888/api/tam_cbor | \
-    tee /builds/rinkai/teep-device/sample/../build/sgx/sgx.log
+build-user@4fcbd11fb97c:~/teep-device$ make run-sample-session
+make -C sample run-session TAM_URL=http://tamproto_tam_api_1:8888
+make[1]: Entering directory '/home/user/teep-device/sample'
+make -C /home/user/teep-device/sample/../hello-tc/build-sgx 
+SOURCE=/home/user/teep-device/sample/../hello-tc upload-download-manifest
+make[2]: Entering directory '/home/user/teep-device/hello-tc/build-sgx'
+curl http://tamproto_tam_api_1:8888/panel/upload \
+	-F "file=@/home/user/teep-device/hello-tc/build-sgx/signed-download-tc.suit;
+	filename=integrated-payload-manifest.cbor"
+<!-- /*
+
+...
+...
+...
+[__create_enclave /home/user/linux-sgx/psw/urts/urts_com.h:332] add tcs 0x7f62b7fe9000
+[__create_enclave /home/user/linux-sgx/psw/urts/urts_com.h:332] add tcs 0x7f62b841d000
+[__create_enclave /home/user/linux-sgx/psw/urts/urts_com.h:332] add tcs 0x7f62b8851000
+[__create_enclave /home/user/linux-sgx/psw/urts/urts_com.h:332] add tcs 0x7f62b8c85000
+[__create_enclave /home/user/linux-sgx/psw/urts/urts_com.h:332] add tcs 0x7f62b90b9000
+[__create_enclave /home/user/linux-sgx/psw/urts/urts_com.h:332] add tcs 0x7f62b94ed000
+[__create_enclave /home/user/linux-sgx/psw/urts/urts_com.h:342] Debug enclave. Checking if VTune is profiling or SGX_DBG_OPTIN is set
+[read_cpusvn_file ../cpusvn_util.cpp:96] Couldn't find/open the configuration file /home/user/.cpusvn.conf.
+[2022/11/24 07:06:03:9250] N: POST: http://tamproto_tam_api_1:8888/api/tam_cbor
+[2022/11/24 07:06:03:9250] N: (hexdump: zero length)
+[2022/11/24 07:06:03:9250] N: http://tamproto_tam_api_1:8888/api/tam_cbor
+[2022/11/24 07:06:03:9329] N: 
+[2022/11/24 07:06:03:9329] N: 0000: 83 01 A5 01 81 01 03 81 00 04 43 01 02 05 14 48    ..........C....H
+[2022/11/24 07:06:03:9329] N: 0010: 77 77 77 77 77 77 77 77 15 81 00 02                wwwwwwww....    
+[2022/11/24 07:06:03:9330] N: 
+[2022/11/24 07:06:03:9330] N: POST: http://tamproto_tam_api_1:8888/api/tam_cbor
+[2022/11/24 07:06:03:9330] N: 
+[2022/11/24 07:06:03:9330] N: 0000: 82 02 A4 14 48 77 77 77 77 77 77 77 77 08 80 0E    ....Hwwwwwwww...
+[2022/11/24 07:06:03:9330] N: 0010: 80 0F 80                                           ...             
+[2022/11/24 07:06:03:9330] N: 
+[2022/11/24 07:06:03:9331] N: http://tamproto_tam_api_1:8888/api/tam_cbor
+[2022/11/24 07:06:03:9393] N: 
+[2022/11/24 07:06:03:9393] N: 0000: 82 03 A2 0A 81 59 01 66 D8 6B A2 02 58 73 82 58    .....Y.f.k..Xs.X
+[2022/11/24 07:06:03:9393] N: 0010: 24 82 2F 58 20 63 70 90 82 1C BB B2 67 95 42 78    $./X cp.....g.Bx
+[2022/11/24 07:06:03:9393] N: 0020: 7B 49 F4 5E 14 AF 0C BF AD 9E F4 A4 F0 B3 42 B9    {I.^..........B.
+[2022/11/24 07:06:03:9393] N: 0030: 23 35 56 05 AF 58 4A D2 84 43 A1 01 26 A0 F6 58    #5V..XJ..C..&..X
+[2022/11/24 07:06:03:9393] N: 0040: 40 12 4A E1 1D DB DA 8A F7 FE 39 D2 57 D3 27 FF    @.J.......9.W.'.
+[2022/11/24 07:06:03:9393] N: 0050: 28 E6 F3 EF D9 E2 7A AD A9 70 B8 50 A3 EA 43 3C    (.....z..p.P..C<
+[2022/11/24 07:06:03:9393] N: 0060: 94 DC B3 58 6D E9 B0 21 EF 50 4B F7 02 81 A4 AF    ...Xm..!.PK.....
+[2022/11/24 07:06:03:9393] N: 0070: 7D DF 7E E6 57 2A F0 07 0A 89 3D E4 B7 BA 99 5F    }.~.W*....=...._
+[2022/11/24 07:06:03:9393] N: 0080: E3 03 58 EA A5 01 01 02 01 03 58 86 A2 02 81 84    ..X.......X.....
+[2022/11/24 07:06:03:9393] N: 0090: 4B 54 45 45 50 2D 44 65 76 69 63 65 48 53 65 63    KTEEP-DeviceHSec
+[2022/11/24 07:06:03:9393] N: 00A0: 75 72 65 46 53 50 8D 82 57 3A 92 6D 47 54 93 53    ureFSP..W:.mGT.S
+[2022/11/24 07:06:03:9393] N: 00B0: 32 DC 29 99 7F 74 42 74 61 04 58 56 86 14 A4 01    2.)..tBta.XV....
+[2022/11/24 07:06:03:9394] N: 00C0: 50 FA 6B 4A 53 D5 AD 5F DF BE 9D E6 63 E4 D4 1F    P.kJS.._....c...
+[2022/11/24 07:06:03:9394] N: 00D0: FE 02 50 14 92 AF 14 25 69 5E 48 BF 42 9B 2D 51    ..P....%i^H.B.-Q
+[2022/11/24 07:06:03:9394] N: 00E0: F2 AB 45 03 58 24 82 2F 58 20 00 11 22 33 44 55    ..E.X$./X ..3DU
+[2022/11/24 07:06:03:9394] N: 00F0: 66 77 88 99 AA BB CC DD EE FF 01 23 45 67 89 AB    fw.........#Eg..
+[2022/11/24 07:06:03:9394] N: 0100: CD EF FE DC BA 98 76 54 32 10 0E 19 87 D0 01 0F    ......vT2.......
+[2022/11/24 07:06:03:9394] N: 0110: 02 0F 09 58 54 86 13 A1 15 78 4A 68 74 74 70 3A    ...XT....xJhttp:
+[2022/11/24 07:06:03:9394] N: 0120: 2F 2F 74 61 6D 70 72 6F 74 6F 5F 74 61 6D 5F 61    //tamproto_tam_a
+[2022/11/24 07:06:03:9394] N: 0130: 70 69 5F 31 3A 38 38 38 38 2F 54 41 73 2F 38 64    pi_1:8888/TAs/8d
+[2022/11/24 07:06:03:9394] N: 0140: 38 32 35 37 33 61 2D 39 32 36 64 2D 34 37 35 34    82573a-926d-4754
+[2022/11/24 07:06:03:9394] N: 0150: 2D 39 33 35 33 2D 33 32 64 63 32 39 39 39 37 66    -9353-32dc29997f
+[2022/11/24 07:06:03:9394] N: 0160: 37 34 2E 74 61 15 02 03 0F 0A 43 82 03 0F 14 48    74.ta.....C....H
+[2022/11/24 07:06:03:9394] N: 0170: AB A1 A2 A3 A4 A5 A6 A7                            ........        
+[2022/11/24 07:06:03:9394] N: 
+[2022/11/24 07:06:03:0110] N: GET: http://tamproto_tam_api_1:8888/TAs/8d82573a-926d-4754-9353-32dc29997f74.ta
+[2022/11/24 07:06:03:0110] N: http://tamproto_tam_api_1:8888/TAs/8d82573a-926d-4754-9353-32dc29997f74.ta
+[2022/11/24 07:06:03:0162] N: POST: http://tamproto_tam_api_1:8888/api/tam_cbor
+[2022/11/24 07:06:03:0162] N: 
+[2022/11/24 07:06:03:0162] N: 0000: 82 05 A1 14 48 77 77 77 77 77 77 77 77             ....Hwwwwwwww   
+[2022/11/24 07:06:03:0162] N: 
+[2022/11/24 07:06:03:0163] N: http://tamproto_tam_api_1:8888/api/tam_cbor
+[2022/11/24 07:06:03:0184] N: (hexdump: zero length)
 [CEnclavePool /home/user/linux-sgx/psw/urts/enclave.cpp:627] enter CEnclavePool constructor
-[build_secs /home/user/linux-sgx/psw/urts/loader.cpp:516] Enclave start addr. = 0x7f011e616000, Size = 0x8000000, 131072 KB
-verifying signature of suit manifest
-verify OK
-command: 20
-execute suit-set-parameters
-command: 1
-execute suit-condition-vendor-identifier
-command: 2
-execute suit-condition-class-identifier
-command: 19
-execute suit-set-parameters
-command: 21
-execute suit-directive-fetch
-fetch_and_store component
-component download 326768
-store component
-  device   = TEEP-Device
-  storage  = SecureFS
-  filename = 8d82573a-926d-4754-9353-32dc29997f74.ta
-finish fetch
-command: 3
-execute suit-condition-image-match
-end of command seq
-cd /builds/rinkai/teep-device/sample/../build/sgx/../../hello-tc/build-sgx/ && \
-    ./App_sgx | \
-    tee -a /builds/rinkai/teep-device/sample/../build/sgx/sgx.log
+[build_secs /home/user/linux-sgx/psw/urts/loader.cpp:516] Enclave start addr. = 0x7f62b5a94000, Size = 0x8000000, 131072 KB
+TTRC:verifying signature of suit manifest
+TTRC:verify OK
+TTRC:command: 20
+TTRC:execute suit-set-parameters
+TTRC:command: 1
+TTRC:execute suit-condition-vendor-identifier
+TTRC:command: 2
+TTRC:execute suit-condition-class-identifier
+TTRC:command: 19
+TTRC:execute suit-set-parameters
+TTRC:command: 21
+TTRC:execute suit-directive-fetch
+TTRC:fetch_and_store component
+TTRC:component download 326768
+TTRC:ta-store.c: store_component() store component
+TTRC:  device   = TEEP-Device
+TTRC:  storage  = SecureFS
+TTRC:  filename = 8d82573a-926d-4754-9353-32dc29997f74.ta
+TTRC:  image_len = 326768
+TINF: ta-store.c: 138: install_ta(): Return value of ocall_open_file is : retval  = 0
+TTRC:finish fetch
+TTRC:command: 3
+TTRC:execute suit-condition-image-match
+TTRC:end of command seq
+ls -l /home/user/teep-device/sample/../build/sgx/agent 
+total 1720
+-rw------- 1 build-user build-user 326768 Nov 24 07:06 8d82573a-926d-4754-9353-32dc29997f74.ta
+-rw-r--r-- 1 build-user build-user   8248 Nov 24 07:04 ta-store.o
+-rw-r--r-- 1 build-user build-user  59664 Nov 24 07:04 teep-agent-ta.o
+-rw-r--r-- 1 build-user build-user 675904 Nov 24 07:04 teep-agent-ta.signed.so
+-rwxr-xr-x 1 build-user build-user 675904 Nov 24 07:04 teep-agent-ta.so
+cd /home/user/teep-device/sample/../build/sgx/../../hello-tc/build-sgx/ && \
+	cp /home/user/teep-device/sample/../build/sgx/agent/8d82573a-926d-4754-9353-32dc29997f74.ta
+	/home/user/teep-device/sample/../build/sgx/../../hello-tc/build-sgx/ && \
+	./App-sgx | \
+	tee -a /home/user/teep-device/sample/../build/sgx/sgx.log
+[parse_dyn /home/user/linux-sgx/psw/urts/parser/elfparser.cpp:176] dynamic tag = 19, ptr = 1faa8
+[parse_dyn /home/user/linux-sgx/psw/urts/parser/elfparser.cpp:176] dynamic tag = 1b, ptr = 0
+[parse_dyn /home/user/linux-sgx/psw/urts/parser/elfparser.cpp:176] dynamic tag = 1a, ptr = 1faa8
+[parse_dyn /home/user/linux-sgx/psw/urts/parser/elfparser.cpp:176] dynamic tag = 1c, ptr = 18
+[parse_dyn /home/user/linux-sgx/psw/urts/parser/elfparser.cpp:176] dynamic tag = 6ffffef5, ptr = 2e8
+[parse_dyn /home/user/linux-sgx/psw/urts/parser/elfparser.cpp:176] dynamic tag = 5, ptr = 3c8
+[parse_dyn /home/user/linux-sgx/psw/urts/parser/elfparser.cpp:176] dynamic tag = 6, ptr = 320
+[parse_dyn /home/user/linux-sgx/psw/urts/parser/elfparser.cpp:176] dynamic tag = a, ptr = 5c
+[parse_dyn /home/user/linux-sgx/psw/urts/parser/elfparser.cpp:176] dynamic tag = b, ptr = 18
+[parse_dyn /home/user/linux-sgx/psw/urts/parser/elfparser.cpp:176] dynamic tag = 15, ptr = 0
+[parse_dyn /home/user/linux-sgx/psw/urts/parser/elfparser.cpp:176] dynamic tag = 3, ptr = 1ff98
+[parse_dyn /home/user/linux-sgx/psw/urts/parser/elfparser.cpp:176] dynamic tag = 7, ptr = 470
+[parse_dyn /home/user/linux-sgx/psw/urts/parser/elfparser.cpp:176] dynamic tag = 8, ptr = 570
+[parse_dyn /home/user/linux-sgx/psw/urts/parser/elfparser.cpp:176] dynamic tag = 9, ptr = 18
+...
+...
+[setreate_enclave /home/user/linux-sgx/psw/urts/urts_com.h:332] add tcs 0x7fef9dcaa000
+[__create_enclave /home/user/linux-sgx/psw/urts/urts_com.h:332] add tcs 0x7fef9e0de000
+[__create_enclave /home/user/linux-sgx/psw/urts/urts_com.h:332] add tcs 0x7fef9e512000
+[__create_enclave /home/user/linux-sgx/psw/urts/urts_com.h:332] add tcs 0x7fef9e946000
+[__create_enclave /home/user/linux-sgx/psw/urts/urts_com.h:332] add tcs 0x7fef9ed7a000
+[__create_enclave /home/user/linux-sgx/psw/urts/urts_com.h:342] Debug enclave. Checking if VTune is profiling or SGX_DBG_OPTIN is set
+[__create_enclave /home/user/linux-sgx/psw/urts/urts_com.h:388] VTune is not profiling and SGX_DBG_OPTIN is not set. 
+TCS Debug OPTIN bit not set and API to do module mapping not invoked
+[read_cpusvn_file ../cpusvn_util.cpp:96] Couldn't find/open the configuration file /home/user/.cpusvn.conf.
 [CEnclavePool /home/user/linux-sgx/psw/urts/enclave.cpp:627] enter CEnclavePool constructor
-[build_secs /home/user/linux-sgx/psw/urts/loader.cpp:516] Enclave start addr. = 0x7f8173294000, Size = 0x8000000, 131072 KB
+[build_secs /home/user/linux-sgx/psw/urts/loader.cpp:516] Enclave start addr. = 0x7fef9b365000, Size = 0x8000000, 131072 KB
 main start
 Hello TEEP from TEE!
 main end
 Info: Enclave successfully returned.
+ls -l /home/user/teep-device/sample/../build/sgx/../../hello-tc/build-sgx
+total 1048
+-rw-r--r-- 1 build-user build-user 326768 Nov 24 07:06 8d82573a-926d-4754-9353-32dc29997f74.ta
+-rwxr-xr-x 1 build-user build-user  31128 Nov 24 07:04 App-sgx
+-rw-r--r-- 1 build-user build-user   4712 Nov 24 07:04 App-sgx.o
+-rw-rw-rw- 1 build-user build-user    149 Nov 24 06:44 Enclave.lds
+-rw-r--r-- 1 build-user build-user   3064 Nov 24 07:04 Enclave.o
+-rw-rw-rw- 1 build-user build-user   2455 Nov 24 06:44 Enclave_private.pem
+-rw-rw-rw- 1 build-user build-user    455 Nov 24 06:44 Makefile
+-rw-rw-rw- 1 build-user build-user   1080 Nov 24 06:44 app.mk
+drwxrwxrwx 2 build-user build-user   4096 Nov 24 06:44 config
+-rw-r--r-- 1 build-user build-user    282 Nov 24 07:04 download-tc.suit
+-rw-r--r-- 1 build-user build-user    761 Nov 24 07:04 download.json
+-rw-r--r-- 1 build-user build-user 326986 Nov 24 07:04 embed-tc.suit
+-rw-r--r-- 1 build-user build-user    209 Nov 24 07:04 embed-tc.suit.tmp
+-rw-r--r-- 1 build-user build-user    690 Nov 24 07:04 embed.json
+-rw-rw-rw- 1 build-user build-user   1917 Nov 24 06:44 enclave.mk
+-rw-r--r-- 1 build-user build-user    358 Nov 24 07:04 signed-download-tc.suit
+-rw-r--r-- 1 build-user build-user 327062 Nov 24 07:04 signed-embed-tc.suit
+if ! [ -f /home/user/teep-device/sample/../build/sgx/../../hello-tc/build-sgx/8d82573a-926d-4754-9353-32dc29997f74.ta ];
+	then \
+	echo ERR: No TC found | tee -a /home/user/teep-device/sample/../build/sgx/sgx.log; \
+fi
+! fgrep 'ERR:' /home/user/teep-device/sample/../build/sgx/sgx.log
+fgrep 'Hello TEEP from TEE!' /home/user/teep-device/sample/../build/sgx/sgx.log
+Hello TEEP from TEE!
+make[1]: Leaving directory '/home/user/teep-device/sample'
 ```
 
 Cleaning built binaries. Deleting the built binaries are required when starting to build TEEP-Device on other CPU architectures otherwise will generate errors.
