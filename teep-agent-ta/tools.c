@@ -71,7 +71,7 @@ static char *local_strstr(const char *x, const char *y)
   return NULL;
 }
 
-// #define USE_SAFESTRSTR
+#define USE_SAFESTRSTR
 #ifdef  USE_SAFESTRSTR
 #define STRBUFSIZE 256
 /**
@@ -91,8 +91,8 @@ char *strstr(const char *haystack, const char *needle)
    char *ret;
 
    /* make sure the haystack, needle will be null terminated */
-   strncpy(buf, haystack, sizeof(buf)/sizeof(buf[0]));
-   strncpy(find_buf, needle, sizeof(find_buf)/sizeof(find_buf[0]));
+   strncpy(buf, haystack, STRBUFSIZE);
+   strncpy(find_buf, needle, STRBUFSIZE);
 
    /* Find if the match exists */
    ret = local_strstr(buf, find_buf);
@@ -101,8 +101,8 @@ char *strstr(const char *haystack, const char *needle)
  
    /* If match exists, do the pointer arithmetic to
    find the pointer and return it. */
-   int index = ret - buf;
-   ret = (char *)haystack + index;
+   uint64_t index = ret - buf;
+   ret = (char *)((uint64_t)haystack + index);
 
    return ret;
 }
