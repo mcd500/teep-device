@@ -116,7 +116,7 @@ The features of TEEP-Agent described in the TEEP Architecture draft are realized
 
 The features of TEEP-Agent do not have to be implemented as a TA in TEEP Architecture draft, ideally it is recommended the features of TEEP-Agent to be implemented inside TEE-os or underlying privileged mode (SMC in OP-TEE and SM in Keystone) to improve preventing from malicious softwares to stop the feature of the TEEP-Agent. The reason for realizing the TEEP-Agent as a TA in the TEEP-Device design is to simplify the implementation only.
 
-| Purpose | Client App| TA App Binary|
+| Purpose | Client App| TA Binary|
 | ------ | ------ | ------ |
 | TEEP | teep-broker-app | teep-agent-ta (teep-agent-ta.so for only sgx) |
 
@@ -127,16 +127,16 @@ In the real scenario, the HELLO-TEEP-TA will have features of Payment Applicatio
 
 Following are the pairs needed for execution on all three TEEs.
 
-| Purpose | Client App| TA App Binary|
+| Purpose | Client App| TA Binary|
 | ------ | ------ | ------ |
 | Keystone | App-keystone  | 8d82573a-926d-4754-9353-32dc29997f74.ta |
 | OP-TEE | App-optee  | 8d82573a-926d-4754-9353-32dc29997f74.ta |
 | Keystone | App-sgx  | 8d82573a-926d-4754-9353-32dc29997f74.ta |
 
 
-Executing the ./teep-broker-app with tamproto URL will allow the teep-agent-ta to talk with the tamproto server and download the TA App Binary.
+Executing the ./teep-broker-app with tamproto URL will allow the teep-agent-ta to talk with the tamproto server and download the TA Binary.
 Once the TA Binary is downloaded, the Client App (App-keystone / App-optee / App-sgx) will run the
-downloaded TA App.
+downloaded TA Binary.
 
-The filename of downloaded TA App Binary is: 8d82573a-926d-4754-9353-32dc29997f74.ta
+The filename of downloaded TA Binary is: 8d82573a-926d-4754-9353-32dc29997f74.ta
 for all the targets.
