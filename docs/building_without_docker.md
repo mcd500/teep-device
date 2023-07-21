@@ -42,7 +42,7 @@ the tamproto server to install the TC's.
 
 ```sh
 # Clone the tamproto repo and checkout master branch
-$ git clone https://192.168.100.100/rinkai/tamproto.git
+$ git clone https://github.com/ko-isobe/tamproto.git
 $ cd tamproto
 $ git checkout master
 $ docker-compose build
@@ -113,7 +113,7 @@ Clone and Build
 
 ```sh
 # Clone the TEEP-Device
-$ git clone https://192.168.100.100/rinkai/teep-device.git
+$ git clone https://github.com/mcd500/teep-device.git
 $ cd teep-device
 $ git checkout master
 
@@ -372,7 +372,7 @@ Clone and Build
 
 ```sh
 # Clone the TEEP-Device
-$ git clone https://192.168.100.100/rinkai/teep-device.git
+$ git clone https://github.com/mcd500/teep-device.git
 $ cd teep-device
 $ git checkout master
 
@@ -915,7 +915,7 @@ Clone and Build
 
 ```sh
 # Clone the TEEP-Device
-$ git clone https://192.168.100.100/rinkai/teep-device.git
+$ git clone https://github.com/mcd500/teep-device.git
 $ cd teep-device
 $ git checkout master
 
