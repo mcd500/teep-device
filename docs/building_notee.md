@@ -26,7 +26,7 @@ python3 -m pip install --upgrade .
 
 ```sh
 # Clone the tamproto repo and checkout master branch
-$ git clone https://192.168.100.100/rinkai/tamproto.git
+$ git clone https://github.com/ko-isobe/tamproto.git
 $ cd tamproto
 $ git checkout master
 $ docker-compose build
@@ -52,7 +52,7 @@ tam_api_1  | Express HTTPS server listening on port 8443
 
 ```sh
 # Clone the teep-device repo and checkout master branch
-$ git clone https://192.168.100.100/rinkai/teep-device.git
+$ git clone https://github.com/mcd500/teep-device.git
 $ cd teep-device
 $ git checkout master
 

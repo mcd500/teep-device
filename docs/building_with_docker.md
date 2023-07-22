@@ -118,7 +118,7 @@ Open the first terminal for the tamproto.
 
 ```sh
 # Clone the tamproto repo and checkout master branch
-$ git clone https://192.168.100.100/rinkai/tamproto.git
+$ git clone https://github.com/ko-isobe/tamproto.git
 $ cd tamproto
 $ git checkout fb1961bc964857384c9ed8696c0d5fc0a76a319d
 $ docker-compose build
@@ -146,7 +146,7 @@ Open the second terminal for editing the sources of TEEP-Device. The directory o
 
 ```sh
 # Clone the teep-device repo and checkout master branch
-$ git clone https://192.168.100.100/rinkai/teep-device.git
+$ git clone https://github.com/mcd500/teep-device.git
 $ cd teep-device
 $ git checkout master
 
@@ -736,7 +736,7 @@ $ make clean
 
 ```sh
 # Clone the teep-device repo and checkout master branch
-$ git clone https://192.168.100.100/rinkai/teep-device.git
+$ git clone https://github.com/mcd500/teep-device.git
 $ cd teep-device
 $ git checkout master
 
@@ -1005,7 +1005,7 @@ $ make clean
 
 ```sh
 # Clone the teep-device repo and checkout master branch
-$ git clone https://192.168.100.100/rinkai/teep-device.git
+$ git clone https://github.com/mcd500/teep-device.git
 $ cd teep-device
 $ git checkout master
 
