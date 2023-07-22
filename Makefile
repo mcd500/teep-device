@@ -176,10 +176,13 @@ test:
 
 # TARGET : docs
 # For generation doxygen documentation
-.PHONY: docs
-docs:
+
+docs/tree_view_dir.md:
 	@echo "Updating the directories tree structure"
 	bash docs/update_tree_structure.sh
+
+.PHONY: docs
+docs:
 	@echo "Generating doxygen files"
 	@doxygen docs/doxygen/Doxyfile
 	make -C docs/doxygen/latex
@@ -188,7 +191,7 @@ docs:
 	mv docs/doxygen/html docs/teep-device_readme_html
 	cd docs; tar czf teep-device_readme_html.tar.gz open-readme.html teep-device_readme_html
 
-gen_readme:
+gen_readme: docs/tree_view_dir.md
 	cat docs/overview_of_teep-device.md docs/tree_view_dir.md \
 		docs/build-environment.md \
 		docs/building_with_docker.md \
