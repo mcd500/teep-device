@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.4"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>TEEP-DEVICE: Operation of TAM and device</title>
+<title>TEEP-DEVICE: Concise Binary Object Representation (CBOR) in TEEP-Device</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 </div>
 <script type="text/javascript">
 /* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
-$(document).ready(function(){initNavTree('a00062.html',''); initResizable(); });
+$(document).ready(function(){initNavTree('a00090.html',''); initResizable(); });
 /* @license-end */
 </script>
 <div id="doc-content">
@@ -89,18 +89,42 @@ $(document).ready(function(){initNavTree('a00062.html',''); initResizable(); });
 </div>
 
 <div><div class="header">
-  <div class="headertitle"><div class="title">Operation of TAM and device </div></div>
+  <div class="headertitle"><div class="title">Concise Binary Object Representation (CBOR) in TEEP-Device </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><div class="image">
-<img src="teep-operations.png" alt=""/>
+<div class="textblock"><h1><a class="anchor" id="autotoc_md10"></a>
+Three format representations in TEEP and SUIT</h1>
+<p >TEEP Messages use CBOR binary format contrary to text based JavaScript Object Notation (JSON). The JSON format is widely used on the modern Internet as an easy of use message exchanging format between servers and clients.</p>
+<p >The CBOR provides binary format which enables smaller packet size to carry over the Internet as well as light weight parsing for the IoT and embedded devices.</p>
+<p >The CBOR has three representations. The Concise Data Definition Language (CDDL), Diagnostic Notation and Binary Representation.</p>
+<p >The CDDL is used for defining CBOR syntax of the TEEP Messages. The CBOR Diagnostic Notation is a way of expression of actuarial packet format of TEEP Messages in CBOR syntax. The CBOR Diagnostic Notation is similar text description to JSON format which are almost interchangeable.</p>
+<p >The CBOR Binary Representation is the result of converting the CBOR Diagnostic Notation to the binary. The TAM server and TEEP-Device parse the Binary Representation and handles the TEEP protocol operation.</p>
+<div class="image">
+<img src="teep-cbor-representation.png" alt=""/>
 </div>
- <p >TEEP Protocol defines four messages, QueryRequest, QueryResponse, Update, and Success-Error.</p>
-<p >The device initiates the first message by sending an empty HTTP POST Method macket to the TAM server, and then the TAM will be sending the QueryRequest to ask the capability of the device. All the consequent TEEP messages after the first empty HTTP POST are carried over HTTP Request/Response. The return message of the QueryResponse contains the information of supported cryptographic algorithms, installed TCs, etc on the device.</p>
-<p >If the TAM decides the TC must be installed to the device or update the previously installed TC, then the TAM will send the Update message and the device will process it. The Update message includes software Updates for Internet of Things (SUIT) Manifest which could contain the TC in the body of the Update message or have URI pointing to the location of the TC hosted elsewhere. The result of processing the Update message in the device is reported to the TAM with a Success-Error message.</p>
-<p >The SUIT Manifest provides metadata of TC including dependency of the TC, procedure of installing, method of verifying signature and information of invoking it. The SUIT Manifest is designed to meet the requirements of constrained devices with limited capacity of CPU and memory size of IoT and/or embedded devices.</p>
-<p >All the messages are transmitted over HTTP packets in the current implementation. The type of transport layer in the drafts is not limited to HTTP, may use HTTPS or any other method. </p>
-</div></div><!-- contents -->
+ <h1><a class="anchor" id="autotoc_md11"></a>
+TEEP Message format</h1>
+<p >Example of the TEEP Message of QueryRequest in both CBOR Diagnostic Notation and Binary Representation. The Diagnostic Notation is expressed in similar text style with JSON when implementing the Query Request by reading the CDDL format.</p>
+<p >The TEEP-Device and TAM will exchange the Binary Representation only. When the TEEP-Device receives the QueryRequest message from the TAM, the TEEP-Device will parse the Binary Representation to the Diagnostic Notation for understanding the contents of the message.</p>
+<div class="image">
+<img src="teep-message-format-cddl.png" alt=""/>
+</div>
+ <div class="image">
+<img src="teep-message-format-diag-notation.png" alt=""/>
+</div>
+ <div class="image">
+<img src="teep-message-format-bin-rep.png" alt=""/>
+</div>
+ <h1><a class="anchor" id="autotoc_md12"></a>
+SUIT Manifest format</h1>
+<p >The Update message of TEEP protocol includes the SUIT Manifests for the information of TC and/or carrying the TC itself in the SUIT Manifest. These are the examples of SUIT Manifest in the Update message.</p>
+<div class="image">
+<img src="suit-message-format-diag-notation.png" alt=""/>
+</div>
+ <div class="image">
+<img src="suit-message-format-bin-rep.png" alt=""/>
+</div>
+  </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->
 <!-- start footer part -->
