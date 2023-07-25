@@ -162,39 +162,42 @@ The below is the current TEEP-Device source code listing only the directories to
 
 ```sh
 .
+  |-hello-tc
+  |  |-build-optee
+  |  |-build-pc
+  |  |-build-sgx
+  |  |-build-keystone
+  |  |-manifest
+  |-submodule
+  |  |-t_cose
+  |  |-mbedtls
+  |  |-googletest
+  |  |-QCBOR
+  |  |-libwebsockets
+  |-teep-broker-app
+  |  |-scripts
   |-platform
-  |  |-keystone
-  |  |-pc
   |  |-sgx
   |  |-op-tee
-  |-docs
-  |  |-images
-  |  |-doxygen
-  |-key
-  |  |-CAs
+  |  |-pc
+  |  |-keystone
+  |-sample
+  |  |-session
   |-lib
   |  |-cose
-  |  |-suit
   |  |-cbor
   |  |-teep
   |  |-log
+  |  |-suit
   |  |-include
-  |-hello-tc
-  |  |-manifest
-  |  |-build-optee
-  |  |-build-pc
-  |  |-build-keystone
-  |  |-build-sgx
-  |-sample
-  |  |-session
-  |-teep-broker-app
-  |  |-scripts
-  |-submodule
-  |  |-libwebsockets
-  |  |-t_cose
-  |  |-QCBOR
-  |  |-mbedtls
-  |  |-googletest
+  |-build
+  |  |-pc
+  |-docs
+  |  |-teep-device_readme_html
+  |  |-doxygen
+  |  |-images
+  |-key
+  |  |-CAs
   |-teep-agent-ta
   |-include
 ```
