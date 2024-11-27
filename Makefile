@@ -193,8 +193,12 @@ docs:
 
 gen_readme: docs/tree_view_dir.md
 	cat docs/overview_of_teep-device.md docs/tree_view_dir.md \
+		docs/teep-device_operations.md \
+		docs/cbor_teep.md \
+		docs/tree_view_dir.md \
 		docs/build-environment.md \
 		docs/building_with_docker.md \
+		docs/building_without_docker.md \
 		docs/building_notee.md > README.md
 	sed -i 's/@image html /![](/g' README.md
 	sed -i '/^\!\[\]/ s/$$/)/' README.md
