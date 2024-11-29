@@ -136,68 +136,6 @@ downloaded TA Binary.
 
 The filename of downloaded TA Binary is: 8d82573a-926d-4754-9353-32dc29997f74.ta
 for all the targets.
-# Directory structure of source files
-
-Following are the important directories in the source code along with its description
-
-| Directory| Description|
-| ------ | ------ |
-| docs | Files for generating documentaions |
-| hello-tc | Sample Trusted Application for TEEP Protocol |
-| include | Header files to build hello-app/ta and teep-broker-app/teep-agent-ta | 
-| key | cryptograpic keys for TEEP protocol |
-| lib | contains libraries used on TEEP-Device |
-| submodules |Contains the submodules used for TEEP-Device |
-| submodules/libwebsockets | HTTP/HTTPS library https://github.com/warmcat/libwebsockets |
-| submodules/mbedtls | Cryptographic library  https://github.com/ARMmbed/mbed-crypto |
-| submodules/QCBOR | CBOR library  https://github.com/laurencelundblade/QCBOR.git |
-| submodules/t_cose | COSE library  https://github.com/laurencelundblade/t_cose.git |
-| teep-agent-ta | Main body of handling TEEP Protocol on TEE side |
-| teep-broker-app | Main body of handling TEEP Protocol on Linux side |
-
-**TEEP-Device Source Code**
-
-The below is the current TEEP-Device source code listing only the directories to one level.
-
-
-```sh
-.
-  |-platform
-  |  |-keystone
-  |  |-pc
-  |  |-sgx
-  |  |-op-tee
-  |-docs
-  |  |-images
-  |  |-doxygen
-  |-key
-  |  |-CAs
-  |-lib
-  |  |-cose
-  |  |-suit
-  |  |-cbor
-  |  |-teep
-  |  |-log
-  |  |-include
-  |-hello-tc
-  |  |-manifest
-  |  |-build-optee
-  |  |-build-pc
-  |  |-build-keystone
-  |  |-build-sgx
-  |-sample
-  |  |-session
-  |-teep-broker-app
-  |  |-scripts
-  |-submodule
-  |  |-libwebsockets
-  |  |-t_cose
-  |  |-QCBOR
-  |  |-mbedtls
-  |  |-googletest
-  |-teep-agent-ta
-  |-include
-```
 # Operation of TAM and device
 
 ![](docs/images/teep-operations.png)

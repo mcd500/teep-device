@@ -192,7 +192,7 @@ docs:
 	cd docs; tar czf teep-device_readme_html.tar.gz open-readme.html teep-device_readme_html
 
 gen_readme: docs/tree_view_dir.md
-	cat docs/overview_of_teep-device.md docs/tree_view_dir.md \
+	cat docs/overview_of_teep-device.md \
 		docs/teep-device_operations.md \
 		docs/cbor_teep.md \
 		docs/tree_view_dir.md \
