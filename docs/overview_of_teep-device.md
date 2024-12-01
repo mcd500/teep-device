@@ -1,5 +1,9 @@
 # Overview of TEEP-Device
 
+There is a wiki page describing Introduction, objective and use cases of TEEP Protocol.
+
+  * [https://github.com/ietf-teep/teep-protocol/wiki](https://github.com/ietf-teep/teep-protocol/wiki)
+
 The TEEP Protocol provides the protocol on a wide range of devices for install, update, and delete Trusted Applications and Personalization Data by Trusted Component Signer or Device Administrators who host Trusted Application Managers (TAMs).
 
 @image html docs/images/overview_of_teep.png
